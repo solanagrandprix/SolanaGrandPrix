@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SolanaGP iRacing Tracker</title>
+
+  <!-- Shared global layout -->
+  <link rel="stylesheet" href="/layout.css">
+
+  <!-- Page-specific styles -->
+  <style>
+    .tracker-wrapper {
+      width: 1100px;
+      max-width: 100%;
+      padding: 0 16px;
+      display: flex;
+      justify-content: center;
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: #0d111c;
+      padding: 30px 40px;
+      border-radius: 18px;
+      box-shadow: 0 0 35px rgba(0,0,0,0.6);
+      width: 420px;
+      text-align: center;
+      border: 1px solid #111827;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+    }
+
+    p {
+      margin: 4px 0 14px;
+    }
+
+    button {
+      padding: 10px 24px;
+      font-size: 16px;
+      background: #22c55e;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+
+    select {
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: none;
+      margin-top: 8px;
+      width: 80%;
+      max-width: 260px;
+      background: #020617;
+      color: #e5e7eb;
+    }
+
+    .output {
+      margin-top: 20px;
+      background: #070b12;
+      padding: 15px;
+      border-radius: 14px;
+      min-height: 60px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    /* NFT-style frame around driver card */
+    .nft-frame {
+      position: relative;
+      padding: 2px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
+      box-shadow: 0 0 20px rgba(34,197,94,0.4);
+      margin-top: 10px;
+      animation: glowPulse 4s ease-in-out infinite;
+    }
+
+    .nft-inner {
+      background: #111827;
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+
+    @keyframes glowPulse {
+      0%,100% { box-shadow: 0 0 18px rgba(139,92,246,0.4); }
+      50%     { box-shadow: 0 0 26px rgba(34,197,94,0.8); }
+    }
+
+    .driver-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    .driver-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      object-fit: cover;
+      background: #020617;
+    }
+
+    .driver-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .driver-name {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .driver-team {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .driver-car {
+      font-size: 13px;
+      color: #d1fae5;
+    }
+
+    .driver-stats {
+      margin-top: 8px;
+      font-size: 14px;
+      text-align: left;
+      line-height: 1.4;
+    }
+
+    .profile-link {
+      margin-top: 10px;
+      text-align: right;
+      font-size: 12px;
+    }
+
+    .profile-link a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    .profile-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sgp-shell">
+    <!-- 🔵 Global header -->
+    <header class="sgp-header">
+      <div class="sgp-logo-block">
+        <div class="sgp-logo">Solana Grand Prix</div>
+        <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
+      </div>
+      <nav class="sgp-nav">
+        <a href="/" class="sgp-nav-link">Home</a>
+        <a href="/tracker" class="sgp-nav-link">Drivers</a>
+        <a href="/season" class="sgp-nav-link">Season hub</a>
+        <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+        <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+      </nav>
+         
+    </header>
+
+    <!-- 🔵 Page content -->
+    <main class="sgp-main">
+      <div class="tracker-wrapper">
+        <div class="card">
+          <h1>SolanaGP iRacing Tracker</h1>
+          <p>Select a driver and load their stats.</p>
+
+          <select id="driverSelect">
+            <option value="riley">Riley McAlpine</option>
+            <option value="alex">Alex Fastboi</option>
+          </select>
+
+          <br>
+          <button onclick="loadStats()">Load Stats</button>
+
+          <div class="output" id="output">Waiting...</div>
+          <div class="output" id="races">Recent races will appear here.</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 🔵 Global footer -->
+    <footer class="sgp-footer">
+      Solana Grand Prix • Prototype hub built by Riley • Data is demo-only — iRacing automation coming soon.
+    </footer>
+  </div>
+
+  <script>
+    let lastDriverKey = 'riley';
+
+    async function loadStats() {
+      const driverKey = document.getElementById('driverSelect').value;
+      lastDriverKey = driverKey;
+
+      try {
+        const [statsRes, racesRes] = await Promise.all([
+          fetch('/api/stats?driver=' + encodeURIComponent(driverKey)),
+          fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey))
+        ]);
+
+        const stats = await statsRes.json();
+        const races = await racesRes.json();
+
+        // DRIVER NFT CARD
+        document.getElementById('output').innerHTML = `
+          <div class="nft-frame">
+            <div class="nft-inner">
+              <div class="driver-header">
+                <img src="${stats.avatar}" alt="${stats.name}" class="driver-avatar">
+                <div class="driver-meta">
+                  <div class="driver-name">#${stats.number} ${stats.name}</div>
+                  <div class="driver-team">${stats.team}</div>
+                  <div class="driver-car">${stats.primaryCar}</div>
+                </div>
+              </div>
+              <div class="driver-stats">
+                <b>iRating:</b> ${stats.irating}<br>
+                <b>License:</b> ${stats.license}<br>
+                <b>Starts:</b> ${stats.starts}
+              </div>
+              <div class="profile-link">
+                <a href="/driver/${driverKey}">View full profile ↗</a>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // RACE TABLE
+        const rows = races.map(race => `
+          <tr>
+            <td>${race.track}</td>
+            <td>${race.car}</td>
+            <td style="text-align:right;">${race.finish}</td>
+            <td style="text-align:right;">${race.srChange}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('races').innerHTML = `
+          <b>Recent Races</b>
+          <table style="width:100%; margin-top:10px; border-collapse:collapse; font-size:14px;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:4px;">Track</th>
+                <th style="text-align:left; padding:4px;">Car</th>
+                <th style="text-align:right; padding:4px;">Finish</th>
+                <th style="text-align:right; padding:4px;">SR Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        `;
+      } catch (err) {
+        console.error(err);
+        document.getElementById('output').innerText = 'Error loading stats.';
+        document.getElementById('races').innerText = 'Error loading races.';
+      }
+    }
+  </script>
+</body>
+</html>

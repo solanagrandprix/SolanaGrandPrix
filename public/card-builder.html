@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SolanaGP NFT Card Builder</title>
+
+  <!-- Shared global layout -->
+  <link rel="stylesheet" href="/layout.css">
+
+  <!-- Page-specific styles -->
+  <style>
+    .card-builder-layout {
+      width: 1100px;
+      max-width: 100%;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 6px;
+    }
+
+    .subheadline {
+      color: #9ca3af;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      background: #020617;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      margin-bottom: 16px;
+      border: 1px solid #111827;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-size: 13px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: none;
+      background: #0b1120;
+      color: #e5e7eb;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 9px 18px;
+      border-radius: 999px;
+      border: none;
+      background: #22c55e;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button.secondary {
+      background: #0f172a;
+      color: #e5e7eb;
+      border: 1px solid #1e293b;
+      margin-left: 8px;
+    }
+
+    /* CARD PREVIEW AREA */
+
+    .preview-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #cardCapture {
+      width: 420px;
+      height: 260px;
+      position: relative;
+    }
+
+    .card-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 3px;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 15px;
+      background: radial-gradient(circle at top left, #1f2937, #020617 70%);
+      display: flex;
+      padding: 14px 16px;
+      box-sizing: border-box;
+      gap: 14px;
+    }
+
+    /* Background animations */
+
+    .bg-static {
+      background: radial-gradient(circle at top left, #1f2937, #020617 70%);
+    }
+
+    .bg-neon-grid {
+      background:
+        linear-gradient(90deg, rgba(148,163,184,0.35) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(148,163,184,0.35) 1px, transparent 1px),
+        radial-gradient(circle at top left, #22c55e33, #020617 70%);
+      background-size: 20px 20px, 20px 20px, auto;
+      animation: gridMove 10s linear infinite;
+    }
+    @keyframes gridMove {
+      0%   { background-position: 0 0, 0 0, 0 0; }
+      100% { background-position: 40px 40px, 40px 40px, 0 0; }
+    }
+
+    .bg-solar {
+      background:
+        radial-gradient(circle at 10% 10%, #f9731633, transparent 55%),
+        radial-gradient(circle at 90% 80%, #22c55e33, transparent 55%),
+        radial-gradient(circle at 50% 120%, #0ea5e933, transparent 55%),
+        #020617;
+      animation: solarPulse 6s ease-in-out infinite;
+    }
+    @keyframes solarPulse {
+      0%,100% { filter: brightness(1); }
+      50%     { filter: brightness(1.25); }
+    }
+
+    .bg-ice {
+      background:
+        radial-gradient(circle at 0% 0%, #7dd3fc33, transparent 55%),
+        radial-gradient(circle at 100% 100%, #a855f733, transparent 55%),
+        #020617;
+      animation: iceShift 9s linear infinite;
+    }
+    @keyframes iceShift {
+      0%   { background-position: 0 0, 100% 100%; }
+      50%  { background-position: 10% 5%, 90% 95%; }
+      100% { background-position: 0 0, 100% 100%; }
+    }
+
+    /* Rarity frames */
+
+    .rarity-common {
+      background: linear-gradient(135deg, #4b5563, #111827);
+      box-shadow: 0 0 12px rgba(31,41,55,0.6);
+    }
+    .rarity-rare {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      box-shadow: 0 0 14px rgba(56,189,248,0.7);
+    }
+    .rarity-legendary {
+      background: linear-gradient(135deg, #f97316, #facc15);
+      box-shadow: 0 0 18px rgba(250,204,21,0.8);
+    }
+    .rarity-mythic {
+      background: conic-gradient(from 0deg,
+        #22c55e, #0ea5e9, #a855f7, #f97316, #22c55e);
+      box-shadow: 0 0 22px rgba(168,85,247,0.9);
+      animation: mythicSpin 8s linear infinite;
+    }
+    @keyframes mythicSpin {
+      0%   { transform: rotate(0deg);   }
+      100% { transform: rotate(360deg); }
+    }
+
+    .card-inner-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .card-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 14px;
+      object-fit: cover;
+      background: #020617;
+      box-shadow: 0 0 10px rgba(15,23,42,0.9);
+    }
+
+    .card-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-top: 4px;
+    }
+
+    .card-name-line {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .card-team {
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+    .card-car {
+      font-size: 12px;
+      color: #c4b5fd;
+    }
+    .card-footer {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .badge-common    { background: #111827; color: #e5e7eb; }
+    .badge-rare      { background: #0ea5e9; color: #0b1120; }
+    .badge-legendary { background: #facc15; color: #451a03; }
+    .badge-mythic    { background: #a855f7; color: #fdf2ff; }
+
+    .controls-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .controls-header a {
+      color: #38bdf8;
+      font-size: 12px;
+      text-decoration: none;
+    }
+    .controls-header a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+      .card-builder-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+
+  <!-- html2canvas for exporting PNG -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+
+<body>
+  <div class="sgp-shell">
+    <!-- 🔵 Global header -->
+    <header class="sgp-header">
+      <div class="sgp-logo-block">
+        <div class="sgp-logo">Solana Grand Prix</div>
+        <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
+      </div>
+      <nav class="sgp-nav">
+        <a href="/" class="sgp-nav-link">Home</a>
+        <a href="/tracker" class="sgp-nav-link">Drivers</a>
+        <a href="/season" class="sgp-nav-link">Season hub</a>
+        <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+        <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+      </nav>
+           
+    </header>
+
+    <!-- 🔵 Page content -->
+    <main class="sgp-main">
+      <div class="card-builder-layout">
+        <div>
+          <h1>SGP NFT Card Builder</h1>
+          <div class="subheadline">Design SolanaGP driver cards and export them as PNGs.</div>
+
+          <div class="panel">
+            <div class="controls-header">
+              <h2>Card Settings</h2>
+              <a href="/tracker" class="sgp-nav-link active">Live tracker</a>
+            </div>
+
+            <label for="driverSelect">Driver</label>
+            <select id="driverSelect">
+              <option value="riley">Riley McAlpine</option>
+              <option value="alex">Alex Fastboi</option>
+            </select>
+
+            <label for="raritySelect">Rarity</label>
+            <select id="raritySelect">
+              <option value="common">Common</option>
+              <option value="rare">Rare</option>
+              <option value="legendary" selected>Legendary</option>
+              <option value="mythic">Mythic</option>
+            </select>
+
+            <label for="bgSelect">Background Style</label>
+            <select id="bgSelect">
+              <option value="static">Static cosmic</option>
+              <option value="neon-grid" selected>Neon grid</option>
+              <option value="solar">Solar flare</option>
+              <option value="ice">Ice storm</option>
+            </select>
+
+            <div style="margin-top: 12px;">
+              <button onclick="updatePreview()">Update Preview</button>
+              <button class="secondary" onclick="exportPNG()">Export PNG</button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Tips</h2>
+            <p style="font-size:13px; color:#9ca3af;">
+              • Use <b>Mythic</b> for crazy animated borders.<br>
+              • Change background to match team colors or event theme.<br>
+              • After exporting PNG, you can drop it into Photoshop, Canva, or your NFT pipeline.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Card Preview</h2>
+          <div class="preview-wrapper">
+            <div id="cardCapture">
+              <!-- Card gets rendered here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 🔵 Global footer -->
+    <footer class="sgp-footer">
+      Solana Grand Prix • Prototype hub built by Riley • Data is demo-only — iRacing automation coming soon.
+    </footer>
+  </div>
+
+  <script>
+    // Frontend copy of basic driver info for the card builder
+    const driverData = {
+      riley: {
+        name: "Riley McAlpine",
+        number: 93,
+        team: "SolanaGP Mazda Cup",
+        car: "Mazda MX-5 Cup",
+        avatar: "/images/riley.png"
+      },
+      alex: {
+        name: "Alex Fastboi",
+        number: 7,
+        team: "SolanaGP GT3",
+        car: "Audi R8 LMS GT3",
+        avatar: "/images/alex.png"
+      }
+    };
+
+    function rarityClasses(rarity) {
+      switch (rarity) {
+        case 'rare':      return { frame: 'rarity-rare',      badge: 'badge-rare',      label: 'RARE' };
+        case 'legendary': return { frame: 'rarity-legendary', badge: 'badge-legendary', label: 'LEGENDARY' };
+        case 'mythic':    return { frame: 'rarity-mythic',    badge: 'badge-mythic',    label: 'MYTHIC' };
+        default:          return { frame: 'rarity-common',    badge: 'badge-common',    label: 'COMMON' };
+      }
+    }
+
+    function bgClass(bg) {
+      switch (bg) {
+        case 'neon-grid': return 'bg-neon-grid';
+        case 'solar':     return 'bg-solar';
+        case 'ice':       return 'bg-ice';
+        default:          return 'bg-static';
+      }
+    }
+
+    function updatePreview() {
+      const driverKey = document.getElementById('driverSelect').value;
+      const rarity = document.getElementById('raritySelect').value;
+      const bg = document.getElementById('bgSelect').value;
+
+      const d = driverData[driverKey];
+      const r = rarityClasses(rarity);
+      const bgCls = bgClass(bg);
+
+      const container = document.getElementById('cardCapture');
+      container.innerHTML = `
+        <div class="card-frame ${r.frame}">
+          <div class="card-inner ${bgCls}">
+            <div class="card-inner-content">
+              <img src="${d.avatar}" class="card-avatar" alt="${d.name}">
+              <div class="card-text">
+                <div>
+                  <div class="badge ${r.badge}">${r.label}</div>
+                  <div class="card-name-line">#${d.number} ${d.name}</div>
+                  <div class="card-team">${d.team}</div>
+                  <div class="card-car">${d.car}</div>
+                </div>
+                <div class="card-footer">
+                  SolanaGP • Season 1<br>
+                  Generated with SGP Card Builder
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function exportPNG() {
+      const driverKey = document.getElementById('driverSelect').value;
+      const rarity = document.getElementById('raritySelect').value;
+
+      const node = document.getElementById('cardCapture');
+
+      const canvas = await html2canvas(node, {
+        backgroundColor: null,
+        scale: 3
+      });
+
+      const link = document.createElement('a');
+      link.download = `sgp-card-${driverKey}-${rarity}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Initialize once page loads
+    updatePreview();
+  </script>
+</body>
+</html>

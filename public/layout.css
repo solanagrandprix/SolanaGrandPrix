@@ -1,0 +1,99 @@
+/* Global base */
+* {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, #22c55e22, transparent 55%),
+      radial-gradient(circle at bottom right, #6366f122, transparent 55%),
+      #020617;
+    color: #e5e7eb;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* 🔵 SGP page shell = header + main + footer */
+  .sgp-shell {
+    min-height: 100vh;          /* make shell fill the full screen height */
+    display: flex;              /* use flex so footer can stick to bottom */
+    flex-direction: column;     /* vertical stack: header, main, footer */
+    padding: 32px 20px 40px;    /* outer padding around everything */
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;             /* center whole app horizontally */
+  }
+  
+  /* Top banner / nav */
+  .sgp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;        /* space between header and main content */
+  }
+  
+  .sgp-logo-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .sgp-logo {
+    font-size: 26px;
+    font-weight: 800;
+  }
+  
+  .sgp-tagline {
+    font-size: 11px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+  
+  .sgp-nav {
+    display: flex;
+    gap: 18px;
+  }
+  
+  .sgp-nav-link {
+    font-size: 14px;
+    color: #9ca3af;
+    text-decoration: none;
+  }
+  
+  .sgp-nav-link:hover {
+    color: #ffffff;
+  }
+  
+  .sgp-nav-link.active {
+    color: #ffffff;
+    font-weight: bold;
+  }
+  
+  /* 🔵 Main content area (this is where each page puts its stuff) */
+  .sgp-main {
+    flex: 1;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 60px 0 100px;  /* default for other pages */
+    box-sizing: border-box;
+  }
+  
+  /* 🔵 Extra spacing ONLY on the home page */
+  .home-main {
+    padding-top: 120px;   /* adjust this number to move everything down/up */
+  }
+  
+  
+  /* Bottom bar / footer */
+  .sgp-footer {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #6b7280;
+    text-align: center;
+    border-top: 1px solid #111827;
+    padding-top: 16px;
+  }
+  
