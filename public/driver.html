@@ -1,227 +1,231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Driver Profile – SolanaGP</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Driver Profile – SolanaGP</title>
 
-  <!-- Shared global layout -->
-  <link rel="stylesheet" href="/layout.css">
+    <!-- Shared global layout -->
+    <link rel="stylesheet" href="/layout.css" />
 
-  <!-- Page-specific styles -->
-  <style>
-    .driver-container {
-      width: 960px;
-      max-width: 100%;
-      padding: 0 16px;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .back-link {
-      color: #38bdf8;
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .back-link:hover {
-      text-decoration: underline;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-      gap: 20px;
-    }
-
-    .nft-frame {
-      position: relative;
-      padding: 2px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
-      box-shadow: 0 0 26px rgba(0,0,0,0.8);
-      animation: glowPulse 4s ease-in-out infinite;
-    }
-
-    .nft-inner {
-      background: #0b1120;
-      border-radius: 16px;
-      padding: 16px 18px;
-    }
-
-    @keyframes glowPulse {
-      0%,100% { box-shadow: 0 0 22px rgba(56,189,248,0.6); }
-      50%     { box-shadow: 0 0 30px rgba(34,197,94,0.8); }
-    }
-
-    .driver-header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 12px;
-      text-align: left;
-    }
-
-    .driver-avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 16px;
-      object-fit: cover;
-      background: #020617;
-    }
-
-    .driver-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .driver-name {
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    .driver-team {
-      font-size: 13px;
-      color: #9ca3af;
-    }
-
-    .driver-car {
-      font-size: 13px;
-      color: #d1fae5;
-    }
-
-    .driver-stats {
-      margin-top: 8px;
-      font-size: 14px;
-      text-align: left;
-      line-height: 1.4;
-    }
-
-    .panel {
-      background: #020617;
-      border-radius: 16px;
-      padding: 14px 18px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      border: 1px solid #111827;
-    }
-
-    .panel h2 {
-      margin-top: 0;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    th, td {
-      padding: 4px;
-    }
-
-    th {
-      text-align: left;
-      color: #9ca3af;
-      font-weight: 500;
-    }
-
-    td:nth-child(3),
-    td:nth-child(4) {
-      text-align: right;
-    }
-
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: minmax(0, 1fr);
+    <!-- Page-specific styles -->
+    <style>
+      .driver-container {
+        width: 960px;
+        max-width: 100%;
+        padding: 0 16px;
       }
-    }
-  </style>
 
-  <!-- Chart.js for the iRating graph -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
 
-<body>
-  <div class="sgp-shell">
-    <!-- 🔵 Global header -->
-    <header class="sgp-header">
-      <div class="sgp-logo-block">
-        <div class="sgp-logo">Solana Grand Prix</div>
-        <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
-      </div>
-      <nav class="sgp-nav">
-        <a href="/" class="sgp-nav-link">Home</a>
-        <a href="/tracker" class="sgp-nav-link">Drivers</a>
-        <a href="/season" class="sgp-nav-link">Season hub</a>
-        <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-        <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-      </nav>          
-    </header>
+      .back-link {
+        color: #38bdf8;
+        text-decoration: none;
+        font-size: 14px;
+      }
 
-    <!-- 🔵 Page content -->
-    <main class="sgp-main">
-      <div class="driver-container">
-        <div class="top-bar">
-          <h1 id="pageTitle">Driver Profile</h1>
-          <a href="/tracker" class="back-link">← Back to main tracker</a>
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        gap: 20px;
+      }
+
+      .nft-frame {
+        position: relative;
+        padding: 2px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
+        box-shadow: 0 0 26px rgba(0, 0, 0, 0.8);
+        animation: glowPulse 4s ease-in-out infinite;
+      }
+
+      .nft-inner {
+        background: #0b1120;
+        border-radius: 16px;
+        padding: 16px 18px;
+      }
+
+      @keyframes glowPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
+        }
+        50% {
+          box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
+        }
+      }
+
+      .driver-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 12px;
+        text-align: left;
+      }
+
+      .driver-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        object-fit: cover;
+        background: #020617;
+      }
+
+      .driver-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .driver-name {
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .driver-team {
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .driver-car {
+        font-size: 13px;
+        color: #d1fae5;
+      }
+
+      .driver-stats {
+        margin-top: 8px;
+        font-size: 14px;
+        text-align: left;
+        line-height: 1.4;
+      }
+
+      .panel {
+        background: #020617;
+        border-radius: 16px;
+        padding: 14px 18px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        border: 1px solid #111827;
+      }
+
+      .panel h2 {
+        margin-top: 0;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th,
+      td {
+        padding: 4px;
+      }
+
+      th {
+        text-align: left;
+        color: #9ca3af;
+        font-weight: 500;
+      }
+
+      td:nth-child(3),
+      td:nth-child(4) {
+        text-align: right;
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+
+    <!-- Chart.js for the iRating graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- 🔵 Global header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
         </div>
+        <nav class="sgp-nav">
+          <a href="/" class="sgp-nav-link">Home</a>
+          <a href="/tracker" class="sgp-nav-link">Drivers</a>
+          <a href="/season" class="sgp-nav-link">Season hub</a>
+          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+        </nav>
+      </header>
 
-        <div class="layout">
-          <div>
-            <div class="nft-frame">
-              <div class="nft-inner" id="driverCard">
-                Loading driver...
+      <!-- 🔵 Page content -->
+      <main class="sgp-main">
+        <div class="driver-container">
+          <div class="top-bar">
+            <h1 id="pageTitle">Driver Profile</h1>
+            <a href="/tracker" class="back-link">← Back to main tracker</a>
+          </div>
+
+          <div class="layout">
+            <div>
+              <div class="nft-frame">
+                <div class="nft-inner" id="driverCard">Loading driver...</div>
+              </div>
+
+              <div class="panel" style="margin-top: 16px">
+                <h2>Driver Progress</h2>
+                <div id="racesPanel">Loading...</div>
               </div>
             </div>
 
-            <div class="panel" style="margin-top:16px;">
-              <h2>Recent Races</h2>
-              <div id="racesPanel">Loading...</div>
+            <div class="panel">
+              <h2>iRating History</h2>
+              <canvas id="irChart" height="200"></canvas>
             </div>
           </div>
-
-          <div class="panel">
-            <h2>iRating History</h2>
-            <canvas id="irChart" height="200"></canvas>
-          </div>
         </div>
-      </div>
-    </main>
+      </main>
 
-    <!-- 🔵 Global footer -->
-    <footer class="sgp-footer">
-      Solana Grand Prix • Prototype hub built by Riley • Data is demo-only — iRacing automation coming soon.
-    </footer>
-  </div>
+      <!-- 🔵 Global footer -->
+      <footer class="sgp-footer">
+        Solana Grand Prix • IRacing automation coming soon.
+      </footer>
+    </div>
 
-  <script>
-    const pathParts = window.location.pathname.split('/');
-    const driverKey = pathParts[pathParts.length - 1] || 'riley';
+    <script>
+      const pathParts = window.location.pathname.split('/');
+      const driverKey = pathParts[pathParts.length - 1] || 'riley';
 
-    async function loadDriver() {
-      try {
-        const [statsRes, racesRes, irRes] = await Promise.all([
-          fetch('/api/stats?driver=' + encodeURIComponent(driverKey)),
-          fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey)),
-          fetch('/api/irating-history?driver=' + encodeURIComponent(driverKey))
-        ]);
+      async function loadDriver() {
+        try {
+          const [statsRes, racesRes, irRes] = await Promise.all([
+            fetch('/api/stats?driver=' + encodeURIComponent(driverKey)),
+            fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey)),
+            fetch('/api/irating-history?driver=' + encodeURIComponent(driverKey)),
+          ]);
 
-        const stats = await statsRes.json();
-        const races = await racesRes.json();
-        const irHistory = await irRes.json();
+          const stats = await statsRes.json();
+          const races = await racesRes.json();
+          const irHistory = await irRes.json();
 
-        // Update title
-        document.getElementById('pageTitle').innerText = `${stats.name} – Driver Profile`;
+          // Update title
+          document.getElementById('pageTitle').innerText = `${stats.name} – Driver Profile`;
 
-        // Driver card
-        document.getElementById('driverCard').innerHTML = `
+          // Driver card
+          document.getElementById('driverCard').innerHTML = `
           <div class="driver-header">
             <img src="${stats.avatar}" alt="${stats.name}" class="driver-avatar">
             <div class="driver-meta">
@@ -237,17 +241,21 @@
           </div>
         `;
 
-        // Races table
-        const rows = races.map(race => `
+          // Races table
+          const rows = races
+            .map(
+              (race) => `
           <tr>
             <td>${race.track}</td>
             <td>${race.car}</td>
             <td>${race.finish}</td>
             <td>${race.srChange}</td>
           </tr>
-        `).join('');
+        `
+            )
+            .join('');
 
-        document.getElementById('racesPanel').innerHTML = `
+          document.getElementById('racesPanel').innerHTML = `
           <table>
             <thead>
               <tr>
@@ -261,45 +269,46 @@
           </table>
         `;
 
-        // iRating chart
-        const labels = irHistory.map(p => p.label);
-        const values = irHistory.map(p => p.value);
+          // iRating chart
+          const labels = irHistory.map((p) => p.label);
+          const values = irHistory.map((p) => p.value);
 
-        const ctx = document.getElementById('irChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [{
-              label: 'iRating',
-              data: values,
-              fill: false,
-              tension: 0.3
-            }]
-          },
-          options: {
-            plugins: {
-              legend: { display: false }
+          const ctx = document.getElementById('irChart').getContext('2d');
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: 'iRating',
+                  data: values,
+                  fill: false,
+                  tension: 0.3,
+                },
+              ],
             },
-            scales: {
-              x: {
-                ticks: { color: '#9ca3af' }
+            options: {
+              plugins: {
+                legend: { display: false },
               },
-              y: {
-                ticks: { color: '#9ca3af' }
-              }
-            }
-          }
-        });
-
-      } catch (err) {
-        console.error(err);
-        document.getElementById('driverCard').innerText = 'Error loading driver.';
-        document.getElementById('racesPanel').innerText = 'Error loading races.';
+              scales: {
+                x: {
+                  ticks: { color: '#9ca3af' },
+                },
+                y: {
+                  ticks: { color: '#9ca3af' },
+                },
+              },
+            },
+          });
+        } catch (err) {
+          console.error(err);
+          document.getElementById('driverCard').innerText = 'Error loading driver.';
+          document.getElementById('racesPanel').innerText = 'Error loading races.';
+        }
       }
-    }
 
-    loadDriver();
-  </script>
-</body>
+      loadDriver();
+    </script>
+  </body>
 </html>

@@ -1,267 +1,251 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>SolanaGP Season Hub</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SolanaGP Season Hub</title>
 
-  <!-- Shared global layout -->
-  <link rel="stylesheet" href="/layout.css">
+    <!-- Shared global layout -->
+    <link rel="stylesheet" href="/layout.css" />
 
-  <!-- Page-specific styles -->
-  <style>
-    .season-container {
-      width: 1100px;
-      max-width: 100%;
-      padding: 0 16px;
-    }
-
-    .season-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 20px;
-    }
-
-    .season-subtitle {
-      color: #9ca3af;
-      font-size: 14px;
-    }
-
-    .season-links {
-      font-size: 14px;
-      color: #9ca3af;
-    }
-
-    .season-links a {
-      color: #38bdf8;
-      text-decoration: none;
-    }
-
-    .season-links a:hover {
-      text-decoration: underline;
-    }
-
-    .season-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-      gap: 20px;
-    }
-
-    .panel {
-      background: #020617;
-      border-radius: 16px;
-      padding: 16px 18px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      margin-bottom: 16px;
-      border: 1px solid #111827;
-    }
-
-    .panel h2 {
-      margin-top: 0;
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    th, td {
-      padding: 4px;
-    }
-
-    th {
-      text-align: left;
-      color: #9ca3af;
-      font-weight: 500;
-    }
-
-    td:nth-child(3),
-    td:nth-child(4),
-    td:nth-child(5) {
-      text-align: right;
-    }
-
-    .pill {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      background: #0f172a;
-      color: #e5e7eb;
-    }
-
-    ul.season-highlights {
-      margin: 0;
-      padding-left: 18px;
-      font-size: 14px;
-      color: #e5e7eb;
-    }
-
-    .season-notes {
-      font-size: 13px;
-      color: #9ca3af;
-    }
-
-    @media (max-width: 900px) {
-      .season-layout {
-        grid-template-columns: minmax(0, 1fr);
+    <!-- Page-specific styles -->
+    <style>
+      .season-container {
+        width: 1100px;
+        max-width: 100%;
+        padding: 0 16px;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <div class="sgp-shell">
-    <!-- 🔵 Global header -->
-    <header class="sgp-header">
-      <div class="sgp-logo-block">
-        <div class="sgp-logo">Solana Grand Prix</div>
-        <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
-      </div>
-      <nav class="sgp-nav">
-        <a href="/" class="sgp-nav-link">Home</a>
-        <a href="/tracker" class="sgp-nav-link">Drivers</a>
-        <a href="/season" class="sgp-nav-link">Season hub</a>
-        <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-        <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-      </nav>      
+      .season-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 20px;
+      }
 
-    </header>
+      .season-subtitle {
+        color: #9ca3af;
+        font-size: 14px;
+      }
 
-    <!-- 🔵 Page content -->
-    <main class="sgp-main">
-      <div class="season-container">
-        <div class="season-top">
-          <div>
-            <h1 style="margin:0;">SolanaGP – Season 1</h1>
-            <div class="season-subtitle">
-              Schedule • Results • Standings • Highlights
+      .season-links {
+        font-size: 14px;
+        color: #9ca3af;
+      }
+
+      .season-links a {
+        color: #38bdf8;
+        text-decoration: none;
+      }
+
+      .season-links a:hover {
+        text-decoration: underline;
+      }
+
+      .season-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        gap: 20px;
+      }
+
+      .panel {
+        background: #020617;
+        border-radius: 16px;
+        padding: 16px 18px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        margin-bottom: 16px;
+        border: 1px solid #111827;
+      }
+
+      .panel h2 {
+        margin-top: 0;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      th,
+      td {
+        padding: 4px;
+      }
+
+      th {
+        text-align: left;
+        color: #9ca3af;
+        font-weight: 500;
+      }
+
+      td:nth-child(3),
+      td:nth-child(4),
+      td:nth-child(5) {
+        text-align: right;
+      }
+
+      .pill {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: #0f172a;
+        color: #e5e7eb;
+      }
+
+      ul.season-highlights {
+        margin: 0;
+        padding-left: 18px;
+        font-size: 14px;
+        color: #e5e7eb;
+      }
+
+      .season-notes {
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      @media (max-width: 900px) {
+        .season-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- 🔵 Global header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
+        </div>
+        <nav class="sgp-nav">
+          <a href="/" class="sgp-nav-link">Home</a>
+          <a href="/tracker" class="sgp-nav-link">Drivers</a>
+          <a href="/season" class="sgp-nav-link">Season hub</a>
+          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+        </nav>
+      </header>
+
+      <!-- 🔵 Page content -->
+      <main class="sgp-main">
+        <div class="season-container">
+          <div class="season-top">
+            <div>
+              <h1 style="margin: 0">SolanaGP – Season 1</h1>
+              <div class="season-subtitle">Schedule • Results • Standings • Highlights</div>
+            </div>
+            <div class="season-links">
+              <a href="/tracker">View live driver tracker</a> •
+              <a href="/card-builder">Open card builder</a>
             </div>
           </div>
-          <div class="season-links">
-            <a href="/tracker">View live driver tracker</a> •
-            <a href="/card-builder">Open card builder</a>
+
+          <div class="season-layout">
+            <!-- Left column -->
+            <div>
+              <div class="panel">
+                <h2>Season Schedule</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Round</th>
+                      <th>Date</th>
+                      <th>Track</th>
+                      <th>Car Class</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>R1</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td><span class="pill">Upcoming</span></td>
+                    </tr>
+                    <tr>
+                      <td>R2</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td><span class="pill">Upcoming</span></td>
+                    </tr>
+                    <tr>
+                      <td>R3</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td><span class="pill">Upcoming</span></td>
+                    </tr>
+                    <tr>
+                      <td>R4</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td>TBD</td>
+                      <td><span class="pill">Upcoming</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="panel">
+                <h2>Latest Highlights</h2>
+                <ul class="season-highlights">
+                  <li><b>R1 – TBD:</b></li>
+                  <li><b>R1 – TBD:</b></li>
+                  <li><b>R2 – TBD:</b></li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Right column -->
+            <div>
+              <div class="panel">
+                <h2>Driver Standings (demo)</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Pos</th>
+                      <th>Driver</th>
+                      <th>Pts</th>
+                      <th>Wins</th>
+                      <th>Avg Fin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>2</td>
+                      <td>#93 Riley McAlpine</td>
+                      <td>0</td>
+                      <td>0</td>
+                      <td>0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="panel">
+                <h2>Season Notes</h2>
+                <p class="season-notes">
+                  This page is currently using demo data. Later, your backend can feed this with
+                  real SGP race results, points, and schedule pulled automatically from the iRacing
+                  API and your custom scoring system.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
+      </main>
 
-        <div class="season-layout">
-          <!-- Left column -->
-          <div>
-            <div class="panel">
-              <h2>Season Schedule</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Round</th>
-                    <th>Date</th>
-                    <th>Track</th>
-                    <th>Car Class</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>R1</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td><span class="pill">Upcoming</span></td>
-                  </tr>
-                  <tr>
-                    <td>R2</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td><span class="pill">Upcoming</span></td>
-                  </tr>
-                  <tr>
-                    <td>R3</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td><span class="pill">Upcoming</span></td>
-                  </tr>
-                  <tr>
-                    <td>R4</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td>TBD</td>
-                    <td><span class="pill">Upcoming</span></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="panel">
-              <h2>Latest Highlights</h2>
-              <ul class="season-highlights">
-                <li><b>R1 – TBD:</b> </li>
-                <li><b>R1 – TBD:</b> </li>
-                <li><b>R2 – TBD:</b> </li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Right column -->
-          <div>
-            <div class="panel">
-              <h2>Driver Standings (demo)</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Pos</th>
-                    <th>Driver</th>
-                    <th>Pts</th>
-                    <th>Wins</th>
-                    <th>Avg Fin</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>#7 Alex Fastboi</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>#93 Riley McAlpine</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>#21 Guest Driver</td>
-                    <td>0</td>
-                    <td>0</td>
-                    <td>0</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="panel">
-              <h2>Season Notes</h2>
-              <p class="season-notes">
-                This page is currently using demo data. Later, your backend can feed this with real
-                SGP race results, points, and schedule pulled automatically from the iRacing API
-                and your custom scoring system.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- 🔵 Global footer -->
-    <footer class="sgp-footer">
-      Solana Grand Prix • Prototype hub built by Riley • Data is demo-only — iRacing automation coming soon.
-    </footer>
-  </div>
-</body>
+      <!-- 🔵 Global footer -->
+      <footer class="sgp-footer">
+        Solana Grand Prix • IRacing automation coming soon.
+      </footer>
+    </div>
+  </body>
 </html>

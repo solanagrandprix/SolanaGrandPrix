@@ -1,279 +1,479 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>SolanaGP iRacing Tracker</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>SolanaGP iRacing Tracker</title>
 
-  <!-- Shared global layout -->
-  <link rel="stylesheet" href="/layout.css">
+    <!-- Shared global layout (header, footer, background) -->
+    <link rel="stylesheet" href="/layout.css" />
 
-  <!-- Page-specific styles -->
-  <style>
-    .tracker-wrapper {
-      width: 1100px;
-      max-width: 100%;
-      padding: 0 16px;
-      display: flex;
-      justify-content: center;
-      margin-top: 40px;
-      margin-bottom: 40px;
-    }
+    <!-- Page-specific styles -->
+    <style>
+      /* -------- Tracker layout shell (center card on the page) -------- */
+      .tracker-wrapper {
+        width: 1100px;
+        max-width: 100%;
+        padding: 0 16px;
+        display: flex;
+        justify-content: center;
+        margin-top: 40px;
+        margin-bottom: 40px;
+      }
 
-    .card {
-      background: #0d111c;
-      padding: 30px 40px;
-      border-radius: 18px;
-      box-shadow: 0 0 35px rgba(0,0,0,0.6);
-      width: 420px;
-      text-align: center;
-      border: 1px solid #111827;
-    }
+      /* Main tracker card */
+      .card {
+        background: #0d111c;
+        padding: 30px 40px;
+        border-radius: 18px;
+        box-shadow: 0 0 35px rgba(0, 0, 0, 0.6);
+        width: 420px;
+        text-align: center;
+        border: 1px solid #111827;
+      }
 
-    h1 {
-      margin: 0 0 14px;
-    }
+      .card h1 {
+        margin: 0 0 14px;
+      }
 
-    p {
-      margin: 4px 0 14px;
-    }
+      .card p {
+        margin: 4px 0 14px;
+      }
 
-    button {
-      padding: 10px 24px;
-      font-size: 16px;
-      background: #22c55e;
-      color: #000;
-      font-weight: bold;
-      border: none;
-      border-radius: 999px;
-      cursor: pointer;
-      margin-top: 12px;
-    }
+      button {
+        padding: 10px 24px;
+        font-size: 16px;
+        background: #22c55e;
+        color: #000;
+        font-weight: bold;
+        border: none;
+        border-radius: 999px;
+        cursor: pointer;
+        margin-top: 12px;
+      }
 
-    button:hover {
-      background: #16a34a;
-    }
+      button:hover {
+        background: #16a34a;
+      }
 
-    select {
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: none;
-      margin-top: 8px;
-      width: 80%;
-      max-width: 260px;
-      background: #020617;
-      color: #e5e7eb;
-    }
+      select {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: none;
+        margin-top: 8px;
+        width: 80%;
+        max-width: 260px;
+        background: #020617;
+        color: #e5e7eb;
+      }
 
-    .output {
-      margin-top: 20px;
-      background: #070b12;
-      padding: 15px;
-      border-radius: 14px;
-      min-height: 60px;
-      text-align: left;
-      font-size: 14px;
-    }
+      /* Generic output boxes in the card */
+      .output {
+        margin-top: 20px;
+        background: #070b12;
+        padding: 15px;
+        border-radius: 14px;
+        min-height: 60px;
+        text-align: left;
+        font-size: 14px;
+      }
 
-    /* NFT-style frame around driver card */
-    .nft-frame {
-      position: relative;
-      padding: 2px;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
-      box-shadow: 0 0 20px rgba(34,197,94,0.4);
-      margin-top: 10px;
-      animation: glowPulse 4s ease-in-out infinite;
-    }
+      /* -------- NFT-style driver card -------- */
+      .nft-frame {
+        position: relative;
+        padding: 2px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+        margin-top: 10px;
+        animation: glowPulse 4s ease-in-out infinite;
+      }
 
-    .nft-inner {
-      background: #111827;
-      border-radius: 16px;
-      padding: 14px 16px;
-    }
+      .nft-inner {
+        background: #111827;
+        border-radius: 16px;
+        padding: 14px 16px;
+      }
 
-    @keyframes glowPulse {
-      0%,100% { box-shadow: 0 0 18px rgba(139,92,246,0.4); }
-      50%     { box-shadow: 0 0 26px rgba(34,197,94,0.8); }
-    }
+      @keyframes glowPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 18px rgba(139, 92, 246, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 26px rgba(34, 197, 94, 0.8);
+        }
+      }
 
-    .driver-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-      text-align: left;
-    }
+      .driver-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+        text-align: left;
+      }
 
-    .driver-avatar {
-      width: 64px;
-      height: 64px;
-      border-radius: 14px;
-      object-fit: cover;
-      background: #020617;
-    }
+      .driver-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        object-fit: cover;
+        background: #020617;
+      }
 
-    .driver-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
+      .driver-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
 
-    .driver-name {
-      font-weight: bold;
-      font-size: 16px;
-    }
+      .driver-name {
+        font-weight: bold;
+        font-size: 16px;
+      }
 
-    .driver-team {
-      font-size: 13px;
-      color: #9ca3af;
-    }
+      .driver-team {
+        font-size: 13px;
+        color: #9ca3af;
+      }
 
-    .driver-car {
-      font-size: 13px;
-      color: #d1fae5;
-    }
+      .driver-car {
+        font-size: 13px;
+        color: #d1fae5;
+      }
 
-    .driver-stats {
-      margin-top: 8px;
-      font-size: 14px;
-      text-align: left;
-      line-height: 1.4;
-    }
+      .driver-stats {
+        margin-top: 8px;
+        font-size: 14px;
+        text-align: left;
+        line-height: 1.4;
+      }
 
-    .profile-link {
-      margin-top: 10px;
-      text-align: right;
-      font-size: 12px;
-    }
+      /* Free Agent YES/NO pill row */
+.free-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+}
 
-    .profile-link a {
-      color: #38bdf8;
-      text-decoration: none;
-    }
+.free-agent-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
 
-    .profile-link a:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
+.free-agent-pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+  font-size: 11px;
+  cursor: default;
+  color: #9ca3af;
+  background: #020617;
+}
 
-<body>
-  <div class="sgp-shell">
-    <!-- 🔵 Global header -->
-    <header class="sgp-header">
-      <div class="sgp-logo-block">
-        <div class="sgp-logo">Solana Grand Prix</div>
-        <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
-      </div>
-      <nav class="sgp-nav">
-        <a href="/" class="sgp-nav-link">Home</a>
-        <a href="/tracker" class="sgp-nav-link">Drivers</a>
-        <a href="/season" class="sgp-nav-link">Season hub</a>
-        <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-        <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-      </nav>
-         
-    </header>
+.free-agent-pill.active {
+  background: #22c55e;
+  color: #020617;
+  border-color: #22c55e;
+  font-weight: 600;
+}
 
-    <!-- 🔵 Page content -->
-    <main class="sgp-main">
-      <div class="tracker-wrapper">
-        <div class="card">
-          <h1>SolanaGP iRacing Tracker</h1>
-          <p>Select a driver and load their stats.</p>
 
-          <select id="driverSelect">
-            <option value="riley">Riley McAlpine</option>
-            <option value="alex">Alex Fastboi</option>
-          </select>
+      .profile-link {
+        margin-top: 10px;
+        text-align: right;
+        font-size: 12px;
+      }
 
-          <br>
-          <button onclick="loadStats()">Load Stats</button>
+      .profile-link a {
+        color: #38bdf8;
+        text-decoration: none;
+      }
 
-          <div class="output" id="output">Waiting...</div>
-          <div class="output" id="races">Recent races will appear here.</div>
+      .profile-link a:hover {
+        text-decoration: underline;
+      }
+
+      /* -------- Gamified Driver Progress panel -------- */
+
+      .progress-card {
+        background: #070b12;
+        border-radius: 14px;
+        padding: 16px 18px;
+        margin-top: 12px;
+        border: 1px solid #111827;
+      }
+
+      .progress-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .progress-level-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #9ca3af;
+        margin-bottom: 6px;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: #020617;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #22c55e, #a855f7);
+      }
+
+      .progress-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px 16px;
+        margin-bottom: 10px;
+      }
+
+      .progress-stat .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b7280;
+      }
+
+      .progress-stat .value {
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .progress-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 4px;
+      }
+
+      .progress-footer .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b7280;
+      }
+
+      .progress-footer .value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #22c55e;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- 🔵 Global header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
+        </div>
+        <nav class="sgp-nav">
+          <a href="/" class="sgp-nav-link">Home</a>
+          <a href="/tracker" class="sgp-nav-link">Drivers</a>
+          <a href="/season" class="sgp-nav-link">Season hub</a>
+          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+        </nav>
+      </header>
+
+      <!-- 🔵 Page content -->
+      <main class="sgp-main">
+        <div class="tracker-wrapper">
+          <div class="card">
+            <h1>Driver Tracker</h1>
+            <p>Select a driver and load their stats.</p>
+
+            <select id="driverSelect">
+              <option value="lemon">Lemon</option>
+            </select>
+
+            <br />
+            <button onclick="loadStats()">Load Stats</button>
+
+            <!-- Driver NFT card -->
+            <div class="output" id="output">Waiting...</div>
+
+            <!-- Driver Progress panel (hidden until stats load) -->
+            <div class="output" id="races" style="display: none;"></div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 🔵 Global footer -->
+      <footer class="sgp-footer">
+        Solana Grand Prix • IRacing automation coming soon.
+      </footer>
+    </div>
+
+    <script>
+      let lastDriverKey = "lemon";
+
+      async function loadStats() {
+        const driverKey = document.getElementById("driverSelect").value;
+        lastDriverKey = driverKey;
+
+        try {
+          const [statsRes, racesRes] = await Promise.all([
+            fetch("/api/stats?driver=" + encodeURIComponent(driverKey)),
+            fetch(
+              "/api/recent-races?driver=" + encodeURIComponent(driverKey)
+            ),
+          ]);
+
+          const stats = await statsRes.json();
+          const races = await racesRes.json();
+          const isFree = !!stats.freeAgent;
+
+          /* ---------- Basic derived numbers ---------- */
+          const starts = stats.starts || races.length || 0;
+          const wins = stats.wins || 0;
+          const podiums = stats.podiums || 0;
+          const dnfs = stats.dnfs || 0;
+          const earnings =
+            typeof stats.earnings === "number" ? stats.earnings : 0;
+          const formattedEarnings = earnings.toLocaleString("en-US");
+
+          /* ---------- XP + level ---------- */
+          const xpFromStarts = starts * 50; // tweak if you want
+          const xpFromWins = wins * 150;
+          const baseXp = 200;
+          const totalXp = baseXp + xpFromStarts + xpFromWins;
+
+          const xpPerLevel = 500;
+          const level = Math.floor(totalXp / xpPerLevel) + 1;
+          const xpIntoLevel = totalXp % xpPerLevel;
+          const progressPct = Math.min(
+            100,
+            Math.round((xpIntoLevel / xpPerLevel) * 100)
+          );
+          const xpText = `${xpIntoLevel}/${xpPerLevel} XP`;
+
+          /* ---------- Win rate & best finish ---------- */
+          const totalRaces = races.length;
+          const winRate = totalRaces
+            ? Math.round((wins / totalRaces) * 100)
+            : 0;
+
+          let bestFinish = null;
+          races.forEach((r) => {
+            if (bestFinish === null || r.finish < bestFinish) {
+              bestFinish = r.finish;
+            }
+          });
+          const bestFinishText = bestFinish === null ? "—" : "P" + bestFinish;
+
+          /* ---------- Skill tier ---------- */
+          let skillTier = "Beginner";
+          if (level >= 3 && winRate >= 20) skillTier = "Club Racer";
+          if (level >= 5 && winRate >= 35) skillTier = "Hotlap Hero";
+          if (level >= 7 && winRate >= 50) skillTier = "Alien";
+
+          /* ---------- DRIVER NFT CARD (top box) ---------- */
+          
+          // Determine free-agent state safely// 
+
+          document.getElementById("output").innerHTML = `
+  <div class="nft-frame">
+    <div class="nft-inner">
+      <div class="driver-header">
+        <img src="${stats.avatar}" alt="${stats.name}" class="driver-avatar" />
+        
+        <div class="driver-meta">
+          <div class="driver-name">#${stats.number} ${stats.name}</div>
+          <div class="driver-team">${stats.team}</div>
+
+          <!-- 🔥 Free Agent Status Pills -->
+          <div class="free-agent-row">
+            <span class="free-agent-label">Free Agent:</span>
+            <span class="free-agent-pill ${isFree ? 'active' : ''}">Yes</span>
+            <span class="free-agent-pill ${!isFree ? 'active' : ''}">No</span>
+          </div>
         </div>
       </div>
-    </main>
 
-    <!-- 🔵 Global footer -->
-    <footer class="sgp-footer">
-      Solana Grand Prix • Prototype hub built by Riley • Data is demo-only — iRacing automation coming soon.
-    </footer>
+      <div class="driver-stats">
+        <b>Wins:</b> ${stats.wins} &nbsp;&nbsp;
+        <b>Podiums:</b> ${stats.podiums} &nbsp;&nbsp;
+        <b>DNFs:</b> ${stats.dnfs}<br>
+        <b>Purse:</b> $${stats.earnings.toLocaleString()}
+      </div>
+
+      <div class="profile-link">
+        <a href="/driver/${driverKey}">View full profile ↗</a>
+      </div>
+    </div>
   </div>
+`;
 
-  <script>
-    let lastDriverKey = 'riley';
+          /* ---------- DRIVER PROGRESS PANEL (bottom box) ---------- */
+          const racesBox = document.getElementById("races");
 
-    async function loadStats() {
-      const driverKey = document.getElementById('driverSelect').value;
-      lastDriverKey = driverKey;
+          racesBox.innerHTML = `
+            <div class="progress-card">
+              <div class="progress-title">Driver Progress</div>
 
-      try {
-        const [statsRes, racesRes] = await Promise.all([
-          fetch('/api/stats?driver=' + encodeURIComponent(driverKey)),
-          fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey))
-        ]);
+              <div class="progress-level-row">
+                <span>Level ${level}</span>
+                <span>${xpText}</span>
+              </div>
 
-        const stats = await statsRes.json();
-        const races = await racesRes.json();
+              <div class="progress-bar">
+                <div class="progress-bar-fill" style="width: ${progressPct}%;"></div>
+              </div>
 
-        // DRIVER NFT CARD
-        document.getElementById('output').innerHTML = `
-          <div class="nft-frame">
-            <div class="nft-inner">
-              <div class="driver-header">
-                <img src="${stats.avatar}" alt="${stats.name}" class="driver-avatar">
-                <div class="driver-meta">
-                  <div class="driver-name">#${stats.number} ${stats.name}</div>
-                  <div class="driver-team">${stats.team}</div>
-                  <div class="driver-car">${stats.primaryCar}</div>
+              <div class="progress-grid">
+                <div class="progress-stat">
+                  <div class="label">Starts</div>
+                  <div class="value">${starts}</div>
+                </div>
+                <div class="progress-stat">
+                  <div class="label">Win rate</div>
+                  <div class="value">${winRate}%</div>
+                </div>
+                <div class="progress-stat">
+                  <div class="label">Best finish</div>
+                  <div class="value">${bestFinishText}</div>
+                </div>
+                <div class="progress-stat">
+                  <div class="label">Skill</div>
+                  <div class="value">${skillTier}</div>
                 </div>
               </div>
-              <div class="driver-stats">
-                <b>iRating:</b> ${stats.irating}<br>
-                <b>License:</b> ${stats.license}<br>
-                <b>Starts:</b> ${stats.starts}
-              </div>
-              <div class="profile-link">
-                <a href="/driver/${driverKey}">View full profile ↗</a>
+
+              <div class="progress-footer">
+                <div class="label">Total purse</div>
+                <div class="value">$${formattedEarnings}</div>
               </div>
             </div>
-          </div>
-        `;
+          `;
 
-        // RACE TABLE
-        const rows = races.map(race => `
-          <tr>
-            <td>${race.track}</td>
-            <td>${race.car}</td>
-            <td style="text-align:right;">${race.finish}</td>
-            <td style="text-align:right;">${race.srChange}</td>
-          </tr>
-        `).join('');
-
-        document.getElementById('races').innerHTML = `
-          <b>Recent Races</b>
-          <table style="width:100%; margin-top:10px; border-collapse:collapse; font-size:14px;">
-            <thead>
-              <tr>
-                <th style="text-align:left; padding:4px;">Track</th>
-                <th style="text-align:left; padding:4px;">Car</th>
-                <th style="text-align:right; padding:4px;">Finish</th>
-                <th style="text-align:right; padding:4px;">SR Δ</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-            </tbody>
-          </table>
-        `;
-      } catch (err) {
-        console.error(err);
-        document.getElementById('output').innerText = 'Error loading stats.';
-        document.getElementById('races').innerText = 'Error loading races.';
+          // Show the progress box now that it has content
+          racesBox.style.display = "block";
+        } catch (err) {
+          console.error(err);
+          document.getElementById("output").innerText = "Error loading stats.";
+          document.getElementById("races").innerText =
+            "Error loading progress.";
+          document.getElementById("races").style.display = "block";
+        }
       }
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>

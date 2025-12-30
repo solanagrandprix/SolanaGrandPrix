@@ -1,99 +1,194 @@
-/* Global base */
+/* ----------------------------------------------------------
+   GLOBAL BASE STYLES
+   These apply to the whole site (every page)
+---------------------------------------------------------- */
 * {
-    box-sizing: border-box;
-  }
-  
-  body {
-    margin: 0;
-    min-height: 100vh;
-    background:
-      radial-gradient(circle at top left, #22c55e22, transparent 55%),
-      radial-gradient(circle at bottom right, #6366f122, transparent 55%),
-      #020617;
-    color: #e5e7eb;
-    font-family: Arial, sans-serif;
-  }
-  
-  /* 🔵 SGP page shell = header + main + footer */
-  .sgp-shell {
-    min-height: 100vh;          /* make shell fill the full screen height */
-    display: flex;              /* use flex so footer can stick to bottom */
-    flex-direction: column;     /* vertical stack: header, main, footer */
-    padding: 32px 20px 40px;    /* outer padding around everything */
-    max-width: 1100px;
-    width: 100%;
-    margin: 0 auto;             /* center whole app horizontally */
-  }
-  
-  /* Top banner / nav */
-  .sgp-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;        /* space between header and main content */
-  }
-  
-  .sgp-logo-block {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  
-  .sgp-logo {
-    font-size: 26px;
-    font-weight: 800;
-  }
-  
-  .sgp-tagline {
-    font-size: 11px;
-    color: #9ca3af;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-  }
-  
-  .sgp-nav {
-    display: flex;
-    gap: 18px;
-  }
-  
-  .sgp-nav-link {
-    font-size: 14px;
-    color: #9ca3af;
-    text-decoration: none;
-  }
-  
-  .sgp-nav-link:hover {
-    color: #ffffff;
-  }
-  
-  .sgp-nav-link.active {
-    color: #ffffff;
-    font-weight: bold;
-  }
-  
-  /* 🔵 Main content area (this is where each page puts its stuff) */
-  .sgp-main {
-    flex: 1;
-    max-width: 1100px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 60px 0 100px;  /* default for other pages */
-    box-sizing: border-box;
-  }
-  
-  /* 🔵 Extra spacing ONLY on the home page */
-  .home-main {
-    padding-top: 120px;   /* adjust this number to move everything down/up */
-  }
-  
-  
-  /* Bottom bar / footer */
-  .sgp-footer {
-    margin-top: 16px;
-    font-size: 11px;
-    color: #6b7280;
-    text-align: center;
-    border-top: 1px solid #111827;
-    padding-top: 16px;
-  }
-  
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, #22c55e22, transparent 55%),
+    radial-gradient(circle at bottom right, #6366f122, transparent 55%),
+    #020617;
+  color: #e5e7eb;
+  font-family: Arial, sans-serif;
+}
+
+/* ----------------------------------------------------------
+   SGP PAGE SHELL
+   - Wraps: header + main + footer
+   - Controls overall padding from browser edges
+---------------------------------------------------------- */
+.sgp-shell {
+  min-height: 100vh;          /* shell fills full screen height */
+  display: flex;              /* stack children vertically */
+  flex-direction: column;     /* header, main, footer order */
+
+  /* 🔧 Outer padding around the whole app
+     top / right&left / bottom
+     ↓ Reduce these if you want LESS space at very top & bottom */
+  padding: 16px 20px 24px;
+
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;             /* center whole site horizontally */
+}
+
+/* ----------------------------------------------------------
+   HEADER / NAV BAR
+---------------------------------------------------------- */
+.sgp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  /* Space between header and main content.
+     ↓ Reduce this to bring main content closer to header. */
+  margin-bottom: 16px;
+}
+
+.sgp-logo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sgp-logo {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.sgp-tagline {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.sgp-nav {
+  display: flex;
+  gap: 18px;
+}
+
+.sgp-nav-link {
+  font-size: 14px;
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.sgp-nav-link:hover {
+  color: #ffffff;
+}
+
+.sgp-nav-link.active {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* ----------------------------------------------------------
+   MAIN CONTENT AREA
+   - Every page uses .sgp-main
+   - Controls vertical space between header & footer
+---------------------------------------------------------- */
+.sgp-main {
+  flex: 1;                    /* take remaining vertical space between header/footer */
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+
+  /* 🔧 Default vertical padding for most pages
+     top / right&left / bottom
+     ↓ These values directly control the “big empty space”
+       between header and footer on regular pages. */
+  padding: 24px 0 32px;
+
+  box-sizing: border-box;
+}
+
+/* Optional compact variant:
+   - Add class="sgp-main compact-main" for tighter pages
+   - Great for Driver Tracker, Leaderboard, etc. */
+.compact-main {
+  padding-top: 5px;   /* almost no gap below the header */
+  padding-bottom: 10px;
+}
+
+/* ----------------------------------------------------------
+   HOME PAGE ONLY
+   - The home page main tag has: class="sgp-main home-main"
+   - Keeps hero pushed down a bit more for that “landing page” feel
+---------------------------------------------------------- */
+.home-main {
+  /* Extra top padding compared to normal pages */
+  padding-top: 80px;   /* was 120px, you can tweak this */
+  padding-bottom: 48px;
+}
+
+/* ----------------------------------------------------------
+   FOOTER
+---------------------------------------------------------- */
+.sgp-footer {
+  margin-top: 12px;        /* gap between main content and footer */
+  font-size: 11px;
+  color: #6b7280;
+  text-align: center;
+  border-top: 1px solid #111827;
+  padding-top: 12px;       /* space inside footer above the text */
+}
+
+.free-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.free-agent-label {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.free-agent-pill {
+  padding: 4px 10px;
+  background: #1e293b;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+  border: 1px solid #334155;
+}
+
+.free-agent-pill.active {
+  background: #22c55e22;
+  color: #22c55e;
+  border-color: #22c55e;
+}
+
+/* --- Home featured driver: Free Agent pills --- */
+.home-free-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.home-free-agent-label {
+  color: #9ca3af;
+}
+
+.home-free-agent-pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #020617;
+  border: 1px solid #1f2937;
+  color: #9ca3af;
+}
+
+.home-free-agent-pill.home-active {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #020617;
+}

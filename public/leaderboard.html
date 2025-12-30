@@ -1,227 +1,227 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Driver leaderboard – SolanaGP</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Driver leaderboard – SolanaGP</title>
 
-  <!-- Shared layout (header, footer, background) -->
-  <link rel="stylesheet" href="/layout.css" />
+    <!-- Shared layout (header, footer, background) -->
+    <link rel="stylesheet" href="/layout.css" />
 
-  <style>
-    .lb-container {
-      width: 1100px;
-      max-width: 100%;
-      padding: 0 16px;
-    }
-
-    .lb-header {
-      margin-bottom: 18px;
-    }
-
-    
-    .lb-header h1 {
-      margin: 0 0 4px;
-      font-size: 44px;
-    }
-
-    .lb-subtitle {
-      font-size: 13px;
-      color: #9ca3af;
-    }
-
-    .lb-table-wrap {
-      margin-top: 16px;
-      background: #020617dd;
-      border-radius: 16px;
-      box-shadow: 0 0 25px rgba(15,23,42,0.9);
-      border: 1px solid #111827;
-      overflow: hidden;
-    }
-
-    table.lb-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    table.lb-table thead {
-      background: radial-gradient(circle at top left, #0f172a, #020617 70%);
-    }
-
-    table.lb-table th,
-    table.lb-table td {
-      padding: 10px 14px;
-    }
-
-    table.lb-table th {
-      text-align: left;
-      font-weight: 700;
-      font-size: 14px;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      border-bottom: 1px solid #111827;
-    }
-
-    table.lb-table tbody tr:nth-child(odd) {
-      background: #020617;
-    }
-
-    table.lb-table tbody tr:nth-child(even) {
-      background: #020617f0;
-    }
-
-    table.lb-table tbody tr.lb-top {
-      background: radial-gradient(circle at top left, #111827, #020617 70%);
-    }
-
-    table.lb-table td {
-      border-top: 1px solid #020617;
-      border-bottom: 1px solid #020617;
-    }
-
-    .lb-pos {
-      width: 50px;
-      text-align: center;
-      color: #facc15;
-      font-weight: 600;
-      border-right: 1px solid #111827;
-    }
-
-    .lb-driver {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .lb-avatar {
-
-      width: 55px;
-      height: 55px;
-      border-radius: 12px;
-      object-fit: cover;
-      background: #020617;
-    }
-
-    .lb-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .lb-name {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .lb-team {
-      font-size: 12px;
-      color: #9ca3af;
-    }
-
-    .lb-num {
-      color: #a5b4fc;
-    }
-
-    .lb-stat {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .lb-profile-cell {
-      text-align: center;
-    }
-
-    .lb-view-link {
-      font-size: 12px;
-      color: #38bdf8;
-      text-decoration: none;
-    }
-
-    .lb-view-link:hover {
-      text-decoration: underline;
-    }
-
-    @media (max-width: 900px) {
-      table.lb-table {
-        font-size: 13px;
+    <style>
+      .lb-container {
+        width: 1100px;
+        max-width: 100%;
+        padding: 0 16px;
       }
+
+      .lb-header {
+        margin-bottom: 18px;
+      }
+
+      .lb-header h1 {
+        margin: 0 0 4px;
+        font-size: 44px;
+      }
+
+      .lb-subtitle {
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .lb-table-wrap {
+        margin-top: 16px;
+        background: #020617dd;
+        border-radius: 16px;
+        box-shadow: 0 0 25px rgba(15, 23, 42, 0.9);
+        border: 1px solid #111827;
+        overflow: hidden;
+      }
+
+      table.lb-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      table.lb-table thead {
+        background: radial-gradient(circle at top left, #0f172a, #020617 70%);
+      }
+
       table.lb-table th,
       table.lb-table td {
-        padding: 8px 10px;
+        padding: 10px 14px;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <div class="sgp-shell">
-    <!-- Global header -->
-    <header class="sgp-header">
-      <div class="sgp-logo-block">
-        <div class="sgp-logo">Solana Grand Prix</div>
-        <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
-      </div>
-      <nav class="sgp-nav">
-        <a href="/" class="sgp-nav-link">Home</a>
-        <a href="/tracker" class="sgp-nav-link">Drivers</a>
-        <a href="/season" class="sgp-nav-link">Season hub</a>
-        <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-        <!-- use .active so layout.css highlights it -->
-        <a href="/leaderboard" class="sgp-nav-link active">Leaderboard</a>
-      </nav>
-    </header>
+      table.lb-table th {
+        text-align: left;
+        font-weight: 700;
+        font-size: 14px;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-bottom: 1px solid #111827;
+      }
 
-    <!-- Page content -->
-    <main class="sgp-main">
-      <div class="lb-container">
-        <div class="lb-header">
-          <h1>Driver leaderboard</h1>
-          <div class="lb-subtitle">
-            Sorted by iRating. Demo data for now — later this can pull live from the iRacing API and your season scoring.
+      table.lb-table tbody tr:nth-child(odd) {
+        background: #020617;
+      }
+
+      table.lb-table tbody tr:nth-child(even) {
+        background: #020617f0;
+      }
+
+      table.lb-table tbody tr.lb-top {
+        background: radial-gradient(circle at top left, #111827, #020617 70%);
+      }
+
+      table.lb-table td {
+        border-top: 1px solid #020617;
+        border-bottom: 1px solid #020617;
+      }
+
+      .lb-pos {
+        width: 50px;
+        text-align: center;
+        color: #facc15;
+        font-weight: 600;
+        border-right: 1px solid #111827;
+      }
+
+      .lb-driver {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .lb-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 12px;
+        object-fit: cover;
+        background: #020617;
+      }
+
+      .lb-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .lb-name {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .lb-team {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+
+      .lb-num {
+        color: #a5b4fc;
+      }
+
+      .lb-stat {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .lb-profile-cell {
+        text-align: center;
+      }
+
+      .lb-view-link {
+        font-size: 12px;
+        color: #38bdf8;
+        text-decoration: none;
+      }
+
+      .lb-view-link:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 900px) {
+        table.lb-table {
+          font-size: 13px;
+        }
+        table.lb-table th,
+        table.lb-table td {
+          padding: 8px 10px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- Global header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
+        </div>
+        <nav class="sgp-nav">
+          <a href="/" class="sgp-nav-link">Home</a>
+          <a href="/tracker" class="sgp-nav-link">Drivers</a>
+          <a href="/season" class="sgp-nav-link">Season hub</a>
+          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+          <!-- use .active so layout.css highlights it -->
+          <a href="/leaderboard" class="sgp-nav-link active">Leaderboard</a>
+        </nav>
+      </header>
+
+      <!-- Page content -->
+      <main class="sgp-main">
+        <div class="lb-container">
+          <div class="lb-header">
+            <h1>Driver leaderboard</h1>
+            <div class="lb-subtitle">
+              TBA.
+            </div>
+          </div>
+
+          <div class="lb-table-wrap">
+            <table class="lb-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px">Pos</th>
+                  <th>Driver</th>
+                  <th style="text-align: right">Championships</th>
+                  <th style="text-align: right">Wins</th>
+                  <th style="text-align: right">Podiums</th>
+                  <th style="text-align: right">Starts</th>
+                  <th style="text-align: right">DNF</th>
+                  <th style="text-align: center">Profile</th>
+                </tr>
+              </thead>
+              <tbody id="lb-body">
+                <!-- rows injected by JS -->
+              </tbody>
+            </table>
           </div>
         </div>
+      </main>
 
-        <div class="lb-table-wrap">
-          <table class="lb-table">
-            <thead>
-              <tr>
-                <th style="width:50px;">Pos</th>
-                <th>Driver</th>
-                <th style="text-align:right;">Championships</th>
-                <th style="text-align:right;">Wins</th>
-                <th style="text-align:right;">Podiums</th>
-                <th style="text-align:right;">Starts</th>
-                <th style="text-align:right;">DNF</th>
-                <th style="text-align:center;">Profile</th>
-              </tr>
-            </thead>
-            <tbody id="lb-body">
-              <!-- rows injected by JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </main>
+      <!-- Global footer (same as home page) -->
+      <footer class="sgp-footer">
+        Solana Grand Prix • IRacing automation coming soon.
+      </footer>
+    </div>
 
-    <!-- Global footer (same as home page) -->
-    <footer class="sgp-footer">
-      Solana Grand Prix • Prototype hub built by Riley • Data is demo-only — iRacing automation coming soon.
-    </footer>
-  </div>
+    <script>
+      async function loadLeaderboard() {
+        try {
+          const res = await fetch('/api/drivers');
+          const drivers = await res.json();
 
-  <script>
-    async function loadLeaderboard() {
-      try {
-        const res = await fetch('/api/drivers');
-        const drivers = await res.json();
+          // sort by iRating desc
+          drivers.sort((a, b) => b.irating - a.irating);
 
-        // sort by iRating desc
-        drivers.sort((a, b) => b.irating - a.irating);
+          const tbody = document.getElementById('lb-body');
 
-        const tbody = document.getElementById('lb-body');
-
-        const rows = drivers.map((d, index) => `
+          const rows = drivers
+            .map(
+              (d, index) => `
           <tr class="${index === 0 ? 'lb-top' : ''}">
             <td class="lb-pos">${index + 1}</td>
 
@@ -245,22 +245,24 @@
               <a href="/driver/${d.key}" class="lb-view-link">View ↗</a>
             </td>
           </tr>
-        `).join('');
+        `
+            )
+            .join('');
 
-        tbody.innerHTML = rows;
-      } catch (err) {
-        console.error(err);
-        document.getElementById('lb-body').innerHTML = `
+          tbody.innerHTML = rows;
+        } catch (err) {
+          console.error(err);
+          document.getElementById('lb-body').innerHTML = `
           <tr>
             <td colspan="8" style="padding:12px; text-align:center; color:#fca5a5;">
               Error loading leaderboard.
             </td>
           </tr>
         `;
+        }
       }
-    }
 
-    loadLeaderboard();
-  </script>
-</body>
+      loadLeaderboard();
+    </script>
+  </body>
 </html>
