@@ -2,300 +2,381 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>SolanaGP iRacing Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drivers – SolanaGP</title>
 
-    <!-- Shared global layout (header, footer, background) -->
+    <!-- Shared global layout -->
     <link rel="stylesheet" href="/layout.css" />
 
     <!-- Page-specific styles -->
     <style>
-      /* -------- Tracker layout shell (center card on the page) -------- */
-      .tracker-wrapper {
-        width: 1100px;
+      .drivers-container {
+        width: 1200px;
         max-width: 100%;
         padding: 0 16px;
+        margin: 0 auto;
+      }
+
+      .drivers-header {
+        margin-bottom: 24px;
+      }
+
+      .drivers-header h1 {
+        margin: 0 0 4px;
+        font-size: 44px;
+        font-weight: 700;
+      }
+
+      .drivers-subtitle {
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .drivers-stats {
         display: flex;
-        justify-content: center;
-        margin-top: 40px;
-        margin-bottom: 40px;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
       }
 
-      /* Main tracker card */
-      .card {
-        background: #0d111c;
-        padding: 30px 40px;
-        border-radius: 18px;
-        box-shadow: 0 0 35px rgba(0, 0, 0, 0.6);
-        width: 420px;
-        text-align: center;
-        border: 1px solid #111827;
+      .driver-stat-card {
+        background: rgba(15, 23, 42, 0.5);
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 12px 16px;
+        min-width: 120px;
       }
 
-      .card h1 {
-        margin: 0 0 14px;
+      .driver-stat-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin-bottom: 4px;
       }
 
-      .card p {
-        margin: 4px 0 14px;
-      }
-
-      button {
-        padding: 10px 24px;
-        font-size: 16px;
-        background: #22c55e;
-        color: #000;
-        font-weight: bold;
-        border: none;
-        border-radius: 999px;
-        cursor: pointer;
-        margin-top: 12px;
-      }
-
-      button:hover {
-        background: #16a34a;
-      }
-
-      select {
-        padding: 8px 10px;
-        border-radius: 6px;
-        border: none;
-        margin-top: 8px;
-        width: 80%;
-        max-width: 260px;
-        background: #020617;
+      .driver-stat-value {
+        font-size: 24px;
+        font-weight: 700;
         color: #e5e7eb;
       }
 
-      /* Generic output boxes in the card */
-      .output {
-        margin-top: 20px;
-        background: #070b12;
-        padding: 15px;
-        border-radius: 14px;
-        min-height: 60px;
-        text-align: left;
-        font-size: 14px;
+      /* Scrollable driver list */
+      .drivers-list-wrapper {
+        background: rgba(2, 6, 23, 0.95);
+        border-radius: 16px;
+        box-shadow: 0 0 25px rgba(15, 23, 42, 0.9);
+        border: 1px solid #111827;
+        padding: 24px;
+        max-height: calc(100vh - 280px);
+        overflow-y: auto;
+        overflow-x: hidden;
       }
 
-      /* -------- NFT-style driver card -------- */
+      /* Custom scrollbar */
+      .drivers-list-wrapper::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      .drivers-list-wrapper::-webkit-scrollbar-track {
+        background: #020617;
+        border-radius: 10px;
+      }
+
+      .drivers-list-wrapper::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 10px;
+      }
+
+      .drivers-list-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #4b5563;
+      }
+
+      .drivers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+      }
+
+      /* Driver card */
+      .driver-card {
+        background: transparent;
+        border-radius: 14px;
+        transition: transform 0.2s ease;
+        cursor: pointer;
+      }
+
+      .driver-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .driver-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+
+      /* NFT-style frame for driver cards - match profile page */
+      .driver-card-frame,
       .nft-frame {
         position: relative;
         padding: 2px;
         border-radius: 18px;
         background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
-        box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
-        margin-top: 10px;
+        box-shadow: 0 0 26px rgba(0, 0, 0, 0.8);
         animation: glowPulse 4s ease-in-out infinite;
-      }
-
-      .nft-inner {
-        background: #111827;
-        border-radius: 16px;
-        padding: 14px 16px;
+        margin-bottom: 12px;
+        transition: box-shadow 0.2s ease;
+        max-width: 380px;
+        width: 100%;
       }
 
       @keyframes glowPulse {
-        0%,
-        100% {
-          box-shadow: 0 0 18px rgba(139, 92, 246, 0.4);
+        0%, 100% {
+          box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
         }
         50% {
-          box-shadow: 0 0 26px rgba(34, 197, 94, 0.8);
+          box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
         }
       }
 
+      .driver-card:hover .driver-card-frame {
+        box-shadow: 0 0 25px rgba(34, 197, 94, 0.5);
+      }
+
+      .driver-card-inner,
+      .nft-inner {
+        position: relative;
+        background: #0b1120;
+        border-radius: 16px;
+        padding: 16px 18px;
+        overflow: hidden;
+      }
+
+      /* Driver card header - match profile page structure */
       .driver-header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
+        gap: 14px;
+        margin-bottom: 12px;
         text-align: left;
       }
 
       .driver-avatar {
-        width: 64px;
-        height: 64px;
-        border-radius: 14px;
+        width: 80px !important;
+        height: 80px !important;
+        border-radius: 16px;
         object-fit: cover;
         background: #020617;
+        flex-shrink: 0;
+        display: block;
+        max-width: 80px;
+        max-height: 80px;
       }
 
       .driver-meta {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
       }
 
       .driver-name {
-        font-weight: bold;
-        font-size: 16px;
+        font-weight: 700;
+        font-size: 18px;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #e5e7eb;
       }
 
       .driver-team {
         font-size: 13px;
         color: #9ca3af;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .driver-car {
-        font-size: 13px;
-        color: #d1fae5;
+        font-size: 12px;
+        color: #a5b4fc;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .driver-free-agent-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+        font-size: 12px;
+        color: #9ca3af;
+        flex-wrap: wrap;
+      }
+
+      .driver-free-agent-label {
+        color: #9ca3af;
+        font-size: 11px;
+      }
+
+      .driver-free-agent-pill {
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid #1f2937;
+        background: rgba(15, 23, 42, 0.7);
+        color: #e5e7eb;
+        font-size: 11px;
+      }
+
+      .driver-free-agent-pill.driver-active {
+        border-color: rgba(34, 197, 94, 0.7);
+        background: rgba(34, 197, 94, 0.15);
+        color: #bbf7d0;
+      }
+
+      .driver-footer {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 6px;
+        line-height: 1.3;
       }
 
       .driver-stats {
-        margin-top: 8px;
-        font-size: 14px;
-        text-align: left;
-        line-height: 1.4;
-      }
-
-      /* -------- Free Agent YES/NO pill row -------- */
-      .free-agent-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 4px;
         font-size: 12px;
+        color: #e5e7eb;
+        line-height: 1.6;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(31, 41, 55, 0.5);
       }
 
-      .free-agent-label {
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+      .driver-stats b {
         color: #9ca3af;
-      }
-
-      .free-agent-pill {
-        padding: 2px 10px;
-        border-radius: 999px;
-        border: 1px solid #1f2937;
-        font-size: 11px;
-        cursor: default;
-        color: #9ca3af;
-        background: #020617;
-      }
-
-      .free-agent-pill.active {
-        background: #22c55e;
-        color: #020617;
-        border-color: #22c55e;
         font-weight: 600;
       }
 
-      .profile-link {
+      .driver-card-footer {
         margin-top: 10px;
         text-align: right;
-        font-size: 12px;
-      }
-
-      .profile-link a {
-        color: #38bdf8;
-        text-decoration: none;
-      }
-
-      .profile-link a:hover {
-        text-decoration: underline;
-      }
-
-      /* -------- Gamified Driver Progress panel -------- */
-
-      .progress-card {
-        background: #070b12;
-        border-radius: 14px;
-        padding: 16px 18px;
-        margin-top: 12px;
-        border: 1px solid #111827;
-      }
-
-      .progress-title {
-        font-size: 13px;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: #9ca3af;
-        margin-bottom: 8px;
-      }
-
-      .progress-level-row {
-        display: flex;
-        justify-content: space-between;
-        font-size: 13px;
-        margin-bottom: 6px;
-      }
-
-      .progress-level-row span:first-child {
-        font-weight: 600;
-        color: #e5e7eb;
-      }
-
-      .progress-level-row span:last-child {
-        color: #a5b4fc;
-      }
-
-      .progress-bar {
-        position: relative;
-        height: 6px;
-        border-radius: 999px;
-        background: #020617;
-        overflow: hidden;
-        margin-bottom: 10px;
-      }
-
-      .progress-bar-fill {
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, #22c55e, #06b6d4, #8b5cf6);
-        transition: width 0.4s ease;
-      }
-
-      .progress-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px 18px;
-        margin-top: 10px;
-      }
-
-      .progress-stat .label {
         font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        color: #6b7280;
-      }
-
-      .progress-stat .value {
-        font-size: 15px;
+        color: #38bdf8;
         font-weight: 600;
-        color: #e5e7eb;
+        opacity: 0.8;
+        transition: opacity 0.2s ease;
       }
 
-      .progress-footer {
-        margin-top: 14px;
+      .driver-card:hover .driver-card-footer {
+        opacity: 1;
+      }
+
+      .loading-message,
+      .error-message,
+      .empty-message {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+        font-size: 14px;
+      }
+
+      .loading-message {
         display: flex;
-        justify-content: space-between;
-        align-items: baseline;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
       }
 
-      .progress-footer .label {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #6b7280;
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(34, 197, 94, 0.2);
+        border-top-color: #22c55e;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
       }
 
-      .progress-footer .value {
-        font-size: 16px;
-        font-weight: 700;
-        color: #22c55e;
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      .error-message {
+        color: #fca5a5;
+      }
+
+      .empty-message {
+        color: #9ca3af;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .drivers-container {
+          padding: 0 12px;
+        }
+
+        .drivers-header h1 {
+          font-size: 32px;
+        }
+
+        .drivers-list-wrapper {
+          padding: 16px;
+          max-height: calc(100vh - 200px);
+        }
+
+        .drivers-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+        }
+
+        .driver-card {
+          padding: 0;
+        }
+
+        .drivers-stats {
+          gap: 12px;
+        }
+
+        .driver-stat-card {
+          flex: 1;
+          min-width: 100px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .drivers-header h1 {
+          font-size: 28px;
+        }
+
+        .drivers-subtitle {
+          font-size: 12px;
+        }
+
+        .drivers-list-wrapper {
+          padding: 12px;
+        }
+
+        .driver-avatar {
+          width: 60px;
+          height: 60px;
+        }
+
+        .driver-name {
+          font-size: 16px;
+        }
       }
     </style>
   </head>
 
   <body>
     <div class="sgp-shell">
-      <!-- 🔵 Global header -->
+      <!-- Global header -->
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
           <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
         </div>
-
         <div class="sgp-header-right">
           <nav class="sgp-nav">
             <a href="/" class="sgp-nav-link">Home</a>
@@ -309,202 +390,293 @@
         </div>
       </header>
 
-      <!-- 🔵 Page content -->
+      <!-- Page content -->
       <main class="sgp-main">
-        <div class="tracker-wrapper">
-          <div class="card">
-            <h1>Driver Tracker</h1>
-            <p>Select a driver and load their stats.</p>
+        <div class="drivers-container">
+          <div class="drivers-header">
+            <h1>All Drivers</h1>
+            <div class="drivers-subtitle">
+              View all registered drivers with active accounts in the league
+            </div>
+          </div>
 
-            <select id="driverSelect">
-              <option value="lemon">Lemon</option>
-            </select>
+          <!-- Stats bar -->
+          <div class="drivers-stats" id="drivers-stats">
+            <div class="driver-stat-card">
+              <div class="driver-stat-label">Total Drivers</div>
+              <div class="driver-stat-value" id="total-drivers">—</div>
+            </div>
+            <div class="driver-stat-card">
+              <div class="driver-stat-label">Active Accounts</div>
+              <div class="driver-stat-value" id="active-accounts">—</div>
+            </div>
+          </div>
 
-            <br />
-            <button onclick="loadStats()">Load Stats</button>
-
-            <!-- Driver NFT card -->
-            <div class="output" id="output">Waiting...</div>
-
-            <!-- Driver Progress panel (hidden until stats load) -->
-            <div class="output" id="races" style="display: none"></div>
+          <!-- Drivers list -->
+          <div class="drivers-list-wrapper">
+            <div class="drivers-grid" id="drivers-grid">
+              <div class="loading-message">
+                <div class="loading-spinner"></div>
+                <div>Loading drivers...</div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
 
-      <!-- 🔵 Global footer -->
+      <!-- Global footer -->
       <footer class="sgp-footer">
         Solana Grand Prix
       </footer>
     </div>
 
-<script>
-  let lastDriverKey = 'lemon';
+    <script src="/global-user.js"></script>
+    <script src="/card-customization.js"></script>
 
-  async function loadStats() {
-    const driverKey = document.getElementById('driverSelect').value;
-    lastDriverKey = driverKey;
+    <script>
+      (function() {
+        const grid = document.getElementById('drivers-grid');
+        const totalDriversEl = document.getElementById('total-drivers');
+        const activeAccountsEl = document.getElementById('active-accounts');
 
-    try {
-      const [statsRes, racesRes] = await Promise.all([
-        fetch('/api/stats?driver=' + encodeURIComponent(driverKey)),
-        fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey)),
-      ]);
+        async function loadDrivers() {
+          try {
+            // Always fetch fresh data (no cache) - add timestamp to bust cache
+            const timestamp = new Date().getTime();
+            const res = await fetch(`/api/drivers?t=${timestamp}`, { 
+              cache: 'no-store',
+              headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            });
+            
+            if (!res.ok) {
+              throw new Error(`Failed to fetch drivers: ${res.status}`);
+            }
 
-      const stats = await statsRes.json();
-      const races = await racesRes.json();
-      const isFree = !!stats.freeAgent;
+            const drivers = await res.json();
+            console.log('[Drivers Page] Loaded drivers:', drivers.length);
+            if (drivers.length > 0) {
+              console.log('[Drivers Page] Sample driver data:', {
+                driverKey: drivers[0].driverKey,
+                name: drivers[0].name,
+                displayName: drivers[0].displayName,
+                number: drivers[0].number,
+                team: drivers[0].team,
+                primaryCar: drivers[0].primaryCar,
+                avatar: drivers[0].avatar,
+                hasCustomization: !!drivers[0].cardCustomization,
+              });
+            }
 
-      /* ---------- Basic derived numbers ---------- */
-      const starts = stats.starts || races.length || 0;
-      const wins = stats.wins || 0;
-      const podiums = stats.podiums || 0;
-      const dnfs = stats.dnfs || 0;
-      const earnings =
-        typeof stats.earnings === 'number' ? stats.earnings : 0;
-      const formattedEarnings = earnings.toLocaleString('en-US');
+            // Filter to only drivers with accounts and required data
+            const validDrivers = drivers.filter(d => {
+              // Check required fields first
+              const driverKey = d.driverKey || d.key;
+              if (!driverKey) {
+                return false;
+              }
+              
+              // Check hasAccount - be more lenient: if it's not explicitly false, include it
+              if (d.hasAccount === false) {
+                return false;
+              }
+              
+              return true;
+            });
+            
+            // Update stats
+            const driverCount = validDrivers.length || 0;
+            if (totalDriversEl) {
+              totalDriversEl.textContent = driverCount;
+            }
+            if (activeAccountsEl) {
+              activeAccountsEl.textContent = driverCount;
+            }
+            
+            // Dispatch event so home page can update its count too
+            window.dispatchEvent(new CustomEvent('sgp:driver-count-updated', { 
+              detail: { count: driverCount } 
+            }));
 
-      /* ---------- XP + level ---------- */
-      const xpFromStarts = starts * 50; // tweak if you want
-      const xpFromWins = wins * 150;
-      const baseXp = 200;
-      const totalXp = baseXp + xpFromStarts + xpFromWins;
+            // Handle empty state
+            if (!validDrivers || validDrivers.length === 0) {
+              grid.innerHTML = `
+                <div class="empty-message" style="grid-column: 1 / -1;">
+                  <div style="font-size: 48px; margin-bottom: 16px;">🏁</div>
+                  <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #e5e7eb;">
+                    No Drivers Found
+                  </div>
+                  <div>Be the first to register and create your driver profile!</div>
+                </div>
+              `;
+              return;
+            }
 
-      const xpPerLevel = 500;
-      const level = Math.floor(totalXp / xpPerLevel) + 1;
-      const xpIntoLevel = totalXp % xpPerLevel;
-      const progressPct = Math.min(
-        100,
-        Math.round((xpIntoLevel / xpPerLevel) * 100)
-      );
-      const xpText = `${xpIntoLevel}/${xpPerLevel} XP`;
+            // Sort by display name alphabetically for consistent ordering
+            validDrivers.sort((a, b) => {
+              const nameA = (a.name || a.displayName || a.driverKey || '').toLowerCase();
+              const nameB = (b.name || b.displayName || b.driverKey || '').toLowerCase();
+              return nameA.localeCompare(nameB);
+            });
 
-      /* ---------- Win rate & best finish ---------- */
-      const totalRaces = races.length;
-      const winRate = totalRaces
-        ? Math.round((wins / totalRaces) * 100)
-        : 0;
+            // Clear grid
+            grid.innerHTML = '';
 
-      let bestFinish = null;
-      races.forEach((r) => {
-        if (bestFinish === null || r.finish < bestFinish) {
-          bestFinish = r.finish;
+            // Fetch fresh data for each driver from /api/stats (same as profile page)
+            // This ensures we get the exact same data structure
+            const driverPromises = validDrivers.map(async (driver) => {
+              const driverKey = driver.key || driver.driverKey || '';
+              if (!driverKey) return null;
+              
+              try {
+                // Fetch fresh stats for this driver (same endpoint as profile page)
+                const statsRes = await fetch(`/api/stats?driver=${encodeURIComponent(driverKey)}&t=${Date.now()}`, { 
+                  cache: 'no-store' 
+                });
+                if (!statsRes.ok) {
+                  console.warn('[Drivers Page] Failed to fetch stats for', driverKey);
+                  return { driverKey, stats: driver, useFallback: true };
+                }
+                
+                const freshStats = await statsRes.json();
+                return { driverKey, stats: freshStats, useFallback: false };
+              } catch (err) {
+                console.error('[Drivers Page] Error fetching stats for', driverKey, ':', err);
+                return { driverKey, stats: driver, useFallback: true };
+              }
+            });
+            
+            // Wait for all stats to be fetched
+            const driversWithStats = await Promise.all(driverPromises);
+            
+            // Create and append each card with fresh data
+            driversWithStats.forEach(({ driverKey, stats, useFallback }) => {
+              if (!driverKey || !stats) return;
+              
+              // Always remove existing card to ensure fresh data
+              const existingCard = grid.querySelector(`[data-driver-key="${driverKey}"]`);
+              if (existingCard) {
+                existingCard.remove();
+              }
+              
+              // Use fresh stats data (EXACT same structure as driver profile page)
+              const driverName = stats.name || stats.displayName || driverKey || 'Driver';
+              const driverNumber = stats.number ?? '';
+              const driverTeam = stats.team || '';
+              const driverCar = stats.primaryCar || 'Mazda MX-5 Cup';
+              const driverAvatar = stats.avatar || '/images/riley.png';
+              const isFreeAgent = !!stats.freeAgent;
+
+              // Create card element - EXACT match to driver profile page structure
+              const cardElement = document.createElement('div');
+              cardElement.className = 'driver-card';
+              cardElement.setAttribute('data-driver-key', driverKey);
+
+              cardElement.innerHTML = `
+                <a href="/driver/${encodeURIComponent(driverKey)}" class="driver-card-link">
+                  <div class="nft-frame driver-card-frame" data-driver-key="${driverKey}">
+                    <div class="nft-inner driver-card-inner">
+                      <div class="driver-header">
+                        <img 
+                          src="${escapeHtml(driverAvatar)}" 
+                          alt="${escapeHtml(driverName)}" 
+                          class="driver-avatar"
+                          loading="lazy"
+                          onerror="this.src='/images/riley.png'"
+                          style="width: 80px; height: 80px; object-fit: cover; border-radius: 16px; flex-shrink: 0;"
+                        />
+                        <div class="driver-meta">
+                          <div class="driver-name">
+                            ${driverNumber ? `#${driverNumber} ` : ''}${escapeHtml(driverName)}
+                          </div>
+                          <div class="driver-team">${escapeHtml(driverTeam)}</div>
+                          <div class="driver-car">${escapeHtml(driverCar)}</div>
+                          
+                          <div class="driver-free-agent-row">
+                            <span class="driver-free-agent-label">Free Agent:</span>
+                            <span class="driver-free-agent-pill ${isFreeAgent ? 'driver-active' : ''}">Yes</span>
+                            <span class="driver-free-agent-pill ${!isFreeAgent ? 'driver-active' : ''}">No</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="driver-stats">
+                        <b>iRating:</b> ${(stats.irating ?? 0).toLocaleString()}<br>
+                        <b>License:</b> ${stats.license || 'Rookie'}<br>
+                        <b>Starts:</b> ${(stats.starts ?? 0).toLocaleString()}<br>
+                        ${stats.wins !== undefined ? `<b>Wins:</b> ${stats.wins} &nbsp;&nbsp;` : ''}
+                        ${stats.podiums !== undefined ? `<b>Podiums:</b> ${stats.podiums}` : ''}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="driver-card-footer">View Profile ↗</div>
+                </a>
+              `;
+
+              // Append to grid
+              grid.appendChild(cardElement);
+
+              // Apply card customizations if available (use fresh stats)
+              setTimeout(() => {
+                if (stats.cardCustomization && typeof window.applyCardCustomization === 'function') {
+                  try {
+                    let customization = typeof stats.cardCustomization === 'string' 
+                      ? JSON.parse(stats.cardCustomization) 
+                      : stats.cardCustomization;
+                    
+                    if (customization && typeof customization === 'object' && Object.keys(customization).length > 0) {
+                      // Use the fresh stats object directly (same as profile page)
+                      console.log('[Drivers Page] Applying customization for', driverKey, 'using fresh stats');
+                      window.applyCardCustomization(cardElement, customization, stats);
+                    }
+                  } catch (err) {
+                    console.error('[Drivers Page] Error applying customization for', driverKey, ':', err);
+                  }
+                }
+              }, 50);
+            });
+
+          } catch (err) {
+            console.error('Error loading drivers:', err);
+            grid.innerHTML = `
+              <div class="error-message" style="grid-column: 1 / -1;">
+                <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+                  Error loading drivers
+                </div>
+                <div>${err.message || 'Please try again later.'}</div>
+              </div>
+            `;
+          }
         }
-      });
-      const bestFinishText = bestFinish === null ? '—' : 'P' + bestFinish;
 
-      /* ---------- Skill tier ---------- */
-      let skillTier = 'Beginner';
-      if (level >= 3 && winRate >= 20) skillTier = 'Club Racer';
-      if (level >= 5 && winRate >= 35) skillTier = 'Hotlap Hero';
-      if (level >= 7 && winRate >= 50) skillTier = 'Alien';
-
-      /* ---------- DRIVER NFT CARD (top box) ---------- */
-      document.getElementById('output').innerHTML = `
-  <div class="nft-frame">
-    <div class="nft-inner">
-      <div class="driver-header">
-        <img src="${stats.avatar || '/images/riley.png'}" alt="${stats.name || 'Driver'}" class="driver-avatar" />
-        
-        <div class="driver-meta">
-          <div class="driver-name">#${stats.number} ${stats.name}</div>
-          <div class="driver-team">${stats.team}</div>
-
-          <!-- 🔥 Free Agent Status Pills -->
-          <div class="free-agent-row">
-            <span class="free-agent-label">Free Agent:</span>
-            <span class="free-agent-pill ${isFree ? 'active' : ''}">Yes</span>
-            <span class="free-agent-pill ${!isFree ? 'active' : ''}">No</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="driver-stats">
-        <b>Wins:</b> ${stats.wins} &nbsp;&nbsp;
-        <b>Podiums:</b> ${stats.podiums} &nbsp;&nbsp;
-        <b>DNFs:</b> ${stats.dnfs}<br>
-        <b>Purse:</b> $${stats.earnings.toLocaleString()}
-      </div>
-
-      <div class="profile-link">
-        <a href="/driver/${driverKey}">View full profile ↗</a>
-      </div>
-    </div>
-  </div>
-`;
-
-      // Apply card customizations if they exist
-      if (typeof applyCardCustomization === 'function' && stats.cardCustomization) {
-        const cardElement = document.getElementById('output');
-        if (cardElement) {
-          applyCardCustomization(cardElement, stats.cardCustomization, stats);
+        function escapeHtml(text) {
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
         }
-      }
 
-      /* ---------- DRIVER PROGRESS PANEL (bottom box) ---------- */
-      const racesBox = document.getElementById('races');
+        // Load drivers on page load
+        loadDrivers();
 
-      racesBox.innerHTML = `
-        <div class="progress-card">
-          <div class="progress-title">Driver Progress</div>
+        // Listen for driver profile updates (profile changes, card customizations, etc.)
+        window.addEventListener('sgp:driver-updated', function() {
+          loadDrivers();
+        });
 
-          <div class="progress-level-row">
-            <span>Level ${level}</span>
-            <span>${xpText}</span>
-          </div>
+        // Also listen for storage events (cross-tab updates)
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'sgp_token' || e.key === 'sgp_user') {
+            loadDrivers();
+          }
+        });
 
-          <div class="progress-bar">
-            <div class="progress-bar-fill" style="width: ${progressPct}%;"></div>
-          </div>
-
-          <div class="progress-grid">
-            <div class="progress-stat">
-              <div class="label">Starts</div>
-              <div class="value">${starts}</div>
-            </div>
-            <div class="progress-stat">
-              <div class="label">Win rate</div>
-              <div class="value">${winRate}%</div>
-            </div>
-            <div class="progress-stat">
-              <div class="label">Best finish</div>
-              <div class="value">${bestFinishText}</div>
-            </div>
-            <div class="progress-stat">
-              <div class="label">Skill</div>
-              <div class="value">${skillTier}</div>
-            </div>
-          </div>
-
-          <div class="progress-footer">
-            <div class="label">Total purse</div>
-            <div class="value">$${formattedEarnings}</div>
-          </div>
-        </div>
-      `;
-
-      // Show the progress box now that it has content
-      racesBox.style.display = 'block';
-    } catch (err) {
-      console.error(err);
-      document.getElementById('output').innerText = 'Error loading stats.';
-      document.getElementById('races').innerText =
-        'Error loading progress.';
-      document.getElementById('races').style.display = 'block';
-    }
-  }
-
-  // Listen for driver profile updates
-  window.addEventListener('sgp:driver-updated', function() {
-    if (lastDriverKey) {
-      loadStats();
-    }
-  });
-</script>
-
-<!-- shared username/dropdown logic for ALL pages -->
-<script src="/global-user.js"></script>
-<script src="/card-customization.js"></script>
-
+        // Periodically refresh to catch any changes (every 10 seconds)
+        setInterval(function() {
+          loadDrivers();
+        }, 10000);
+      })();
+    </script>
   </body>
 </html>

@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Account Settings – SolanaGP</title>
 
     <!-- Shared global layout -->
@@ -75,6 +76,7 @@
       .account-field select,
       .account-field textarea {
         width: 100%;
+        max-width: 100%;
         padding: 8px 10px;
         border-radius: 8px;
         border: 1px solid #111827;
@@ -82,6 +84,7 @@
         color: #e5e7eb;
         font-size: 14px;
         outline: none;
+        box-sizing: border-box;
       }
 
       .account-field textarea {
@@ -180,12 +183,32 @@
           grid-template-columns: minmax(0, 1fr);
         }
       }
+
+      @media (max-width: 768px) {
+        .account-container {
+          padding: 0 12px;
+        }
+
+        .account-section {
+          padding: 16px;
+        }
+
+        .account-section input,
+        .account-section button {
+          font-size: 16px; /* Prevents zoom on iOS */
+          padding: 12px;
+        }
+
+        .account-section button {
+          min-height: 48px; /* Touch target */
+        }
+      }
     </style>
   </head>
 
   <body>
     <div class="sgp-shell">
-      <!-- 🔵 Global header -->
+      <!-- Global header -->
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
@@ -205,7 +228,7 @@
         </div>
       </header>
 
-      <!-- 🔵 Page content -->
+      <!-- Page content -->
       <main class="sgp-main compact-main">
         <div class="account-container">
           <div class="account-header">
@@ -345,20 +368,31 @@
               <!-- Danger zone -->
               <section class="account-panel">
                 <h2>Danger Zone</h2>
-                <p class="danger-text">
-                  Full account deletion will be added once a real database is wired up.
-                  For now, this only clears your local browser settings.
+                <p class="danger-text" style="margin-bottom: 12px;">
+                  Request account deletion. Your request will be reviewed by an admin before your account is permanently deleted.
                 </p>
-                <button type="button" id="acc-clear-local" class="danger-btn">
-                  Clear local account data
-                </button>
+                <div id="deletion-status" style="font-size: 12px; color: #9ca3af; margin-bottom: 12px;"></div>
+                <form id="deletion-request-form" style="display: none;">
+                  <div class="account-field" style="margin-bottom: 12px;">
+                    <label for="deletion-reason">Reason (optional)</label>
+                    <textarea
+                      id="deletion-reason"
+                      placeholder="Tell us why you're leaving..."
+                      rows="3"
+                    ></textarea>
+                  </div>
+                  <button type="submit" class="danger-btn" style="width: 100%;">
+                    Request Account Deletion
+                  </button>
+                </form>
+                <div id="deletion-request-status" style="font-size: 12px; margin-top: 8px;"></div>
               </section>
             </div>
           </div>
         </div>
       </main>
 
-      <!-- 🔵 Global footer -->
+      <!-- Global footer -->
       <footer class="sgp-footer">Solana Grand Prix</footer>
     </div>
 
@@ -434,17 +468,8 @@
           }
         }
 
-        function clearLocal() {
-          Object.values(STORAGE_KEYS).forEach(function (key) {
-            localStorage.removeItem(key);
-          });
-          loadFromLocal();
-          if (statusEl) statusEl.textContent = 'Local data cleared.';
-        }
-
         const form = document.getElementById('account-form');
         if (form) form.addEventListener('submit', saveToLocal);
-        if (clearBtn) clearBtn.addEventListener('click', clearLocal);
 
         loadFromLocal();
 
@@ -545,6 +570,110 @@
         if (credForm) {
           credForm.addEventListener('submit', submitCredentials);
         }
+
+        // --------------------------
+        // DELETION REQUEST
+        // --------------------------
+        const deletionForm = document.getElementById('deletion-request-form');
+        const deletionStatus = document.getElementById('deletion-status');
+        const deletionRequestStatus = document.getElementById('deletion-request-status');
+        const deletionReason = document.getElementById('deletion-reason');
+
+        async function loadDeletionStatus() {
+          const token = localStorage.getItem('sgp_token');
+          if (!token) return;
+
+          try {
+            const res = await fetch('/api/account/deletion-status', {
+              headers: {
+                Authorization: 'Bearer ' + token,
+              },
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+
+            if (data.hasRequest) {
+              deletionForm.style.display = 'none';
+              if (data.status === 'pending') {
+                deletionStatus.innerHTML = '<span style="color: #fbbf24;">⏳ Pending Review</span><br>Your deletion request is awaiting admin review.';
+              } else if (data.status === 'approved') {
+                deletionStatus.innerHTML = '<span style="color: #22c55e;">✓ Approved</span><br>Your account has been deleted.';
+              } else if (data.status === 'denied') {
+                deletionStatus.innerHTML = '<span style="color: #fca5a5;">✗ Denied</span><br>Your deletion request was denied.';
+                if (data.notes) {
+                  deletionStatus.innerHTML += '<br><small style="color: #9ca3af;">Admin note: ' + data.notes + '</small>';
+                }
+                deletionForm.style.display = 'block';
+              }
+            } else {
+              deletionForm.style.display = 'block';
+              deletionStatus.textContent = '';
+            }
+          } catch (err) {
+            console.error('Error loading deletion status:', err);
+          }
+        }
+
+        async function submitDeletionRequest(evt) {
+          if (evt) evt.preventDefault();
+          if (!deletionForm) return;
+
+          const token = localStorage.getItem('sgp_token');
+          if (!token) {
+            deletionRequestStatus.textContent = 'You must be logged in to request deletion.';
+            deletionRequestStatus.style.color = '#fca5a5';
+            return;
+          }
+
+          if (!confirm('Are you sure you want to request account deletion? This action cannot be undone once approved by an admin.')) {
+            return;
+          }
+
+          deletionRequestStatus.textContent = 'Submitting request...';
+          deletionRequestStatus.style.color = '#9ca3af';
+
+          try {
+            const res = await fetch('/api/account/request-deletion', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({
+                reason: deletionReason.value.trim() || null,
+              }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              deletionRequestStatus.textContent = data.message || 'Failed to submit deletion request.';
+              deletionRequestStatus.style.color = '#fca5a5';
+              return;
+            }
+
+            deletionRequestStatus.textContent = data.message || 'Deletion request submitted successfully.';
+            deletionRequestStatus.style.color = '#22c55e';
+            deletionReason.value = '';
+            
+            // Reload status to show pending state
+            setTimeout(() => {
+              loadDeletionStatus();
+            }, 1000);
+          } catch (err) {
+            console.error(err);
+            deletionRequestStatus.textContent = 'Network error while submitting request.';
+            deletionRequestStatus.style.color = '#fca5a5';
+          }
+        }
+
+        if (deletionForm) {
+          deletionForm.addEventListener('submit', submitDeletionRequest);
+        }
+
+        loadDeletionStatus();
       })();
     </script>
 

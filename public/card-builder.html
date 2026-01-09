@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solana Grand Prix – Card Builder</title>
     <link rel="stylesheet" href="/layout.css" />
 
@@ -18,6 +19,26 @@
         .card-builder-layout {
           grid-template-columns: minmax(0, 1fr);
           height: auto;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .panel {
+          padding: 12px 14px;
+        }
+
+        .panel h2 {
+          font-size: 14px;
+        }
+
+        .panel label {
+          font-size: 12px;
+        }
+
+        .panel input,
+        .panel select {
+          font-size: 16px; /* Prevents zoom on iOS */
+          padding: 10px;
         }
       }
 
@@ -466,7 +487,7 @@
 
   <body>
     <div class="sgp-shell">
-      <!-- 🔵 Global Header -->
+      <!-- Global Header -->
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
@@ -477,8 +498,8 @@
           <nav class="sgp-nav">
             <a href="/" class="sgp-nav-link">Home</a>
             <a href="/tracker" class="sgp-nav-link">Drivers</a>
-            <a href="/season" class="sgp-nav-link">Season hub</a>
-            <a href="/card-builder" class="sgp-nav-link active">Card builder</a>
+            <a href="/season" class="sgp-nav-link">Season Hub</a>
+            <a href="/card-builder" class="sgp-nav-link active">Card Builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
             <a href="/auth" class="sgp-nav-link">Account</a>
           </nav>
@@ -486,7 +507,7 @@
         </div>
       </header>
 
-      <!-- 🔵 Page Content -->
+      <!-- Page Content -->
       <main class="sgp-main">
         <div class="card-builder-layout">
           <!-- Left side (controls) -->
@@ -668,7 +689,7 @@
         </div>
       </main>
 
-      <!-- 🔵 Footer -->
+      <!-- Footer -->
       <footer class="sgp-footer">Solana Grand Prix</footer>
     </div>
     

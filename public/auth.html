@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solana Grand Prix – Account</title>
     <link rel="stylesheet" href="/layout.css" />
 
@@ -18,6 +19,10 @@
         border-radius: 16px;
         padding: 16px;
         box-shadow: 0 10px 30px rgba(15, 23, 42, 0.6);
+        max-width: 320px;
+        width: 100%;
+        margin: 0 auto;
+        box-sizing: border-box;
       }
 
       .auth-card h2 {
@@ -40,11 +45,14 @@
 
       .auth-card input {
         width: 100%;
+        max-width: 100%;
         padding: 10px;
         border-radius: 10px;
         border: 1px solid #1f2937;
         background: #020617;
         color: #e5e7eb;
+        box-sizing: border-box;
+        font-size: 14px;
       }
 
       .auth-card button {
@@ -85,6 +93,34 @@
       #auth-mode-toggle button {
         transition: all 0.2s ease;
       }
+
+      @media (max-width: 768px) {
+        .auth-grid {
+          margin-top: 0;
+          padding: 0 12px;
+        }
+
+        .auth-card {
+          padding: 16px;
+          width: 100%;
+        }
+
+        .auth-card input {
+          font-size: 16px; /* Prevents zoom on iOS */
+          padding: 12px;
+        }
+
+        .auth-card button {
+          padding: 12px;
+          font-size: 16px;
+          min-height: 48px; /* Touch target */
+        }
+
+        #auth-mode-toggle button {
+          padding: 10px;
+          min-height: 44px;
+        }
+      }
     </style>
   </head>
 
@@ -119,8 +155,7 @@
         </p>
 
         <div class="auth-grid">
-          <!-- LOG IN / SIGN UP -->
-          <div class="auth-card" style="max-width: 400px; margin: 0 auto;">
+          <div class="auth-card">
             <div id="auth-mode-toggle" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #1f2937; padding-bottom: 12px;">
               <button id="toggle-login" style="flex: 1; padding: 8px; border: none; background: #22c55e; color: #020617; border-radius: 8px; font-weight: 600; cursor: pointer;">Log In</button>
               <button id="toggle-signup" style="flex: 1; padding: 8px; border: none; background: transparent; color: #9ca3af; border-radius: 8px; font-weight: 600; cursor: pointer;">Sign Up</button>
@@ -158,6 +193,15 @@
             <div id="signup-form" style="display: none;">
               <h2>Create Account</h2>
               <p style="margin-bottom: 20px;">Register a new account</p>
+
+              <label for="signup-email">Email Address</label>
+              <input
+                id="signup-email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                required
+              />
 
               <label for="signup-username">Username</label>
               <input
@@ -223,23 +267,35 @@
           var usernameInput = document.getElementById(prefix + '-username');
           var passwordInput = document.getElementById(prefix + '-password');
           var statusEl = document.getElementById(prefix + '-status');
+          var emailInput = type === 'signup' ? document.getElementById('signup-email') : null;
 
           if (!usernameInput || !passwordInput || !statusEl) {
             console.error('Auth inputs not found for', prefix);
             return;
           }
 
+          if (type === 'signup' && (!emailInput || !emailInput.value.trim())) {
+            updateStatus(statusEl, 'Email address is required.');
+            return;
+          }
+
           updateStatus(statusEl, 'Submitting…');
+
+          var bodyData = {
+            username: usernameInput.value,
+            password: passwordInput.value,
+          };
+
+          if (type === 'signup' && emailInput) {
+            bodyData.email = emailInput.value.trim();
+          }
 
           fetch('/api/' + type, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              username: usernameInput.value,
-              password: passwordInput.value,
-            }),
+            body: JSON.stringify(bodyData),
           })
             .then(function (res) {
               return res.json().then(function (data) {
@@ -268,8 +324,14 @@
                 localStorage.setItem('sgp_user', result.data.user.username);
               }
 
-              // After successful signup or login, send them home
-              if (type === 'signup' || type === 'login') {
+              // After successful signup or login
+              if (type === 'signup') {
+                // For signup, show message about email verification
+                updateStatus(statusEl, 'Account created! Please check your email to verify your account.');
+                setTimeout(function () {
+                  window.location.href = '/';
+                }, 2000);
+              } else if (type === 'login') {
                 updateStatus(statusEl, 'Logged in! Redirecting…');
                 setTimeout(function () {
                   window.location.href = '/';

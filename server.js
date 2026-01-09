@@ -3,11 +3,110 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const multer = require('multer');
+const nodemailer = require('nodemailer');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Email configuration
+// For production, set these environment variables:
+// SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, BASE_URL
+// For development/testing, uses a test account (emails won't actually send)
+const emailTransporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.ethereal.email',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // true for 465, false for other ports
+  auth: process.env.SMTP_USER && process.env.SMTP_PASS ? {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  } : undefined,
+});
+
+// Email sending function
+async function sendVerificationEmail(email, username, verificationToken) {
+  try {
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}`;
+    
+    const mailOptions = {
+      from: process.env.SMTP_FROM || 'noreply@solanagp.com',
+      to: email,
+      subject: 'Verify your Solana Grand Prix account',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #22c55e, #06b6d4); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+            .button { display: inline-block; padding: 12px 24px; background: #22c55e; color: white; text-decoration: none; border-radius: 8px; margin: 20px 0; font-weight: 600; }
+            .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Solana Grand Prix</h1>
+            </div>
+            <div class="content">
+              <h2>Verify your email address</h2>
+              <p>Hi ${escapeHtmlForEmail(username)},</p>
+              <p>Thank you for signing up for Solana Grand Prix! Please verify your email address by clicking the button below:</p>
+              <div style="text-align: center;">
+                <a href="${verificationUrl}" class="button">Verify Email</a>
+              </div>
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #6b7280; font-size: 12px;">${verificationUrl}</p>
+              <p>This link will expire in 7 days.</p>
+              <p>If you didn't create an account, you can safely ignore this email.</p>
+            </div>
+            <div class="footer">
+              <p>Solana Grand Prix - iRacing League</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        Verify your Solana Grand Prix account
+        
+        Hi ${username},
+        
+        Thank you for signing up! Please verify your email address by visiting this link:
+        
+        ${verificationUrl}
+        
+        This link will expire in 7 days.
+        
+        If you didn't create an account, you can safely ignore this email.
+      `,
+    };
+
+    const info = await emailTransporter.sendMail(mailOptions);
+    console.log('Verification email sent:', info.messageId);
+    return true;
+  } catch (error) {
+    console.error('Error sending verification email:', error);
+    // Don't throw - allow signup to continue even if email fails
+    return false;
+  }
+}
+
+function escapeHtmlForEmail(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'public', 'uploads', 'avatars');
@@ -71,10 +170,14 @@ const sessions = new Map(); // token -> { userId, createdAt, lastAccess }
 // Session expiration time: 30 days
 const SESSION_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
 
-// Rate limiting for authentication endpoints
+// Rate limiting for authentication endpoints (login rate limiting disabled)
 const rateLimitMap = new Map(); // ip -> { count, resetTime }
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 const RATE_LIMIT_MAX_ATTEMPTS = 5; // Max 5 attempts per window
+
+// Clear all rate limits on server startup
+rateLimitMap.clear();
+console.log('✅ Rate limiting cleared - login cooldown disabled');
 
 function checkRateLimit(ip) {
   const now = Date.now();
@@ -92,6 +195,9 @@ function checkRateLimit(ip) {
   limit.count++;
   return true;
 }
+
+// Clear all rate limits on server startup (so login works immediately after restart)
+rateLimitMap.clear();
 
 // Cleanup old rate limit entries
 setInterval(() => {
@@ -205,6 +311,8 @@ app.post('/api/signup', rateLimitAuth, async (req, res) => {
   try {
     const usernameRaw = (req.body.username || '').trim();
     const password = req.body.password || '';
+    // Email verification temporarily disabled
+    // const email = (req.body.email || '').trim().toLowerCase();
 
     // Enhanced validation
     if (!usernameRaw || usernameRaw.length < 3) {
@@ -227,15 +335,28 @@ app.post('/api/signup', rateLimitAuth, async (req, res) => {
     const username = normalizeUsername(usernameRaw);
     const passwordHash = hashPassword(password);
 
-    const existing = await prisma.user.findUnique({ where: { username } });
-    if (existing) {
+    // Check for existing username
+    const existingUsername = await prisma.user.findUnique({ where: { username } });
+    if (existingUsername) {
       return res.status(409).json({ message: 'That username is already registered.' });
     }
+
+    // Email verification temporarily disabled
+    // // Check for existing email
+    // const existingEmail = await prisma.user.findUnique({ where: { email } });
+    // if (existingEmail) {
+    //   return res.status(409).json({ message: 'That email address is already registered.' });
+    // }
 
     const created = await prisma.user.create({
       data: {
         username,
         passwordHash: passwordHash,
+        // Email verification temporarily disabled
+        // email: email,
+        // emailVerified: false,
+        // verificationToken: verificationToken,
+        // verificationSentAt: new Date(),
         driver: {
           create: {
             driverKey: username,
@@ -262,6 +383,12 @@ app.post('/api/signup', rateLimitAuth, async (req, res) => {
       include: { driver: true },
     });
 
+    // Email verification temporarily disabled
+    // // Send verification email (don't block signup if it fails)
+    // sendVerificationEmail(email, usernameRaw, verificationToken).catch(err => {
+    //   console.error('Failed to send verification email:', err);
+    // });
+
     const token = createSession(created.id);
 
     return res.status(201).json({
@@ -274,25 +401,38 @@ app.post('/api/signup', rateLimitAuth, async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error(err);
+    console.error('Signup error:', err);
+    if (err.code === 'P2002') {
+      // Unique constraint violation
+      if (err.meta?.target?.includes('email')) {
+        return res.status(409).json({ message: 'That email address is already registered.' });
+      }
+      return res.status(409).json({ message: 'That username is already registered.' });
+    }
     return res.status(500).json({ message: 'Server error.' });
   }
 });
 
 
-// Rate limiting middleware for auth endpoints
+// Rate limiting middleware for auth endpoints (disabled for login, kept for signup)
 function rateLimitAuth(req, res, next) {
+  // Skip rate limiting for login endpoint (check req.path or req.url)
+  const isLogin = req.path === '/api/login' || req.url === '/api/login';
+  if (isLogin) {
+    return next(); // Skip rate limiting for login
+  }
+  
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
   if (!checkRateLimit(ip)) {
     return res.status(429).json({ 
-      message: 'Too many login attempts. Please try again in 15 minutes.' 
+      message: 'Too many attempts. Please try again in 15 minutes.' 
     });
   }
   next();
 }
 
 // -------- Login (DB) --------
-app.post('/api/login', rateLimitAuth, async (req, res) => {
+app.post('/api/login', async (req, res) => {
   try {
     const usernameRaw = (req.body.username || '').trim();
     const password = req.body.password || '';
@@ -303,19 +443,60 @@ app.post('/api/login', rateLimitAuth, async (req, res) => {
 
     const username = normalizeUsername(usernameRaw);
 
+    // Explicitly select only fields that exist in database (email verification disabled)
+    // Note: updatedAt doesn't exist in User table in current database
     const user = await prisma.user.findUnique({
       where: { username },
-      include: { driver: true },
+      select: {
+        id: true,
+        username: true,
+        passwordHash: true,
+        isAdmin: true,
+        createdAt: true,
+        driver: {
+          select: {
+            id: true,
+            userId: true,
+            driverKey: true,
+            displayName: true,
+            number: true,
+            team: true,
+            primaryCar: true,
+            avatar: true,
+            irating: true,
+            license: true,
+            starts: true,
+            freeAgent: true,
+            xpTotal: true,
+            xpLevel: true,
+            xpToNext: true,
+            skillTier: true,
+            bestFinish: true,
+            winRate: true,
+            totalPurse: true,
+            preferredClasses: true,
+            country: true,
+            timezone: true,
+            twitch: true,
+            twitter: true,
+            discord: true,
+            driverNotes: true,
+            cardCustomization: true,
+            createdAt: true,
+            updatedAt: true, // This should exist in Driver table
+          },
+        },
+      },
     });
 
     // Security: Don't reveal if username exists to prevent enumeration attacks
     // Always hash and compare to prevent timing attacks
     const passwordHash = hashPassword(password);
-    
+
     if (!user || passwordHash !== user.passwordHash) {
       // Use same error message and response time to prevent enumeration
       return res.status(401).json({ message: 'Invalid username or password.' });
-    }
+}
     const token = createSession(user.id);
 
     return res.json({
@@ -329,8 +510,26 @@ app.post('/api/login', rateLimitAuth, async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Server error.' });
+    console.error('LOGIN ERROR:', err);
+    console.error('Error message:', err.message);
+    console.error('Error code:', err.code);
+    console.error('Error meta:', err.meta);
+    
+    // Check if it's a missing column error (migration not run)
+    if (err.message && (err.message.includes('no such column') || err.message.includes('Unknown column'))) {
+      return res.status(500).json({
+        message: 'Database migration required. Please stop the server and run: npx prisma generate && npx prisma migrate deploy',
+        error: 'Missing database columns. The schema was updated but migrations need to be applied.',
+      });
+    }
+    
+    return res.status(500).json({ 
+      message: 'Server error during login.',
+      ...(process.env.NODE_ENV !== 'production' && { 
+        error: err.message,
+        code: err.code 
+      })
+    });
   }
 });
 
@@ -364,6 +563,9 @@ app.get('/api/me', requireAuth, async (req, res) => {
         driverKey: user.driver?.driverKey || user.username,
         displayName: user.driver?.displayName || user.username,
         isAdmin: user.isAdmin || false,
+        // Email verification temporarily disabled
+        // email: user.email || null,
+        // emailVerified: user.emailVerified || false,
       },
     });
   } catch (err) {
@@ -560,6 +762,10 @@ app.post('/api/driver/profile', requireAuth, async (req, res) => {
         // Check if driverKey is already taken by another driver
         const existingDriver = await prisma.driver.findUnique({
           where: { driverKey: newUsername },
+          select: {
+            id: true,
+            userId: true,
+          },
         });
         
         if (existingDriver && existingDriver.userId !== user.id) {
@@ -605,6 +811,7 @@ app.post('/api/driver/profile', requireAuth, async (req, res) => {
       twitch: req.body.twitch,
       twitter: req.body.twitter,
       discord: req.body.discord,
+      iracing: req.body.iracing,
       driverNotes: req.body.driverNotes,
     };
 
@@ -701,7 +908,42 @@ app.get('/api/driver/:key', async (req, res) => {
     const key = normalizeUsername(req.params.key || '');
     if (!key) return res.status(400).json({ message: 'Missing driver key.' });
 
-    const d = await prisma.driver.findUnique({ where: { driverKey: key } });
+    // Explicitly select only fields that exist in database
+    const d = await prisma.driver.findUnique({ 
+      where: { driverKey: key },
+      select: {
+        id: true,
+        userId: true,
+        driverKey: true,
+        displayName: true,
+        number: true,
+        team: true,
+        primaryCar: true,
+        avatar: true,
+        irating: true,
+        license: true,
+        starts: true,
+        freeAgent: true,
+        xpTotal: true,
+        xpLevel: true,
+        xpToNext: true,
+        skillTier: true,
+        bestFinish: true,
+        winRate: true,
+        totalPurse: true,
+        preferredClasses: true,
+        country: true,
+        timezone: true,
+        twitch: true,
+        twitter: true,
+        discord: true,
+        driverNotes: true,
+        cardCustomization: true,
+        createdAt: true,
+        updatedAt: true,
+        // iracing and solanaWallet may not exist in DB yet - handle gracefully
+      },
+    });
     if (!d) return res.status(404).json({ message: 'Driver not found.' });
 
     // Parse card customization if it exists
@@ -746,8 +988,42 @@ app.get('/api/stats', async (req, res) => {
       }
     }
 
+    // Explicitly select only fields that exist in database (avoid missing column errors)
     const d = await prisma.driver.findUnique({
       where: { driverKey: key },
+      select: {
+        id: true,
+        userId: true,
+        driverKey: true,
+        displayName: true,
+        number: true,
+        team: true,
+        primaryCar: true,
+        avatar: true,
+        irating: true,
+        license: true,
+        starts: true,
+        freeAgent: true,
+        xpTotal: true,
+        xpLevel: true,
+        xpToNext: true,
+        skillTier: true,
+        bestFinish: true,
+        winRate: true,
+        totalPurse: true,
+        preferredClasses: true,
+        country: true,
+        timezone: true,
+        twitch: true,
+        twitter: true,
+        discord: true,
+        // iracing: true, // May not exist in DB yet - handle gracefully
+        // solanaWallet: true, // May not exist in DB yet - handle gracefully
+        driverNotes: true,
+        cardCustomization: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     if (!d) {
@@ -831,9 +1107,20 @@ app.get('/api/stats', async (req, res) => {
       publicStats.twitch = d.twitch || '';
       publicStats.twitter = d.twitter || '';
       publicStats.discord = d.discord || '';
+      // iRacing data is PRIVATE - only returned to the user themselves
+      // Never displayed publicly, only used for API connection
+      publicStats.iracing = d.iracing || '';
       publicStats.driverNotes = d.driverNotes || '';
     }
+    
+    // SECURITY: iRacing data is NEVER included in public responses
+    // It is only available to the user themselves (isOwnProfile check above)
 
+    // Set cache headers to prevent caching
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    
     return res.json(publicStats);
   } catch (err) {
     console.error(err);
@@ -842,16 +1129,91 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // -------- Drivers list (DB) --------
+// Only returns drivers that have active user accounts
 app.get('/api/drivers', async (req, res) => {
   try {
+    // Get all drivers - userId is required in schema, so all drivers have accounts
+    // But we'll verify by including the user relation
     const drivers = await prisma.driver.findMany({
-      orderBy: { irating: 'desc' },
+      select: {
+        id: true,
+        userId: true,
+        driverKey: true,
+        displayName: true,
+        number: true,
+        team: true,
+        primaryCar: true,
+        avatar: true,
+        irating: true,
+        license: true,
+        starts: true,
+        freeAgent: true,
+        xpTotal: true,
+        xpLevel: true,
+        xpToNext: true,
+        skillTier: true,
+        bestFinish: true,
+        winRate: true,
+        totalPurse: true,
+        preferredClasses: true,
+        country: true,
+        timezone: true,
+        twitch: true,
+        twitter: true,
+        discord: true,
+        // iracing: true, // May not exist in DB yet - handle gracefully
+        // solanaWallet: true, // May not exist in DB yet - handle gracefully
+        driverNotes: true,
+        cardCustomization: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            username: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: { 
+        displayName: 'asc',
+      },
+    });
+    
+    // All drivers have accounts since userId is required in schema
+    // But filter out any that somehow don't have user loaded (shouldn't happen)
+    const validDrivers = drivers.filter(d => {
+      // If user relation exists, include it
+      if (d.user && d.user.id) {
+        return true;
+      }
+      // If user relation is missing but driver exists, log warning but still include
+      // (userId is required, so user should always exist)
+      if (d.userId) {
+        console.warn('Driver', d.driverKey, 'has userId but user relation not loaded');
+        return true; // Still include it since userId exists
+      }
+      return false; // Only exclude if no userId at all
     });
 
-    res.json(
-      drivers.map((d) => ({
-        key: d.driverKey, // tracker uses this
-        name: d.displayName, // tracker shows this
+    // Map to response format
+    const driversList = validDrivers.map((d) => {
+      let cardCustomization = null;
+      if (d.cardCustomization) {
+        try {
+          cardCustomization = JSON.parse(d.cardCustomization);
+        } catch (e) {
+          console.error('Error parsing cardCustomization for driver', d.driverKey, e);
+        }
+      }
+      
+      // Ensure hasAccount is always explicitly true or false
+      const hasAccount = !!(d.user || d.userId);
+      
+      return {
+        key: d.driverKey,
+        driverKey: d.driverKey,
+        name: d.displayName,
         displayName: d.displayName,
         number: d.number,
         team: d.team,
@@ -863,17 +1225,44 @@ app.get('/api/drivers', async (req, res) => {
         freeAgent: d.freeAgent,
         xpTotal: d.xpTotal ?? 0,
         xpLevel: d.xpLevel ?? 1,
+        xpToNext: d.xpToNext ?? 500,
         skillTier: d.skillTier || 'Beginner',
+        bestFinish: d.bestFinish ?? 0,
+        winRate: d.winRate ?? 0,
+        totalPurse: d.totalPurse ?? 0,
+        cardCustomization: cardCustomization,
+        // Account info (for verification)
+        // Always explicitly set to true or false
+        hasAccount: hasAccount,
+        accountCreated: d.user?.createdAt || null,
         // Default values for fields not yet in schema
         championships: 0,
         wins: 0,
         podiums: 0,
         dnfs: 0,
         earnings: d.totalPurse ?? 0,
-      }))
-    );
+      };
+    });
+
+    console.log(`/api/drivers: Returning ${driversList.length} drivers (from ${drivers.length} total, ${validDrivers.length} valid)`);
+    if (driversList.length > 0) {
+      console.log('Sample driver:', {
+        driverKey: driversList[0].driverKey,
+        name: driversList[0].name,
+        hasAccount: driversList[0].hasAccount,
+        hasCustomization: !!driversList[0].cardCustomization,
+        customizationKeys: driversList[0].cardCustomization ? Object.keys(driversList[0].cardCustomization) : null,
+      });
+    }
+
+    // Set cache headers to prevent caching
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
+    return res.json(driversList);
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching drivers:', err);
     return res.status(500).json({ message: 'Server error.' });
   }
 });
@@ -893,17 +1282,23 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
       users: users.map((u) => ({
         id: u.id,
         username: u.username,
+        // Email verification temporarily disabled
+        // email: u.email || null,
+        // emailVerified: u.emailVerified || false,
+        // verifiedAt: u.verifiedAt || null,
         isAdmin: u.isAdmin,
         createdAt: u.createdAt,
         driver: u.driver
           ? {
               driverKey: u.driver.driverKey,
-              displayName: u.driver.displayName,
+              displayName: u.driver.displayName, // Only display name, never full name
               team: u.driver.team,
               number: u.driver.number,
               irating: u.driver.irating,
               starts: u.driver.starts,
               freeAgent: u.driver.freeAgent,
+              // NOTE: iRacing data is intentionally excluded for privacy
+              // It is only used for API connection, never displayed
             }
           : null,
       })),
@@ -959,6 +1354,8 @@ app.get('/api/admin/users/:id', requireAdmin, async (req, res) => {
           twitch: user.driver.twitch,
           twitter: user.driver.twitter,
           discord: user.driver.discord,
+          // iRacing data is PRIVATE - only used for API connection, never displayed
+          // iracing: user.driver.iracing, // REMOVED - privacy protection
           driverNotes: user.driver.driverNotes,
           createdAt: user.driver.createdAt,
           updatedAt: user.driver.updatedAt,
@@ -1017,7 +1414,7 @@ app.post('/api/admin/users/:id', requireAdmin, async (req, res) => {
 // Get admin stats (admin only)
 app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   try {
-    const [totalUsers, totalAdmins, totalDrivers, recentUsers] = await Promise.all([
+    const [totalUsers, totalAdmins, totalDrivers, recentUsers, verifiedEmails] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { isAdmin: true } }),
       prisma.driver.count(),
@@ -1028,6 +1425,9 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
           },
         },
       }),
+      // Email verification temporarily disabled
+      // prisma.user.count({ where: { emailVerified: true } }),
+      0, // Placeholder for verified email count
     ]);
 
     return res.json({
@@ -1036,6 +1436,7 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
         totalAdmins,
         totalDrivers,
         recentUsers,
+        // verifiedEmails, // Email verification temporarily disabled
       },
     });
   } catch (err) {
@@ -1046,6 +1447,47 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 
 // Store featured driver key (in-memory for now, can be persisted later)
 let featuredDriverKey = 'lemon'; // Default
+
+// Get driver count (public) - for home page stats
+// Only counts drivers with active user accounts (same logic as /api/drivers)
+app.get('/api/driver-count', async (req, res) => {
+  try {
+    // Get all drivers with user accounts (same query as /api/drivers)
+    const drivers = await prisma.driver.findMany({
+      select: {
+        id: true,
+        userId: true,
+        driverKey: true,
+        displayName: true,
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    
+    // Filter to only drivers with active accounts (same logic as /api/drivers)
+    const validDrivers = drivers.filter(d => {
+      // If user relation exists, include it
+      if (d.user && d.user.id) {
+        return true;
+      }
+      // If user relation is missing but driver exists, still include
+      // (userId is required, so user should always exist)
+      if (d.userId) {
+        return true; // Still include it since userId exists
+      }
+      return false; // Only exclude if no userId at all
+    });
+    
+    const count = validDrivers.length;
+    return res.json({ count });
+  } catch (err) {
+    console.error('Driver count error:', err);
+    return res.status(500).json({ message: 'Server error.', count: 0 });
+  }
+});
 
 // Get featured driver (public)
 app.get('/api/featured-driver', async (req, res) => {
@@ -1069,6 +1511,10 @@ app.post('/api/admin/featured-driver', requireAdmin, async (req, res) => {
     // Validate that the driver exists
     const driver = await prisma.driver.findUnique({
       where: { driverKey: normalizeUsername(driverKey) },
+      select: {
+        id: true,
+        driverKey: true,
+      },
     });
 
     if (!driver) {
@@ -1115,11 +1561,827 @@ app.get('/season', (req, res) =>
 app.get('/leaderboard', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'leaderboard.html'))
 );
+app.get('/connections', (req, res) => {
+  console.log('Connections route hit:', req.url);
+  const filePath = path.join(__dirname, 'public', 'connections.html');
+  console.log('Sending file:', filePath);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error('Error sending connections.html:', err);
+      res.status(500).send('Error loading connections page');
+    }
+  });
+});
+
+app.get('/verify-email', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'verify-email.html'));
+});
+
+// -------- Connections API Endpoints --------
+// Get connections (returns current user's connections)
+app.get('/api/driver/connections', requireAuth, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.auth.userId },
+      include: { driver: true },
+    });
+
+    if (!user || !user.driver) {
+      return res.status(404).json({ message: 'Driver profile not found.' });
+    }
+
+    return res.json({
+      discord: user.driver.discord || null,
+      iracing: user.driver.iracing || null,
+      twitter: user.driver.twitter || null,
+      solanaWallet: user.driver.solanaWallet || null,
+    });
+  } catch (err) {
+    console.error('Get connections error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Update connections
+app.post('/api/driver/connections', requireAuth, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.auth.userId },
+      include: { driver: true },
+    });
+
+    if (!user || !user.driver) {
+      return res.status(404).json({ message: 'Driver profile not found.' });
+    }
+
+    const updateData = {};
+
+    // Update only provided fields, convert empty strings to null
+    if (req.body.discord !== undefined) {
+      updateData.discord = req.body.discord && req.body.discord.trim() !== '' 
+        ? req.body.discord.trim() 
+        : null;
+    }
+
+    if (req.body.iracing !== undefined) {
+      // iRacing connection is PRIVATE - only used for API integration
+      // Never displayed publicly, only stored for backend API calls
+      const iracingValue = req.body.iracing && req.body.iracing.trim() !== '' 
+        ? req.body.iracing.trim() 
+        : null;
+      
+      // Ensure we're only storing username/ID, not full names
+      // iRacing usernames are typically alphanumeric, no spaces
+      if (iracingValue && iracingValue.length > 100) {
+        return res.status(400).json({ message: 'Invalid iRacing identifier format.' });
+      }
+      
+      updateData.iracing = iracingValue;
+    }
+
+    if (req.body.twitter !== undefined) {
+      updateData.twitter = req.body.twitter && req.body.twitter.trim() !== '' 
+        ? req.body.twitter.trim() 
+        : null;
+    }
+
+    if (req.body.solanaWallet !== undefined) {
+      // Validate Solana wallet address format (base58, 32-44 characters)
+      const walletAddress = req.body.solanaWallet && req.body.solanaWallet.trim() !== '' 
+        ? req.body.solanaWallet.trim() 
+        : null;
+      
+      if (walletAddress) {
+        // Basic validation: Solana addresses are base58 encoded, typically 32-44 characters
+        const solanaAddressRegex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+        if (!solanaAddressRegex.test(walletAddress)) {
+          return res.status(400).json({ message: 'Invalid Solana wallet address format.' });
+        }
+      }
+      
+      updateData.solanaWallet = walletAddress;
+    }
+
+    await prisma.driver.update({
+      where: { id: user.driver.id },
+      data: updateData,
+    });
+
+    return res.json({
+      message: 'Connections updated successfully.',
+      connections: {
+        discord: updateData.discord,
+        iracing: updateData.iracing,
+        twitter: updateData.twitter,
+        solanaWallet: updateData.solanaWallet,
+      },
+    });
+  } catch (err) {
+    console.error('Update connections error:', err);
+    return res.status(500).json({ message: 'Server error while updating connections.' });
+  }
+});
+
+// -------- Achievements API Endpoints --------
+// Get achievements for a driver
+app.get('/api/driver/:driverKey/achievements', async (req, res) => {
+  try {
+    const driverKey = normalizeUsername(req.params.driverKey);
+    const driver = await prisma.driver.findUnique({
+      where: { driverKey },
+      select: {
+        id: true,
+        driverKey: true,
+        displayName: true,
+        achievements: {
+          where: { driverId: { not: null } }, // Only unlocked achievements
+          orderBy: { unlockedAt: 'desc' },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            icon: true,
+            xpReward: true,
+            rarity: true,
+            category: true,
+            unlockedAt: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!driver) {
+      return res.status(404).json({ message: 'Driver not found.' });
+    }
+
+    // Also get global achievement templates (available achievements)
+    const globalAchievements = await prisma.achievement.findMany({
+      where: {
+        driverId: null,
+        isActive: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return res.json({
+      unlocked: driver.achievements,
+      available: globalAchievements,
+    });
+  } catch (err) {
+    console.error('Fetch achievements error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Admin Achievement Management --------
+// Get all achievements (templates and unlocked)
+app.get('/api/admin/achievements', requireAdmin, async (req, res) => {
+  try {
+    const achievements = await prisma.achievement.findMany({
+      orderBy: [{ driverId: 'asc' }, { createdAt: 'desc' }],
+      include: {
+        driver: {
+          select: {
+            driverKey: true,
+            displayName: true,
+          },
+        },
+      },
+    });
+    return res.json(achievements);
+  } catch (err) {
+    console.error('Fetch all achievements error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Create achievement template
+app.post('/api/admin/achievements', requireAdmin, async (req, res) => {
+  try {
+    const { name, description, icon, xpReward, rarity, category, isActive } = req.body;
+
+    if (!name || !description) {
+      return res.status(400).json({ message: 'Name and description are required.' });
+    }
+
+    const achievement = await prisma.achievement.create({
+      data: {
+        name,
+        description,
+        icon: icon || null,
+        xpReward: parseInt(xpReward) || 0,
+        rarity: rarity || 'Common',
+        category: category || null,
+        isActive: isActive !== false,
+        driverId: null, // Template achievement
+      },
+    });
+
+    return res.json(achievement);
+  } catch (err) {
+    console.error('Create achievement error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Update achievement
+app.put('/api/admin/achievements/:id', requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { name, description, icon, xpReward, rarity, category, isActive } = req.body;
+
+    const achievement = await prisma.achievement.update({
+      where: { id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(description !== undefined && { description }),
+        ...(icon !== undefined && { icon }),
+        ...(xpReward !== undefined && { xpReward: parseInt(xpReward) || 0 }),
+        ...(rarity !== undefined && { rarity }),
+        ...(category !== undefined && { category }),
+        ...(isActive !== undefined && { isActive }),
+      },
+    });
+
+    return res.json(achievement);
+  } catch (err) {
+    console.error('Update achievement error:', err);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Achievement not found.' });
+    }
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Delete achievement
+app.delete('/api/admin/achievements/:id', requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.achievement.delete({
+      where: { id },
+    });
+    return res.json({ message: 'Achievement deleted successfully.' });
+  } catch (err) {
+    console.error('Delete achievement error:', err);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Achievement not found.' });
+    }
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Account credentials update --------
+app.post('/api/account/credentials', requireAuth, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.auth.userId },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Session invalid.' });
+    }
+
+    const { currentPassword, newUsername, newPassword } = req.body;
+
+    if (!currentPassword) {
+      return res.status(400).json({ message: 'Current password is required.' });
+    }
+
+    // Verify current password
+    const currentPasswordHash = hashPassword(currentPassword);
+    if (currentPasswordHash !== user.passwordHash) {
+      return res.status(401).json({ message: 'Current password is incorrect.' });
+    }
+
+    const updateData = {};
+
+    // Update username if provided
+    if (newUsername && newUsername.trim()) {
+      const normalizedUsername = normalizeUsername(newUsername.trim());
+      
+      // Check if username is already taken
+      const existingUser = await prisma.user.findUnique({
+        where: { username: normalizedUsername },
+      });
+
+      if (existingUser && existingUser.id !== user.id) {
+        return res.status(409).json({ message: 'That username is already taken.' });
+      }
+
+      updateData.username = normalizedUsername;
+
+      // Also update driverKey if driver exists
+      const driver = await prisma.driver.findUnique({
+        where: { userId: user.id },
+        select: {
+          id: true,
+          userId: true,
+          driverKey: true,
+        },
+      });
+
+      if (driver) {
+        await prisma.driver.update({
+          where: { id: driver.id },
+          data: { driverKey: normalizedUsername },
+        });
+      }
+    }
+
+    // Update password if provided
+    if (newPassword && newPassword.trim()) {
+      if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+      }
+      updateData.passwordHash = hashPassword(newPassword);
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ message: 'Nothing to update.' });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: updateData,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        isAdmin: true,
+      },
+    });
+
+    return res.json({
+      message: 'Credentials updated successfully.',
+      user: updatedUser,
+    });
+  } catch (err) {
+    console.error('Credentials update error:', err);
+    if (err.code === 'P2002') {
+      return res.status(409).json({ message: 'That username is already taken.' });
+    }
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Request account deletion --------
+app.post('/api/account/request-deletion', requireAuth, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.auth.userId },
+      include: { deletionRequest: true },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Session invalid.' });
+    }
+
+    // Check if user already has a pending request
+    if (user.deletionRequest) {
+      if (user.deletionRequest.status === 'pending') {
+        return res.status(409).json({ message: 'You already have a pending deletion request.' });
+      }
+      // If previous request was denied, allow new request
+      if (user.deletionRequest.status === 'denied') {
+        await prisma.deletionRequest.delete({
+          where: { userId: user.id },
+        });
+      }
+    }
+
+    const { reason } = req.body;
+
+    await prisma.deletionRequest.create({
+      data: {
+        userId: user.id,
+        reason: reason || null,
+        status: 'pending',
+      },
+    });
+
+    return res.json({
+      message: 'Deletion request submitted successfully. An admin will review your request.',
+    });
+  } catch (err) {
+    console.error('Deletion request error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Get deletion request status (for user) --------
+app.get('/api/account/deletion-status', requireAuth, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.auth.userId },
+      include: { deletionRequest: true },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Session invalid.' });
+    }
+
+    if (!user.deletionRequest) {
+      return res.json({ hasRequest: false });
+    }
+
+    return res.json({
+      hasRequest: true,
+      status: user.deletionRequest.status,
+      reason: user.deletionRequest.reason,
+      createdAt: user.deletionRequest.createdAt,
+      reviewedAt: user.deletionRequest.reviewedAt,
+      notes: user.deletionRequest.notes,
+    });
+  } catch (err) {
+    console.error('Deletion status error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Admin: Get all deletion requests --------
+app.get('/api/admin/deletion-requests', requireAdmin, async (req, res) => {
+  try {
+    const requests = await prisma.deletionRequest.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            createdAt: true,
+            driver: {
+              select: {
+                driverKey: true,
+                displayName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return res.json(requests);
+  } catch (err) {
+    console.error('Get deletion requests error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Admin: Approve deletion request --------
+app.post('/api/admin/deletion-requests/:id/approve', requireAdmin, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const { notes } = req.body;
+
+    const deletionRequest = await prisma.deletionRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        user: {
+          include: {
+            driver: true,
+          },
+        },
+      },
+    });
+
+    if (!deletionRequest) {
+      return res.status(404).json({ message: 'Deletion request not found.' });
+    }
+
+    if (deletionRequest.status !== 'pending') {
+      return res.status(400).json({ message: 'This request has already been processed.' });
+    }
+
+    // Prevent admins from deleting themselves
+    if (deletionRequest.user.isAdmin) {
+      return res.status(403).json({ message: 'Cannot delete admin accounts.' });
+    }
+
+    const userId = deletionRequest.userId;
+
+    // Delete the user (cascade will delete driver, achievements, and deletion request)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    // Invalidate any active sessions for this user
+    const tokensToDelete = [];
+    for (const [token, session] of sessions.entries()) {
+      if (session.userId === userId) {
+        tokensToDelete.push(token);
+      }
+    }
+    tokensToDelete.forEach(token => sessions.delete(token));
+
+    return res.json({
+      message: 'Account deleted successfully.',
+    });
+  } catch (err) {
+    console.error('Approve deletion error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Admin: Deny deletion request --------
+app.post('/api/admin/deletion-requests/:id/deny', requireAdmin, async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.id);
+    const { notes } = req.body;
+
+    const deletionRequest = await prisma.deletionRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!deletionRequest) {
+      return res.status(404).json({ message: 'Deletion request not found.' });
+    }
+
+    if (deletionRequest.status !== 'pending') {
+      return res.status(400).json({ message: 'This request has already been processed.' });
+    }
+
+    await prisma.deletionRequest.update({
+      where: { id: requestId },
+      data: {
+        status: 'denied',
+        reviewedBy: req.auth.userId,
+        reviewedAt: new Date(),
+        notes: notes || null,
+      },
+    });
+
+    return res.json({
+      message: 'Deletion request denied.',
+    });
+  } catch (err) {
+    console.error('Deny deletion error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Calendar Events API --------
+// Get all calendar events (public)
+app.get('/api/calendar', async (req, res) => {
+  try {
+    const events = await prisma.calendarEvent.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        eventDate: 'asc',
+      },
+    });
+
+    return res.json(events);
+  } catch (err) {
+    console.error('Get calendar events error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Get calendar events (admin - includes inactive)
+app.get('/api/admin/calendar', requireAdmin, async (req, res) => {
+  try {
+    const events = await prisma.calendarEvent.findMany({
+      orderBy: {
+        eventDate: 'asc',
+      },
+    });
+
+    return res.json(events);
+  } catch (err) {
+    console.error('Get calendar events (admin) error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Create calendar event (admin only)
+app.post('/api/admin/calendar', requireAdmin, async (req, res) => {
+  try {
+    const { title, description, eventDate, eventType, track, carClass, status, isActive } = req.body;
+
+    if (!title || !eventDate) {
+      return res.status(400).json({ message: 'Title and event date are required.' });
+    }
+
+    const event = await prisma.calendarEvent.create({
+      data: {
+        title,
+        description: description || null,
+        eventDate: new Date(eventDate),
+        eventType: eventType || 'race',
+        track: track || null,
+        carClass: carClass || null,
+        status: status || 'scheduled',
+        isActive: isActive !== undefined ? isActive : true,
+        createdBy: req.auth.userId,
+      },
+    });
+
+    return res.json({
+      message: 'Calendar event created successfully.',
+      event,
+    });
+  } catch (err) {
+    console.error('Create calendar event error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Update calendar event (admin only)
+app.put('/api/admin/calendar/:id', requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { title, description, eventDate, eventType, track, carClass, status, isActive } = req.body;
+
+    const updateData = {};
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description || null;
+    if (eventDate !== undefined) updateData.eventDate = new Date(eventDate);
+    if (eventType !== undefined) updateData.eventType = eventType;
+    if (track !== undefined) updateData.track = track || null;
+    if (carClass !== undefined) updateData.carClass = carClass || null;
+    if (status !== undefined) updateData.status = status;
+    if (isActive !== undefined) updateData.isActive = isActive;
+
+    const event = await prisma.calendarEvent.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return res.json({
+      message: 'Calendar event updated successfully.',
+      event,
+    });
+  } catch (err) {
+    console.error('Update calendar event error:', err);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Calendar event not found.' });
+    }
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Delete calendar event (admin only)
+app.delete('/api/admin/calendar/:id', requireAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    await prisma.calendarEvent.delete({
+      where: { id },
+    });
+    return res.json({ message: 'Calendar event deleted successfully.' });
+  } catch (err) {
+    console.error('Delete calendar event error:', err);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Calendar event not found.' });
+    }
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// Award achievement to a driver
+app.post('/api/admin/achievements/:id/award', requireAdmin, async (req, res) => {
+  try {
+    const achievementId = parseInt(req.params.id);
+    const { driverKey } = req.body;
+
+    if (!driverKey) {
+      return res.status(400).json({ message: 'Driver key is required.' });
+    }
+
+    const driver = await prisma.driver.findUnique({
+      where: { driverKey: normalizeUsername(driverKey) },
+      select: {
+        id: true,
+        driverKey: true,
+        displayName: true,
+        xpTotal: true,
+      },
+    });
+
+    if (!driver) {
+      return res.status(404).json({ message: 'Driver not found.' });
+    }
+
+    // Check if achievement is already unlocked
+    const existing = await prisma.achievement.findFirst({
+      where: {
+        id: achievementId,
+        driverId: driver.id,
+      },
+    });
+
+    if (existing) {
+      return res.status(400).json({ message: 'Achievement already unlocked for this driver.' });
+    }
+
+    // Get the achievement template
+    const template = await prisma.achievement.findUnique({
+      where: { id: achievementId },
+    });
+
+    if (!template) {
+      return res.status(404).json({ message: 'Achievement template not found.' });
+    }
+
+    // Create unlocked achievement instance
+    const unlockedAchievement = await prisma.achievement.create({
+      data: {
+        name: template.name,
+        description: template.description,
+        icon: template.icon,
+        xpReward: template.xpReward,
+        rarity: template.rarity,
+        category: template.category,
+        isActive: true,
+        driverId: driver.id,
+        unlockedAt: new Date(),
+      },
+    });
+
+    // Award XP to driver
+    if (template.xpReward > 0) {
+      await prisma.driver.update({
+        where: { id: driver.id },
+        data: {
+          xpTotal: {
+            increment: template.xpReward,
+          },
+        },
+      });
+    }
+
+    return res.json(unlockedAchievement);
+  } catch (err) {
+    console.error('Award achievement error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Admin XP Management --------
+// Update driver XP
+app.post('/api/admin/driver/:driverKey/xp', requireAdmin, async (req, res) => {
+  try {
+    const driverKey = normalizeUsername(req.params.driverKey);
+    const { xpTotal, xpLevel, xpToNext, skillTier } = req.body;
+
+    const updateData = {};
+    if (xpTotal !== undefined) updateData.xpTotal = parseInt(xpTotal);
+    if (xpLevel !== undefined) updateData.xpLevel = parseInt(xpLevel);
+    if (xpToNext !== undefined) updateData.xpToNext = parseInt(xpToNext);
+    if (skillTier !== undefined) updateData.skillTier = skillTier;
+
+    const driver = await prisma.driver.update({
+      where: { driverKey },
+      data: updateData,
+    });
+
+    return res.json({
+      message: 'XP updated successfully.',
+      driver: {
+        driverKey: driver.driverKey,
+        displayName: driver.displayName,
+        xpTotal: driver.xpTotal,
+        xpLevel: driver.xpLevel,
+        xpToNext: driver.xpToNext,
+        skillTier: driver.skillTier,
+      },
+    });
+  } catch (err) {
+    console.error('Update XP error:', err);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ message: 'Driver not found.' });
+    }
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
 
 // Serve static files (including uploaded avatars)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
+// Test database connection on startup (async, non-blocking)
+prisma.$connect()
+  .then(() => {
+    console.log('✅ Database connected successfully');
+  })
+  .catch((err) => {
+    console.error('❌ DATABASE CONNECTION FAILED:', err.message);
+    console.error('Error code:', err.code || 'N/A');
+    console.error('This will cause all API endpoints to fail!');
+    console.error('\nFIX: Run these commands:');
+    console.error('1. npx prisma generate');
+    console.error('2. npx prisma migrate resolve --rolled-back 20260104000000_add_driver_profile_fields');
+    console.error('3. npx prisma migrate resolve --applied 20260104000000_add_driver_profile_fields');
+    console.error('4. npx prisma migrate deploy');
+    console.error('5. Restart the server\n');
+  });
+
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
+  console.log('⚠️  Check above for database connection status');
 });

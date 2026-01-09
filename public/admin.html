@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Panel – SolanaGP</title>
     <link rel="stylesheet" href="/layout.css" />
 
@@ -189,6 +190,56 @@
         color: #6b7280;
         font-size: 14px;
       }
+
+      @media (max-width: 768px) {
+        .admin-container {
+          padding: 0 12px;
+        }
+
+        .admin-section {
+          padding: 16px;
+        }
+
+        .admin-btn {
+          padding: 12px 16px;
+          font-size: 14px;
+          min-height: 48px; /* Touch target */
+        }
+
+        .admin-table {
+          font-size: 12px;
+        }
+
+        .admin-table th,
+        .admin-table td {
+          padding: 8px 6px;
+        }
+
+        .admin-table th {
+          font-size: 11px;
+        }
+
+        .admin-section-title {
+          font-size: 18px;
+        }
+
+        .admin-section select,
+        .admin-section input {
+          font-size: 16px; /* Prevents zoom on iOS */
+          padding: 10px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .admin-table {
+          font-size: 11px;
+        }
+
+        .admin-table th,
+        .admin-table td {
+          padding: 6px 4px;
+        }
+      }
     </style>
   </head>
 
@@ -252,10 +303,108 @@
           </div>
 
           <!-- Users Table -->
-          <div class="admin-users-section">
+          <div class="admin-users-section" style="margin-bottom: 24px;">
             <h2 class="admin-section-title">All Users</h2>
             <div id="admin-users-content">
               <div class="admin-loading">Loading users...</div>
+            </div>
+          </div>
+
+          <!-- XP Management -->
+          <div class="admin-users-section" style="margin-bottom: 24px;">
+            <h2 class="admin-section-title">⚡ XP Management</h2>
+            <p style="font-size: 13px; color: #9ca3af; margin: 0 0 16px;">
+              Update driver XP, level, and skill tier.
+            </p>
+            <div style="display: flex; gap: 12px; align-items: flex-end; margin-bottom: 16px;">
+              <div style="flex: 1;">
+                <label for="xp-driver-select" style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">
+                  Driver
+                </label>
+                <select id="xp-driver-select" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #020617; color: #e5e7eb; font-size: 14px;">
+                  <option value="">Select a driver...</option>
+                </select>
+              </div>
+              <button id="load-xp-btn" class="admin-btn" style="padding: 8px 18px; white-space: nowrap;">
+                Load XP
+              </button>
+            </div>
+            <div id="xp-form-container" style="display: none;">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px;">
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">
+                    Total XP
+                  </label>
+                  <input type="number" id="xp-total-input" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #020617; color: #e5e7eb; font-size: 14px;" min="0" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">
+                    Level
+                  </label>
+                  <input type="number" id="xp-level-input" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #020617; color: #e5e7eb; font-size: 14px;" min="1" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">
+                    XP to Next Level
+                  </label>
+                  <input type="number" id="xp-to-next-input" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #020617; color: #e5e7eb; font-size: 14px;" min="0" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">
+                    Skill Tier
+                  </label>
+                  <select id="xp-tier-input" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #020617; color: #e5e7eb; font-size: 14px;">
+                    <option value="Beginner">Beginner</option>
+                    <option value="Club Racer">Club Racer</option>
+                    <option value="Hotlap Hero">Hotlap Hero</option>
+                    <option value="Alien">Alien</option>
+                  </select>
+                </div>
+              </div>
+              <button id="save-xp-btn" class="admin-btn" style="width: 100%;">
+                Save XP Changes
+              </button>
+              <div id="xp-status" style="margin-top: 12px; font-size: 12px; color: #9ca3af;"></div>
+            </div>
+          </div>
+
+          <!-- Deletion Requests -->
+          <div class="admin-users-section" style="margin-bottom: 24px;">
+            <h2 class="admin-section-title">🗑️ Account Deletion Requests</h2>
+            <p style="font-size: 13px; color: #9ca3af; margin: 0 0 16px;">
+              Review and manage account deletion requests from users.
+            </p>
+            <div id="deletion-requests-list">
+              <div class="admin-loading">Loading deletion requests...</div>
+            </div>
+          </div>
+
+          <!-- Calendar Management -->
+          <div class="admin-users-section" style="margin-bottom: 24px;">
+            <h2 class="admin-section-title">📅 Calendar Management</h2>
+            <p style="font-size: 13px; color: #9ca3af; margin: 0 0 16px;">
+              Manage calendar events for the season hub. Events will appear on the calendar widget.
+            </p>
+            <div style="margin-bottom: 16px;">
+              <button id="new-calendar-event-btn" class="admin-btn" style="margin-bottom: 16px;">
+                + Create New Event
+              </button>
+            </div>
+            <div id="calendar-events-list">
+              <div class="admin-loading">Loading calendar events...</div>
+            </div>
+          </div>
+
+          <!-- Achievements Management -->
+          <div class="admin-users-section">
+            <h2 class="admin-section-title">🏆 Achievements Management</h2>
+            <div style="margin-bottom: 16px;">
+              <button id="new-achievement-btn" class="admin-btn" style="margin-bottom: 16px;">
+                + Create New Achievement
+              </button>
+            </div>
+            <div id="achievements-list">
+              <div class="admin-loading">Loading achievements...</div>
             </div>
           </div>
         </div>
@@ -326,8 +475,8 @@
           if (!token) return;
 
           try {
-            // Load stats, users, drivers, and featured driver in parallel
-            const [statsRes, usersRes, driversRes, featuredRes] = await Promise.all([
+            // Load stats, users, drivers, featured driver, and deletion requests in parallel
+            const [statsRes, usersRes, driversRes, featuredRes, deletionRequestsRes] = await Promise.all([
               fetch('/api/admin/stats', {
                 headers: { Authorization: 'Bearer ' + token },
               }),
@@ -336,6 +485,9 @@
               }),
               fetch('/api/drivers'),
               fetch('/api/featured-driver'),
+              fetch('/api/admin/deletion-requests', {
+                headers: { Authorization: 'Bearer ' + token },
+              }),
             ]);
 
             if (!statsRes.ok || !usersRes.ok) {
@@ -348,15 +500,281 @@
             const usersData = await usersRes.json();
             const drivers = await driversRes.json().catch(() => []);
             const featured = await featuredRes.json().catch(() => ({ driverKey: '' }));
+            const deletionRequests = deletionRequestsRes.ok ? await deletionRequestsRes.json().catch(() => []) : [];
 
             renderStats(stats.stats);
             renderUsers(usersData.users);
             renderFeaturedDriverSelect(drivers, featured.driverKey || '');
+            renderXPDriverSelect(drivers);
+            renderDeletionRequests(deletionRequests);
+            loadCalendarEvents();
+            loadAchievements();
           } catch (err) {
             console.error(err);
             showStatus('error', 'Error loading admin data.');
           }
         }
+
+        function renderXPDriverSelect(drivers) {
+          const select = document.getElementById('xp-driver-select');
+          if (!select) return;
+
+          if (!drivers || drivers.length === 0) {
+            select.innerHTML = '<option value="">No drivers found</option>';
+            return;
+          }
+
+          select.innerHTML = '<option value="">Select a driver...</option>';
+          drivers.forEach((driver) => {
+            const option = document.createElement('option');
+            option.value = driver.key || driver.driverKey;
+            option.textContent = `#${driver.number || ''} ${driver.name || driver.displayName || driver.key}`;
+            select.appendChild(option);
+          });
+        }
+
+        async function loadXP() {
+          const driverKey = document.getElementById('xp-driver-select').value;
+          if (!driverKey) {
+            showStatus('error', 'Please select a driver.');
+            return;
+          }
+
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            const res = await fetch('/api/stats?driver=' + encodeURIComponent(driverKey), {
+              headers: { Authorization: 'Bearer ' + token },
+            });
+
+            if (!res.ok) {
+              showStatus('error', 'Failed to load driver XP.');
+              return;
+            }
+
+            const stats = await res.json();
+            document.getElementById('xp-total-input').value = stats.xpTotal || 0;
+            document.getElementById('xp-level-input').value = stats.xpLevel || 1;
+            document.getElementById('xp-to-next-input').value = stats.xpToNext || 500;
+            document.getElementById('xp-tier-input').value = stats.skillTier || 'Beginner';
+            document.getElementById('xp-form-container').style.display = 'block';
+            document.getElementById('xp-status').textContent = `Loaded XP for ${stats.name || driverKey}`;
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error loading XP.');
+          }
+        }
+
+        async function saveXP() {
+          const driverKey = document.getElementById('xp-driver-select').value;
+          if (!driverKey) {
+            showStatus('error', 'Please select a driver.');
+            return;
+          }
+
+          const token = getToken();
+          if (!token) return;
+
+          const xpData = {
+            xpTotal: parseInt(document.getElementById('xp-total-input').value) || 0,
+            xpLevel: parseInt(document.getElementById('xp-level-input').value) || 1,
+            xpToNext: parseInt(document.getElementById('xp-to-next-input').value) || 500,
+            skillTier: document.getElementById('xp-tier-input').value || 'Beginner',
+          };
+
+          try {
+            const res = await fetch('/api/admin/driver/' + encodeURIComponent(driverKey) + '/xp', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify(xpData),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              showStatus('error', data.message || 'Failed to update XP.');
+              return;
+            }
+
+            document.getElementById('xp-status').textContent = 'XP updated successfully!';
+            showStatus('info', 'XP updated successfully.');
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error updating XP.');
+          }
+        }
+
+        async function loadAchievements() {
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            const res = await fetch('/api/admin/achievements', {
+              headers: { Authorization: 'Bearer ' + token },
+            });
+
+            if (!res.ok) {
+              document.getElementById('achievements-list').innerHTML = '<div class="admin-empty">Failed to load achievements.</div>';
+              return;
+            }
+
+            const achievements = await res.json();
+            renderAchievements(achievements);
+          } catch (err) {
+            console.error(err);
+            document.getElementById('achievements-list').innerHTML = '<div class="admin-empty">Error loading achievements.</div>';
+          }
+        }
+
+        function renderAchievements(achievements) {
+          const listEl = document.getElementById('achievements-list');
+          if (!listEl) return;
+
+          if (!achievements || achievements.length === 0) {
+            listEl.innerHTML = '<div class="admin-empty">No achievements found. Create one to get started!</div>';
+            return;
+          }
+
+          const templates = achievements.filter(a => !a.driverId);
+          const unlocked = achievements.filter(a => a.driverId);
+
+          let html = '';
+
+          if (templates.length > 0) {
+            html += '<h3 style="font-size: 14px; font-weight: 600; margin: 0 0 12px; color: #e5e7eb;">Achievement Templates</h3>';
+            html += '<div style="display: grid; gap: 12px; margin-bottom: 24px;">';
+            templates.forEach(ach => {
+              html += renderAchievementItem(ach, true);
+            });
+            html += '</div>';
+          }
+
+          if (unlocked.length > 0) {
+            html += '<h3 style="font-size: 14px; font-weight: 600; margin: 0 0 12px; color: #e5e7eb;">Unlocked Achievements</h3>';
+            html += '<div style="display: grid; gap: 12px;">';
+            unlocked.forEach(ach => {
+              html += renderAchievementItem(ach, false);
+            });
+            html += '</div>';
+          }
+
+          listEl.innerHTML = html;
+        }
+
+        function renderAchievementItem(ach, isTemplate) {
+          const icon = ach.icon || '🏆';
+          const rarityColors = {
+            Common: '#9ca3af',
+            Rare: '#60a5fa',
+            Epic: '#a78bfa',
+            Legendary: '#fbbf24',
+          };
+          const rarityColor = rarityColors[ach.rarity] || '#9ca3af';
+
+          return `
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 16px; border-radius: 12px; border: 1px solid #1f2937; display: flex; align-items: center; gap: 16px;">
+              <div style="font-size: 32px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border-radius: 12px; flex-shrink: 0;">
+                ${icon}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <div style="font-weight: 600; font-size: 14px; color: #e5e7eb;">${escapeHtml(ach.name)}</div>
+                  <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(${ach.rarity === 'Legendary' ? '251, 191, 36' : ach.rarity === 'Epic' ? '139, 92, 246' : ach.rarity === 'Rare' ? '59, 130, 246' : '156, 163, 175'}, 0.2); color: ${rarityColor}; font-weight: 600; text-transform: uppercase;">
+                    ${ach.rarity}
+                  </span>
+                </div>
+                <div style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">${escapeHtml(ach.description)}</div>
+                <div style="font-size: 11px; color: #6b7280;">
+                  ${ach.xpReward > 0 ? `+${ach.xpReward} XP` : 'No XP reward'} • ${ach.category || 'Uncategorized'}
+                  ${!isTemplate && ach.driver ? ` • Unlocked by: ${escapeHtml(ach.driver.displayName || ach.driver.driverKey)}` : ''}
+                  ${!isTemplate && ach.unlockedAt ? ` • ${formatDate(ach.unlockedAt)}` : ''}
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                ${isTemplate ? `
+                  <button onclick="editAchievement(${ach.id})" class="admin-btn" style="padding: 6px 12px; font-size: 12px;">Edit</button>
+                  <button onclick="deleteAchievement(${ach.id})" class="admin-btn" style="padding: 6px 12px; font-size: 12px; background: #ef4444;">Delete</button>
+                ` : `
+                  <button onclick="awardAchievement(${ach.id})" class="admin-btn" style="padding: 6px 12px; font-size: 12px;">Award to Driver</button>
+                `}
+              </div>
+            </div>
+          `;
+        }
+
+        window.editAchievement = function(id) {
+          // TODO: Implement edit modal
+          alert('Edit achievement functionality coming soon!');
+        };
+
+        window.deleteAchievement = async function(id) {
+          if (!confirm('Are you sure you want to delete this achievement?')) return;
+
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            const res = await fetch('/api/admin/achievements/' + id, {
+              method: 'DELETE',
+              headers: { Authorization: 'Bearer ' + token },
+            });
+
+            if (!res.ok) {
+              const data = await res.json();
+              showStatus('error', data.message || 'Failed to delete achievement.');
+              return;
+            }
+
+            showStatus('info', 'Achievement deleted successfully.');
+            loadAchievements();
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error deleting achievement.');
+          }
+        };
+
+        window.awardAchievement = async function(achievementId) {
+          const driverKey = prompt('Enter driver key to award this achievement to:');
+          if (!driverKey) return;
+
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            const res = await fetch('/api/admin/achievements/' + achievementId + '/award', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({ driverKey }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              showStatus('error', data.message || 'Failed to award achievement.');
+              return;
+            }
+
+            showStatus('info', 'Achievement awarded successfully!');
+            loadAchievements();
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error awarding achievement.');
+          }
+        };
+
+        document.getElementById('load-xp-btn')?.addEventListener('click', loadXP);
+        document.getElementById('save-xp-btn')?.addEventListener('click', saveXP);
+        document.getElementById('new-achievement-btn')?.addEventListener('click', () => {
+          // TODO: Implement create achievement modal
+          alert('Create achievement functionality coming soon! Use the API directly for now.');
+        });
 
         function renderFeaturedDriverSelect(drivers, currentFeatured) {
           const select = document.getElementById('featured-driver-select');
@@ -390,6 +808,10 @@
               <div class="admin-stat-value">${stats.totalUsers || 0}</div>
             </div>
             <div class="admin-stat-card">
+              <div class="admin-stat-label">Verified Emails</div>
+              <div class="admin-stat-value">${stats.verifiedEmails || 0}</div>
+            </div>
+            <div class="admin-stat-card">
               <div class="admin-stat-label">Admins</div>
               <div class="admin-stat-value">${stats.totalAdmins || 0}</div>
             </div>
@@ -419,6 +841,8 @@
                 <tr>
                   <th>ID</th>
                   <th>Username</th>
+                  <th>Email</th>
+                  <th>Verified</th>
                   <th>Role</th>
                   <th>Driver Profile</th>
                   <th>Created</th>
@@ -432,6 +856,16 @@
                   <tr>
                     <td>${user.id}</td>
                     <td>${escapeHtml(user.username)}</td>
+                    <td>${user.email ? escapeHtml(user.email) : '<span style="color: #6b7280;">—</span>'}</td>
+                    <td>
+                      ${
+                        user.email
+                          ? user.emailVerified
+                            ? '<span class="admin-badge" style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3);">✓ Verified</span>'
+                            : '<span class="admin-badge" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);">✗ Unverified</span>'
+                          : '<span style="color: #6b7280;">—</span>'
+                      }
+                    </td>
                     <td>
                       <span class="admin-badge ${user.isAdmin ? 'admin' : 'user'}">
                         ${user.isAdmin ? 'Admin' : 'User'}
@@ -590,27 +1024,450 @@ Driver Profile:
 
             if (!res.ok) {
               if (statusEl) {
-                statusEl.textContent = data.message || 'Failed to save featured driver.';
+                statusEl.textContent = data.message || 'Failed to save Featured Driver.';
                 statusEl.style.color = '#fca5a5';
               }
               return;
             }
 
             if (statusEl) {
-              statusEl.textContent = '✓ Featured driver updated successfully!';
+                statusEl.textContent = '✓ Featured Driver updated successfully!';
               statusEl.style.color = '#22c55e';
             }
             
-            showStatus('info', 'Featured driver updated successfully.');
+            showStatus('info', 'Featured Driver updated successfully.');
+
+            // Dispatch event to notify home page to refresh featured driver
+            window.dispatchEvent(new CustomEvent('sgp:featured-driver-updated', {
+              detail: { driverKey: select.value }
+            }));
           } catch (err) {
             console.error(err);
             if (statusEl) {
-              statusEl.textContent = 'Error saving featured driver.';
+              statusEl.textContent = 'Error saving Featured Driver.';
               statusEl.style.color = '#fca5a5';
             }
-            showStatus('error', 'Error saving featured driver.');
+            showStatus('error', 'Error saving Featured Driver.');
           }
         }
+
+        // Render deletion requests
+        function renderDeletionRequests(requests) {
+          const container = document.getElementById('deletion-requests-list');
+          if (!container) return;
+
+          if (!requests || requests.length === 0) {
+            container.innerHTML = '<div style="color: #9ca3af; font-size: 13px;">No pending deletion requests.</div>';
+            return;
+          }
+
+          const pendingRequests = requests.filter(r => r.status === 'pending');
+          const processedRequests = requests.filter(r => r.status !== 'pending');
+
+          let html = '';
+
+          if (pendingRequests.length > 0) {
+            html += '<div style="margin-bottom: 24px;"><h3 style="font-size: 14px; color: #fbbf24; margin-bottom: 12px;">Pending Requests</h3>';
+            pendingRequests.forEach(req => {
+              html += renderDeletionRequestItem(req, true);
+            });
+            html += '</div>';
+          }
+
+          if (processedRequests.length > 0) {
+            html += '<div><h3 style="font-size: 14px; color: #9ca3af; margin-bottom: 12px;">Processed Requests</h3>';
+            processedRequests.forEach(req => {
+              html += renderDeletionRequestItem(req, false);
+            });
+            html += '</div>';
+          }
+
+          container.innerHTML = html;
+        }
+
+        function renderDeletionRequestItem(req, isPending) {
+          const user = req.user;
+          const statusColors = {
+            pending: '#fbbf24',
+            approved: '#22c55e',
+            denied: '#fca5a5',
+          };
+          const statusLabels = {
+            pending: 'Pending',
+            approved: 'Approved',
+            denied: 'Denied',
+          };
+
+          let html = `
+            <div style="background: #020617; border: 1px solid #111827; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <div>
+                  <div style="font-weight: 600; color: #e5e7eb; margin-bottom: 4px;">
+                    ${user.username} ${user.email ? `(${user.email})` : ''}
+                  </div>
+                  ${user.driver ? `<div style="font-size: 12px; color: #9ca3af;">Driver: ${user.driver.displayName} (${user.driver.driverKey})</div>` : ''}
+                  <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">
+                    Requested: ${new Date(req.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                <span style="padding: 4px 8px; border-radius: 4px; background: ${statusColors[req.status]}20; color: ${statusColors[req.status]}; font-size: 11px; font-weight: 600;">
+                  ${statusLabels[req.status]}
+                </span>
+              </div>
+              ${req.reason ? `<div style="font-size: 12px; color: #9ca3af; margin-top: 8px; padding: 8px; background: #0a0f1a; border-radius: 4px;"><strong>Reason:</strong> ${req.reason}</div>` : ''}
+              ${req.reviewedAt ? `<div style="font-size: 11px; color: #6b7280; margin-top: 8px;">Reviewed: ${new Date(req.reviewedAt).toLocaleString()}</div>` : ''}
+              ${req.notes ? `<div style="font-size: 12px; color: #9ca3af; margin-top: 8px; padding: 8px; background: #0a0f1a; border-radius: 4px;"><strong>Admin Notes:</strong> ${req.notes}</div>` : ''}
+          `;
+
+          if (isPending) {
+            html += `
+              <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button onclick="approveDeletionRequest(${req.id})" class="admin-btn" style="flex: 1; background: #dc2626; color: #fff;">
+                  Approve & Delete
+                </button>
+                <button onclick="denyDeletionRequest(${req.id})" class="admin-btn" style="flex: 1; background: #374151; color: #e5e7eb;">
+                  Deny
+                </button>
+              </div>
+            `;
+          }
+
+          html += '</div>';
+          return html;
+        }
+
+        async function approveDeletionRequest(requestId) {
+          if (!confirm('Are you sure you want to approve this deletion request? This will permanently delete the user account and all associated data. This action cannot be undone.')) {
+            return;
+          }
+
+          const token = getToken();
+          if (!token) return;
+
+          const notes = prompt('Add admin notes (optional):');
+          if (notes === null) return; // User cancelled
+
+          try {
+            const res = await fetch(`/api/admin/deletion-requests/${requestId}/approve`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({ notes: notes || null }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              showStatus('error', data.message || 'Failed to approve deletion request.');
+              return;
+            }
+
+            showStatus('info', 'Account deleted successfully.');
+            setTimeout(() => {
+              loadAdminData();
+            }, 1000);
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error approving deletion request.');
+          }
+        }
+
+        async function denyDeletionRequest(requestId) {
+          const notes = prompt('Add admin notes (optional):');
+          if (notes === null) return; // User cancelled
+
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            const res = await fetch(`/api/admin/deletion-requests/${requestId}/deny`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({ notes: notes || null }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              showStatus('error', data.message || 'Failed to deny deletion request.');
+              return;
+            }
+
+            showStatus('info', 'Deletion request denied.');
+            setTimeout(() => {
+              loadAdminData();
+            }, 1000);
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error denying deletion request.');
+          }
+        }
+
+        // -------- Calendar Management --------
+        async function loadCalendarEvents() {
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            const res = await fetch('/api/admin/calendar', {
+              headers: { Authorization: 'Bearer ' + token },
+            });
+
+            if (!res.ok) {
+              showStatus('error', 'Failed to load calendar events.');
+              return;
+            }
+
+            const events = await res.json();
+            renderCalendarEvents(events);
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error loading calendar events.');
+          }
+        }
+
+        function renderCalendarEvents(events) {
+          const container = document.getElementById('calendar-events-list');
+          if (!container) return;
+
+          if (!events || events.length === 0) {
+            container.innerHTML = '<div style="color: #9ca3af; font-size: 13px;">No calendar events. Create one to get started.</div>';
+            return;
+          }
+
+          // Sort by date
+          events.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+
+          let html = '';
+          events.forEach(event => {
+            const eventDate = new Date(event.eventDate);
+            const dateStr = eventDate.toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit'
+            });
+            
+            const statusColors = {
+              scheduled: '#22c55e',
+              completed: '#3b82f6',
+              cancelled: '#ef4444',
+              postponed: '#f59e0b',
+            };
+
+            html += `
+              <div style="background: #020617; border: 1px solid #111827; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #e5e7eb; margin-bottom: 4px;">${escapeHtml(event.title)}</div>
+                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 4px;">${dateStr}</div>
+                    ${event.description ? `<div style="font-size: 12px; color: #6b7280; margin-top: 4px;">${escapeHtml(event.description)}</div>` : ''}
+                    ${event.track ? `<div style="font-size: 11px; color: #6b7280; margin-top: 4px;">📍 ${escapeHtml(event.track)}${event.carClass ? ' • ' + escapeHtml(event.carClass) : ''}</div>` : ''}
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: start;">
+                    <span style="padding: 4px 8px; border-radius: 4px; background: ${statusColors[event.status] || '#9ca3af'}20; color: ${statusColors[event.status] || '#9ca3af'}; font-size: 11px; font-weight: 600; text-transform: capitalize;">
+                      ${event.status}
+                    </span>
+                    <span style="padding: 4px 8px; border-radius: 4px; background: ${event.isActive ? '#22c55e20' : '#6b728020'}; color: ${event.isActive ? '#22c55e' : '#6b7280'}; font-size: 11px;">
+                      ${event.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                  <button onclick="editCalendarEvent(${event.id})" class="admin-btn" style="flex: 1; padding: 6px 12px; font-size: 12px;">
+                    Edit
+                  </button>
+                  <button onclick="deleteCalendarEvent(${event.id})" class="admin-btn" style="flex: 1; padding: 6px 12px; font-size: 12px; background: #dc2626; color: #fff;">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            `;
+          });
+
+          container.innerHTML = html;
+        }
+
+        function editCalendarEvent(eventId) {
+          const token = getToken();
+          if (!token) return;
+
+          // Load event details and show edit modal
+          fetch(`/api/admin/calendar`, {
+            headers: { Authorization: 'Bearer ' + token },
+          })
+            .then(res => res.json())
+            .then(events => {
+              const event = events.find(e => e.id === eventId);
+              if (!event) {
+                showStatus('error', 'Event not found.');
+                return;
+              }
+
+              showCalendarEventModal(event);
+            })
+            .catch(err => {
+              console.error(err);
+              showStatus('error', 'Error loading event.');
+            });
+        }
+
+        function deleteCalendarEvent(eventId) {
+          if (!confirm('Are you sure you want to delete this calendar event?')) {
+            return;
+          }
+
+          const token = getToken();
+          if (!token) return;
+
+          fetch(`/api/admin/calendar/${eventId}`, {
+            method: 'DELETE',
+            headers: { Authorization: 'Bearer ' + token },
+          })
+            .then(async res => {
+              const data = await res.json();
+              if (res.ok) {
+                showStatus('info', 'Calendar event deleted.');
+                loadCalendarEvents();
+              } else {
+                showStatus('error', data.message || 'Failed to delete event.');
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              showStatus('error', 'Error deleting event.');
+            });
+        }
+
+        function showCalendarEventModal(event = null) {
+          const isEdit = !!event;
+          const eventDate = event ? new Date(event.eventDate) : new Date();
+          const dateStr = eventDate.toISOString().slice(0, 16); // Format for datetime-local input
+
+          const modal = document.createElement('div');
+          modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+          
+          modal.innerHTML = `
+            <div style="background: #020617; border-radius: 16px; padding: 24px; max-width: 500px; width: 90%; border: 1px solid #111827; max-height: 90vh; overflow-y: auto;">
+              <h2 style="margin: 0 0 16px; color: #e5e7eb;">${isEdit ? 'Edit' : 'Create'} Calendar Event</h2>
+              <form id="calendar-event-form" style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">Title *</label>
+                  <input type="text" id="event-title" required style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #0a0f1a; color: #e5e7eb; font-size: 14px;" value="${event ? escapeHtml(event.title) : ''}" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">Description</label>
+                  <textarea id="event-description" rows="3" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #0a0f1a; color: #e5e7eb; font-size: 14px; resize: vertical;">${event ? escapeHtml(event.description || '') : ''}</textarea>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">Date & Time *</label>
+                  <input type="datetime-local" id="event-date" required style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #0a0f1a; color: #e5e7eb; font-size: 14px;" value="${dateStr}" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">Event Type</label>
+                  <select id="event-type" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #0a0f1a; color: #e5e7eb; font-size: 14px;">
+                    <option value="race" ${event && event.eventType === 'race' ? 'selected' : ''}>Race</option>
+                    <option value="practice" ${event && event.eventType === 'practice' ? 'selected' : ''}>Practice</option>
+                    <option value="qualifier" ${event && event.eventType === 'qualifier' ? 'selected' : ''}>Qualifier</option>
+                    <option value="special" ${event && event.eventType === 'special' ? 'selected' : ''}>Special Event</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">Track</label>
+                  <input type="text" id="event-track" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #0a0f1a; color: #e5e7eb; font-size: 14px;" value="${event ? escapeHtml(event.track || '') : ''}" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">Car Class</label>
+                  <input type="text" id="event-car-class" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #0a0f1a; color: #e5e7eb; font-size: 14px;" value="${event ? escapeHtml(event.carClass || '') : ''}" />
+                </div>
+                <div>
+                  <label style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">Status</label>
+                  <select id="event-status" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #0a0f1a; color: #e5e7eb; font-size: 14px;">
+                    <option value="scheduled" ${event && event.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
+                    <option value="completed" ${event && event.status === 'completed' ? 'selected' : ''}>Completed</option>
+                    <option value="cancelled" ${event && event.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                    <option value="postponed" ${event && event.status === 'postponed' ? 'selected' : ''}>Postponed</option>
+                  </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="event-active" ${event && event.isActive !== false ? 'checked' : ''} style="width: 16px; height: 16px;" />
+                  <label for="event-active" style="font-size: 13px; color: #e5e7eb; margin: 0;">Active (visible on calendar)</label>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                  <button type="submit" class="admin-btn" style="flex: 1;">${isEdit ? 'Update' : 'Create'} Event</button>
+                  <button type="button" onclick="this.closest('div[style*=\"position: fixed\"]').remove()" class="admin-btn" style="flex: 1; background: #374151; color: #e5e7eb;">Cancel</button>
+                </div>
+              </form>
+            </div>
+          `;
+
+          document.body.appendChild(modal);
+
+          const form = document.getElementById('calendar-event-form');
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = getToken();
+            if (!token) return;
+
+            const data = {
+              title: document.getElementById('event-title').value.trim(),
+              description: document.getElementById('event-description').value.trim() || null,
+              eventDate: document.getElementById('event-date').value,
+              eventType: document.getElementById('event-type').value,
+              track: document.getElementById('event-track').value.trim() || null,
+              carClass: document.getElementById('event-car-class').value.trim() || null,
+              status: document.getElementById('event-status').value,
+              isActive: document.getElementById('event-active').checked,
+            };
+
+            try {
+              const url = isEdit ? `/api/admin/calendar/${event.id}` : '/api/admin/calendar';
+              const method = isEdit ? 'PUT' : 'POST';
+              
+              const res = await fetch(url, {
+                method,
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: 'Bearer ' + token,
+                },
+                body: JSON.stringify(data),
+              });
+
+              const result = await res.json();
+
+              if (!res.ok) {
+                showStatus('error', result.message || 'Failed to save event.');
+                return;
+              }
+
+              showStatus('info', result.message || 'Event saved successfully.');
+              modal.remove();
+              loadCalendarEvents();
+            } catch (err) {
+              console.error(err);
+              showStatus('error', 'Error saving event.');
+            }
+          });
+
+          // Close on background click
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              modal.remove();
+            }
+          });
+        }
+
+        // Make functions globally accessible
+        window.approveDeletionRequest = approveDeletionRequest;
+        window.denyDeletionRequest = denyDeletionRequest;
+        window.editCalendarEvent = editCalendarEvent;
+        window.deleteCalendarEvent = deleteCalendarEvent;
 
         // Check admin access on page load
         checkAdminAccess();
@@ -621,6 +1478,11 @@ Driver Profile:
           if (saveBtn) {
             saveBtn.addEventListener('click', saveFeaturedDriver);
           }
+          
+          // Load calendar events
+          document.getElementById('new-calendar-event-btn')?.addEventListener('click', () => {
+            showCalendarEventModal();
+          });
         });
       })();
     </script>

@@ -114,10 +114,40 @@
 
   // Apply customizations to a card element
   window.applyCardCustomization = function(cardElement, customization, stats) {
-    if (!cardElement || !customization) return;
+    if (!cardElement || !customization) {
+      if (!cardElement) console.warn('[Card Customization] No cardElement provided');
+      if (!customization) console.warn('[Card Customization] No customization provided');
+      return;
+    }
+    
+    console.log('[Card Customization] Starting - Element:', cardElement.className || cardElement.tagName, 'Has children:', cardElement.children.length);
+    
+    console.log('[Card Customization] Applying to element:', cardElement.className, 'Customization keys:', Object.keys(customization));
 
-    const frame = cardElement.querySelector('.nft-frame') || cardElement;
-    const inner = cardElement.querySelector('.nft-inner') || frame.querySelector('.nft-inner');
+    // Support driver profile card, drivers page card, and featured driver card
+    // Try multiple selectors to find the frame element
+    let frame = cardElement.querySelector('.nft-frame') || 
+                cardElement.querySelector('.driver-card-frame') ||
+                cardElement.querySelector('.home-feature-frame');
+    
+    // If cardElement itself is a frame, use it
+    if (!frame && (cardElement.classList.contains('nft-frame') || 
+                   cardElement.classList.contains('driver-card-frame') ||
+                   cardElement.classList.contains('home-feature-frame'))) {
+      frame = cardElement;
+    }
+    
+    // Fallback: use cardElement if no frame found
+    if (!frame) {
+      frame = cardElement;
+    }
+    
+    const inner = cardElement.querySelector('.nft-inner') || 
+                  cardElement.querySelector('.driver-card-inner') ||
+                  cardElement.querySelector('.home-feature-inner') ||
+                  frame.querySelector('.nft-inner') ||
+                  frame.querySelector('.driver-card-inner') ||
+                  frame.querySelector('.home-feature-inner');
     
     if (!frame) return;
 
@@ -162,6 +192,8 @@
     } else {
       frame.style.animation = `${animClass} 4s ease-in-out infinite`;
     }
+    
+    console.log('[Card Customization] Frame styles applied - padding:', frame.style.padding, 'background:', frame.style.background ? 'YES' : 'NO', 'frame element:', frame.className);
 
     // Add effect classes
     if (custom.enableShimmer) {
@@ -181,25 +213,82 @@
       inner.style.cssText += '; ' + getBackgroundStyle(custom);
     }
 
-    // Apply text colors
-    const nameEl = cardElement.querySelector('.driver-name');
+    // Apply text colors - support driver profile, featured driver, and drivers page class names
+    // Search in both cardElement and frame to handle different structures
+    const searchIn = [cardElement, frame].filter(Boolean);
+    
+    let nameEl = null;
+    for (const container of searchIn) {
+      nameEl = container.querySelector('.driver-name') || 
+               container.querySelector('.driver-card-name') ||
+               container.querySelector('.home-feature-name');
+      if (nameEl) break;
+    }
     if (nameEl && stats) {
-      nameEl.style.cssText = getNameStyle(custom);
+      const nameStyle = getNameStyle(custom);
+      nameEl.style.cssText = nameStyle;
+      console.log('[Card Customization] Name style applied to:', nameEl.className, 'Style preview:', nameStyle.substring(0, 50));
+    } else {
+      if (!nameEl) console.warn('[Card Customization] Name element not found. Searched containers:', searchIn.length);
+      if (!stats) console.warn('[Card Customization] Stats not provided');
     }
 
-    const teamEl = cardElement.querySelector('.driver-team');
+    let teamEl = null;
+    for (const container of searchIn) {
+      teamEl = container.querySelector('.driver-team') ||
+               container.querySelector('.driver-card-team') ||
+               container.querySelector('.home-feature-team');
+      if (teamEl) break;
+    }
     if (teamEl) {
       teamEl.style.color = custom.teamColor || defaultCustomization.teamColor;
     }
 
-    const carEl = cardElement.querySelector('.driver-car');
+    let carEl = null;
+    for (const container of searchIn) {
+      carEl = container.querySelector('.driver-car') ||
+              container.querySelector('.driver-card-car') ||
+              container.querySelector('.home-feature-car');
+      if (carEl) break;
+    }
     if (carEl) {
       carEl.style.color = custom.carColor || defaultCustomization.carColor;
     }
 
-    const statsEl = cardElement.querySelector('.driver-stats');
+    let statsEl = null;
+    for (const container of searchIn) {
+      statsEl = container.querySelector('.driver-stats') ||
+                container.querySelector('.driver-card-stats');
+      if (statsEl) break;
+    }
     if (statsEl) {
       statsEl.style.color = custom.statsColor || defaultCustomization.statsColor;
+    }
+
+    // Handle particles effect
+    if (custom.enableParticles && inner) {
+      let particlesContainer = inner.querySelector('.particles');
+      if (!particlesContainer) {
+        particlesContainer = document.createElement('div');
+        particlesContainer.className = 'particles';
+        inner.insertBefore(particlesContainer, inner.firstChild);
+        
+        // Create particles
+        for (let i = 0; i < 15; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          particle.style.left = Math.random() * 100 + '%';
+          particle.style.animationDelay = Math.random() * 10 + 's';
+          particle.style.animationDuration = (5 + Math.random() * 10) + 's';
+          particlesContainer.appendChild(particle);
+        }
+      }
+    } else if (inner) {
+      // Remove particles if disabled
+      const particlesContainer = inner.querySelector('.particles');
+      if (particlesContainer) {
+        particlesContainer.remove();
+      }
     }
   };
 })();

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Email – SolanaGP</title>
+    <link rel="stylesheet" href="/layout.css" />
+    <style>
+      .verify-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .verify-card {
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid #111827;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.6);
+        text-align: center;
+      }
+
+      .verify-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+      }
+
+      .verify-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0 0 12px;
+        color: #e5e7eb;
+      }
+
+      .verify-message {
+        color: #9ca3af;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 24px;
+      }
+
+      .verify-status {
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      .verify-status.success {
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: #bbf7d0;
+      }
+
+      .verify-status.error {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+      }
+
+      .verify-status.loading {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #93c5fd;
+      }
+
+      .verify-btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        border: none;
+        background: #22c55e;
+        color: #020617;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      .verify-btn:hover {
+        box-shadow: 0 12px 24px rgba(34, 197, 94, 0.4);
+        transform: translateY(-2px);
+      }
+
+      .verify-btn:disabled {
+        background: #374151;
+        color: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .verify-link {
+        color: #38bdf8;
+        text-decoration: none;
+        margin-top: 16px;
+        display: inline-block;
+      }
+
+      .verify-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sgp-shell">
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
+        </div>
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
+      </header>
+
+      <main class="sgp-main">
+        <div class="verify-container">
+          <div class="verify-card">
+            <div class="verify-icon" id="verify-icon">📧</div>
+            <h1 class="verify-title" id="verify-title">Verifying Email...</h1>
+            <div class="verify-message" id="verify-message">
+              Please wait while we verify your email address.
+            </div>
+            <div class="verify-status loading" id="verify-status" style="display: none;">
+              Verifying...
+            </div>
+            <div id="verify-actions" style="display: none;">
+              <a href="/" class="verify-link">Go to Home</a>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="sgp-footer">
+        Solana Grand Prix
+      </footer>
+    </div>
+
+    <script src="/global-user.js"></script>
+    <script>
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const statusEl = document.getElementById('verify-status');
+        const iconEl = document.getElementById('verify-icon');
+        const titleEl = document.getElementById('verify-title');
+        const messageEl = document.getElementById('verify-message');
+        const actionsEl = document.getElementById('verify-actions');
+
+        async function verifyEmail() {
+          if (!token) {
+            showError('No verification token provided.');
+            return;
+          }
+
+          statusEl.style.display = 'block';
+          statusEl.className = 'verify-status loading';
+          statusEl.textContent = 'Verifying email address...';
+
+          try {
+            const res = await fetch('/api/verify-email?token=' + encodeURIComponent(token));
+            const data = await res.json();
+
+            if (!res.ok) {
+              throw new Error(data.message || 'Verification failed');
+            }
+
+            // Success
+            iconEl.textContent = '✅';
+            titleEl.textContent = 'Email Verified!';
+            messageEl.textContent = 'Your email address has been successfully verified. You can now use all features of your account.';
+            statusEl.className = 'verify-status success';
+            statusEl.textContent = data.message || 'Email verified successfully!';
+            actionsEl.style.display = 'block';
+
+            // Trigger user update event
+            window.dispatchEvent(new Event('sgp:driver-updated'));
+          } catch (err) {
+            showError(err.message || 'Failed to verify email. Please try again.');
+          }
+        }
+
+        function showError(message) {
+          iconEl.textContent = '❌';
+          titleEl.textContent = 'Verification Failed';
+          messageEl.textContent = message;
+          statusEl.className = 'verify-status error';
+          statusEl.textContent = message;
+          statusEl.style.display = 'block';
+          actionsEl.style.display = 'block';
+        }
+
+        // Auto-verify on page load
+        verifyEmail();
+      })();
+    </script>
+  </body>
+</html>

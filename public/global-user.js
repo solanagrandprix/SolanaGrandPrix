@@ -82,6 +82,11 @@
             role="menuitem"
           >Account</a>
 
+          <a class="sgp-usermenu-item" href="/connections"
+            style="display:block;padding:10px 10px;border-radius:10px;color:#e5e7eb;text-decoration:none;"
+            role="menuitem"
+          >Connections</a>
+
           <button
             type="button"
             id="sgp-logout"

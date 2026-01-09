@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solana Grand Prix – Home</title>
 
     <!-- Shared header/footer + background -->
@@ -122,6 +123,8 @@
         padding: 18px 20px;
         box-shadow: 0 0 30px rgba(15, 23, 42, 0.9);
         border: 1px solid #1f2937;
+        max-width: 420px; /* Increased by 50% from 280px */
+        margin: 0 auto; /* Center it */
       }
 
       .home-feature-label {
@@ -132,87 +135,122 @@
 
       .home-feature-frame {
         position: relative;
-        padding: 3px;
+        padding: 2px;
         border-radius: 18px;
-        background: linear-gradient(135deg, #22c55e, #06b6d4, #a855f7);
-        box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
-        animation: frameGlow 7s ease-in-out infinite;
+        background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
+        box-shadow: 0 0 26px rgba(0, 0, 0, 0.8);
+        animation: glowPulse 4s ease-in-out infinite;
         cursor: pointer;
       }
 
-      @keyframes frameGlow {
+      @keyframes glowPulse {
         0%,
         100% {
-          box-shadow: 0 0 22px rgba(34, 197, 94, 0.7);
+          box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
         }
         50% {
-          box-shadow: 0 0 30px rgba(129, 140, 248, 0.95);
+          box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
         }
       }
 
       .home-feature-inner {
         border-radius: 16px;
-        background: radial-gradient(circle at top left, #111827, #020617 70%);
-        padding: 14px 16px;
+        background: #0b1120;
+        padding: 16px 18px;
+      }
+
+      .home-feature-header {
         display: flex;
-        gap: 12px;
+        gap: 14px;
         align-items: center;
+        margin-bottom: 12px;
       }
 
       .home-feature-avatar {
-        width: 72px;
-        height: 72px;
+        width: 80px;
+        height: 80px;
         border-radius: 16px;
         object-fit: cover;
         background: #020617;
+        flex-shrink: 0;
       }
 
       .home-feature-text {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
+        min-width: 0;
+        flex: 1;
       }
 
       .home-feature-name {
-        font-size: 16px;
+        font-size: 18px; /* Increased by 50% from 14px */
         font-weight: 700;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #e5e7eb;
       }
 
       .home-feature-team {
-        font-size: 13px;
+        font-size: 13px; /* Increased by 50% from 11px (rounded) */
         color: #9ca3af;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .home-feature-car {
-        font-size: 12px;
+        font-size: 12px; /* Increased by 50% from 10px (rounded) */
         color: #a5b4fc;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .home-feature-footer {
-        font-size: 11px;
+        font-size: 11px; /* Increased by 50% from 9px (rounded) */
         color: #9ca3af;
-        margin-top: 6px;
+        margin-top: 6px; /* Increased from 4px */
+        line-height: 1.3;
+      }
+
+      .home-feature-stats {
+        font-size: 12px;
+        color: #e5e7eb;
+        line-height: 1.6;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(31, 41, 55, 0.5);
+      }
+
+      .home-feature-stats b {
+        color: #9ca3af;
+        font-weight: 600;
       }
 
       /* Free Agent pills (if not already in layout.css) */
       .home-free-agent-row {
         display: flex;
         align-items: center;
-        gap: 6px;
-        margin-top: 4px;
-        font-size: 12px;
+        gap: 6px; /* Increased by 50% from 4px */
+        margin-top: 4px; /* Increased from 3px */
+        font-size: 12px; /* Increased by 50% from 10px (rounded) */
         color: #9ca3af;
+        flex-wrap: wrap;
       }
       .home-free-agent-label {
         color: #9ca3af;
+        font-size: 11px; /* Increased by 50% from 9px (rounded) */
       }
       .home-free-agent-pill {
-        padding: 2px 8px;
+        padding: 2px 8px; /* Increased from 2px 6px */
         border-radius: 999px;
         border: 1px solid #1f2937;
         background: rgba(15, 23, 42, 0.7);
         color: #e5e7eb;
-        font-size: 11px;
+        font-size: 11px; /* Increased by 50% from 9px (rounded) */
       }
       .home-free-agent-pill.home-active {
         border-color: rgba(34, 197, 94, 0.7);
@@ -475,6 +513,38 @@
           grid-template-columns: minmax(0, 1fr);
         }
       }
+
+      @media (max-width: 480px) {
+        .home-title {
+          font-size: 32px;
+        }
+
+        .home-sub {
+          font-size: 14px;
+        }
+
+        .home-buttons {
+          flex-direction: column;
+        }
+
+        .home-btn {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .home-stats-strip {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        .home-stat-value {
+          font-size: 20px;
+        }
+
+        .home-feature-card {
+          max-width: 100%;
+        }
+      }
     </style>
   </head>
 
@@ -491,8 +561,8 @@
           <nav class="sgp-nav">
             <a href="/" class="sgp-nav-link active">Home</a>
             <a href="/tracker" class="sgp-nav-link">Drivers</a>
-            <a href="/season" class="sgp-nav-link">Season hub</a>
-            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/season" class="sgp-nav-link">Season Hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card Builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
             <a href="/auth" class="sgp-nav-link">Account</a>
           </nav>
@@ -526,37 +596,41 @@
                 View Season 1 hub
               </a>
               <a href="/card-builder" class="home-btn home-btn-secondary">
-                Driver cards
+                Card Builder
               </a>
             </div>
           </div>
 
           <aside class="home-feature-card">
-            <div class="home-feature-label">Featured driver</div>
+            <div class="home-feature-label">Featured Driver</div>
 
-            <!-- clickable frame -->
             <div class="home-feature-frame" id="featured-link" role="button" tabindex="0">
               <div class="home-feature-inner">
-                <img
-                  id="featured-avatar"
-                  src="/images/riley.png"
-                  class="home-feature-avatar"
-                  alt="Featured driver"
-                />
-                <div class="home-feature-text">
-                  <div id="featured-name" class="home-feature-name">#93 Lemon</div>
-                  <div id="featured-team" class="home-feature-team">SolanaGP</div>
-                  <div id="featured-car" class="home-feature-car">Mazda MX-5 Cup</div>
+                <div class="home-feature-header">
+                  <img
+                    id="featured-avatar"
+                    src="/images/riley.png"
+                    class="home-feature-avatar"
+                    alt="Featured driver"
+                  />
+                  <div class="home-feature-text">
+                    <div id="featured-name" class="home-feature-name">#93 Lemon</div>
+                    <div id="featured-team" class="home-feature-team">SolanaGP</div>
+                    <div id="featured-car" class="home-feature-car">Mazda MX-5 Cup</div>
 
-                  <div class="home-free-agent-row">
-                    <span class="home-free-agent-label">Free Agent:</span>
-                    <span id="featured-fa-yes" class="home-free-agent-pill home-active">Yes</span>
-                    <span id="featured-fa-no" class="home-free-agent-pill">No</span>
+                    <div class="home-free-agent-row">
+                      <span class="home-free-agent-label">Free Agent:</span>
+                      <span id="featured-fa-yes" class="home-free-agent-pill home-active">Yes</span>
+                      <span id="featured-fa-no" class="home-free-agent-pill">No</span>
+                    </div>
                   </div>
-
-                  <div class="home-feature-footer">
-                    Open Drivers to see full stats &amp; iRating history.
-                  </div>
+                </div>
+                <div id="featured-stats" class="home-feature-stats" style="display: none;">
+                  <b>iRating:</b> <span id="featured-irating">0</span><br>
+                  <b>License:</b> <span id="featured-license">Rookie</span><br>
+                  <b>Starts:</b> <span id="featured-starts">0</span><br>
+                  <span id="featured-wins" style="display: none;"></span>
+                  <span id="featured-podiums" style="display: none;"></span>
                 </div>
               </div>
             </div>
@@ -572,7 +646,7 @@
           </div>
           <div class="home-stat-card">
             <div class="home-stat-label">Drivers</div>
-            <div class="home-stat-value">1+</div>
+            <div class="home-stat-value" id="driver-count">—</div>
             <div class="home-stat-sub">Ready to scale</div>
           </div>
           <div class="home-stat-card">
@@ -597,11 +671,11 @@
                 See iRating, license, starts and recent results for every SolanaGP driver. Deep-dive
                 on dedicated profile pages with graphs and history.
               </p>
-              <a href="/tracker">Open drivers ↗</a>
+              <a href="/tracker">Open Drivers ↗</a>
             </div>
 
             <div class="home-tile">
-              <h3>Season hub</h3>
+              <h3>Season Hub</h3>
               <p>
                 Follow the full calendar, results, standings and storylines for each season. Perfect
                 for race broadcasts, recap threads and league docs.
@@ -615,7 +689,7 @@
                 Generate animated driver cards with rarity frames, export high-res PNGs and drop
                 them on Solana. Use them for overlays, merch or NFT drops.
               </p>
-              <a href="/card-builder">Launch card builder ↗</a>
+              <a href="/card-builder">Launch Card Builder ↗</a>
             </div>
           </div>
         </section>
@@ -625,7 +699,7 @@
           <!-- Upcoming -->
           <article class="home-card">
             <div class="home-card-header">
-              <div class="home-card-title">Next event</div>
+              <div class="home-card-title">Next Event</div>
               <span class="home-pill">TBD</span>
             </div>
 
@@ -731,7 +805,8 @@
           if (!linkEl || !driverKey) return;
 
           function go() {
-            window.location.href = '/driver/' + encodeURIComponent(driverKey);
+            // Navigate to drivers page
+            window.location.href = '/tracker';
           }
 
           linkEl.onclick = go;
@@ -745,22 +820,25 @@
 
         async function refreshFeaturedDriver() {
           try {
-            // Get featured driver from API
-            var featuredRes = await fetch('/api/featured-driver');
+            // Get featured driver from API (no cache to ensure fresh data)
+            var featuredRes = await fetch('/api/featured-driver', { cache: 'no-store' });
             if (!featuredRes.ok) {
-              // Fallback to default if API fails
               return;
             }
 
             var featuredData = await featuredRes.json();
             var driverKey = (featuredData.driverKey || 'lemon').toLowerCase();
-            if (!driverKey) return;
+            if (!driverKey) {
+              return;
+            }
 
             wireFeaturedLink(driverKey);
 
-            // Pull featured driver profile
-            var statsRes = await fetch('/api/stats?driver=' + encodeURIComponent(driverKey));
-            if (!statsRes.ok) return;
+            // Pull featured driver profile (no cache to ensure fresh data)
+            var statsRes = await fetch('/api/stats?driver=' + encodeURIComponent(driverKey), { cache: 'no-store' });
+            if (!statsRes.ok) {
+              return;
+            }
 
             var stats = await statsRes.json();
 
@@ -768,39 +846,140 @@
             var nameEl = document.getElementById('featured-name');
             var teamEl = document.getElementById('featured-team');
             var carEl = document.getElementById('featured-car');
+            var featuredCardEl = document.getElementById('featured-link');
 
-            if (avatarEl && stats.avatar) avatarEl.src = stats.avatar;
-            if (avatarEl && stats.name) avatarEl.alt = stats.name + ' avatar';
+            // Update avatar
+            if (avatarEl) {
+              if (stats.avatar) {
+                avatarEl.src = stats.avatar;
+              }
+              if (stats.name) {
+                avatarEl.alt = stats.name + ' avatar';
+              }
+            }
 
-            var number = typeof stats.number !== 'undefined' ? stats.number : '';
+            // Update text fields - EXACT match to driver profile page structure
+            var number = typeof stats.number !== 'undefined' && stats.number !== null && stats.number !== 0 ? stats.number : '';
             var display = stats.name || stats.displayName || 'Driver';
 
-            if (nameEl) nameEl.textContent = '#' + number + ' ' + display;
-            if (teamEl) teamEl.textContent = stats.team || 'Privateer';
-            if (carEl) carEl.textContent = stats.primaryCar || 'Mazda MX-5 Cup';
+            if (nameEl) {
+              nameEl.textContent = (number ? '#' + number + ' ' : '') + display;
+            }
+            if (teamEl) {
+              // Match profile page exactly - show empty string if no team
+              teamEl.textContent = stats.team || '';
+            }
+            if (carEl) {
+              carEl.textContent = stats.primaryCar || 'Mazda MX-5 Cup';
+            }
 
+            // Update Free Agent status
             setFreeAgentUI(!!stats.freeAgent);
 
+            // Update stats section (matching card builder preview)
+            var statsEl = document.getElementById('featured-stats');
+            var iratingEl = document.getElementById('featured-irating');
+            var licenseEl = document.getElementById('featured-license');
+            var startsEl = document.getElementById('featured-starts');
+            var winsEl = document.getElementById('featured-wins');
+            var podiumsEl = document.getElementById('featured-podiums');
+
+            if (statsEl && iratingEl && licenseEl && startsEl) {
+              statsEl.style.display = 'block';
+              iratingEl.textContent = (stats.irating ?? 0).toLocaleString();
+              licenseEl.textContent = stats.license || 'Rookie';
+              startsEl.textContent = (stats.starts ?? 0).toLocaleString();
+
+              // Show wins and podiums if available (matching card builder format exactly)
+              if (winsEl && stats.wins !== undefined) {
+                winsEl.style.display = '';
+                winsEl.innerHTML = `<b>Wins:</b> ${stats.wins} &nbsp;&nbsp;`;
+              } else if (winsEl) {
+                winsEl.style.display = 'none';
+              }
+
+              if (podiumsEl && stats.podiums !== undefined) {
+                podiumsEl.style.display = '';
+                podiumsEl.innerHTML = `<b>Podiums:</b> ${stats.podiums}`;
+              } else if (podiumsEl) {
+                podiumsEl.style.display = 'none';
+              }
+            }
+
             // Apply card customizations if available
-            if (stats.cardCustomization && window.applyCardCustomization) {
-              const featuredCardEl = document.getElementById('featured-link');
-              if (featuredCardEl) {
-                setTimeout(() => {
-                  window.applyCardCustomization(featuredCardEl, stats.cardCustomization, stats);
-                }, 100);
+            if (featuredCardEl) {
+              // Clear any existing customizations first
+              featuredCardEl.style.cssText = '';
+              const innerEl = featuredCardEl.querySelector('.home-feature-inner');
+              if (innerEl) {
+                innerEl.style.cssText = '';
+              }
+              
+              // Apply new customizations
+              if (stats.cardCustomization && typeof window.applyCardCustomization === 'function') {
+                try {
+                  let customization = typeof stats.cardCustomization === 'string' 
+                    ? JSON.parse(stats.cardCustomization) 
+                    : stats.cardCustomization;
+                  
+                  if (customization && typeof customization === 'object' && Object.keys(customization).length > 0) {
+                    // Use a small delay to ensure DOM is ready
+                    setTimeout(() => {
+                      window.applyCardCustomization(featuredCardEl, customization, stats);
+                    }, 50);
+                  }
+                } catch (customErr) {
+                  console.error('Error applying card customization:', customErr);
+                }
               }
             }
           } catch (err) {
-            console.error(err);
+            console.error('Error refreshing featured driver:', err);
+          }
+        }
+
+        // Load driver count
+        async function loadDriverCount() {
+          try {
+            const res = await fetch('/api/driver-count');
+            if (!res.ok) return;
+            
+            const data = await res.json();
+            const countEl = document.getElementById('driver-count');
+            if (countEl && data.count !== undefined) {
+              countEl.textContent = data.count + '+';
+            }
+          } catch (err) {
+            console.error('Error loading driver count:', err);
           }
         }
 
         // initial load
         refreshFeaturedDriver();
+        loadDriverCount();
 
         // update live after save on profile page
         window.addEventListener('sgp:driver-updated', function () {
           refreshFeaturedDriver();
+          loadDriverCount(); // Refresh count when driver updates
+        });
+
+        // Listen for featured driver changes from admin panel
+        window.addEventListener('sgp:featured-driver-updated', function () {
+          refreshFeaturedDriver();
+        });
+
+        // Periodically refresh featured driver to catch any changes (every 30 seconds)
+        setInterval(function() {
+          refreshFeaturedDriver();
+        }, 30000);
+        
+        // Also listen for driver count updates from drivers page
+        window.addEventListener('sgp:driver-count-updated', function (e) {
+          const countEl = document.getElementById('driver-count');
+          if (countEl && e.detail && e.detail.count !== undefined) {
+            countEl.textContent = e.detail.count + '+';
+          }
         });
       })();
     </script>

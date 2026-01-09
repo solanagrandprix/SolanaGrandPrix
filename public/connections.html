@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connections – SolanaGP</title>
+
+    <!-- Shared global layout -->
+    <link rel="stylesheet" href="/layout.css" />
+
+    <style>
+      .connections-container {
+        width: 1100px;
+        max-width: 100%;
+        padding: 0 16px;
+      }
+
+      .connections-header {
+        margin-bottom: 24px;
+      }
+
+      .connections-header h1 {
+        margin: 0 0 4px;
+        font-size: 32px;
+      }
+
+      .connections-subtitle {
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .connections-panel {
+        background: #020617;
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        border: 1px solid #111827;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        overflow: hidden;
+        width: 100%;
+        max-width: 100%;
+      }
+
+      #connections-form {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      .connections-panel h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .connections-panel p {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: #9ca3af;
+        line-height: 1.5;
+      }
+
+      .connection-field {
+        margin-bottom: 20px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .connection-field label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+
+      .connection-field input {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #1f2937;
+        background: #0b1120;
+        color: #e5e7eb;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s ease;
+        box-sizing: border-box;
+        margin: 0;
+        display: block;
+      }
+
+      .connection-field input:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+      }
+
+      .connection-field input::placeholder {
+        color: #4b5563;
+      }
+
+      .connection-icon {
+        font-size: 16px;
+        margin-right: 4px;
+      }
+
+      .connection-help {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+
+      .save-btn {
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 10px;
+        border: none;
+        background: #22c55e;
+        color: #020617;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 8px;
+      }
+
+      .save-btn:hover {
+        background: #16a34a;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+      }
+
+      .save-btn:active {
+        transform: translateY(0);
+      }
+
+      .save-btn:disabled {
+        background: #374151;
+        color: #9ca3af;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .status-message {
+        margin-top: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        display: none;
+      }
+
+      .status-message.success {
+        background: rgba(34, 197, 94, 0.15);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: #bbf7d0;
+        display: block;
+      }
+
+      .status-message.error {
+        background: rgba(239, 68, 68, 0.15);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+        display: block;
+      }
+
+      .status-message.info {
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        color: #93c5fd;
+        display: block;
+      }
+
+      .connection-info-box {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 20px;
+      }
+
+      .connection-info-box h3 {
+        margin: 0 0 8px;
+        font-size: 14px;
+        color: #93c5fd;
+      }
+
+      .connection-info-box p {
+        margin: 0;
+        font-size: 12px;
+        color: #9ca3af;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 768px) {
+        .connections-container {
+          padding: 0 12px;
+        }
+
+        .connections-header h1 {
+          font-size: 28px;
+        }
+
+        .connections-panel {
+          padding: 16px;
+        }
+
+        .connection-field input {
+          font-size: 16px; /* Prevents zoom on iOS */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- Global header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
+        </div>
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
+      </header>
+
+      <!-- Page content -->
+      <main class="sgp-main">
+        <div class="connections-container">
+          <div class="connections-header">
+            <h1>🔗 Account Connections</h1>
+            <div class="connections-subtitle">
+              Link your Discord, iRacing, and Twitter accounts to connect with the league
+            </div>
+          </div>
+
+          <div class="connection-info-box">
+            <h3>ℹ️ About Connections</h3>
+            <p>
+              Connect your accounts to enable integration with the private iRacing league API. 
+              Your iRacing username will be used to sync race data and statistics automatically.
+            </p>
+          </div>
+
+          <div class="connections-panel">
+            <h2>📱 Social & Platform Connections</h2>
+            <p>
+              Link your accounts below. These connections help identify you across platforms and 
+              enable automatic data synchronization with the league.
+            </p>
+
+            <form id="connections-form" style="width: 100%; max-width: 100%; box-sizing: border-box;">
+              <div class="connection-field">
+                <label for="discord">
+                  <span class="connection-icon">💬</span>
+                  Discord Username
+                </label>
+                <input
+                  type="text"
+                  id="discord"
+                  name="discord"
+                  placeholder="username#1234 or username"
+                  autocomplete="off"
+                />
+                <div class="connection-help">
+                  Your Discord username (with or without discriminator)
+                </div>
+              </div>
+
+              <div class="connection-field">
+                <label for="iracing">
+                  <span class="connection-icon">🏁</span>
+                  iRacing Username
+                </label>
+                <input
+                  type="text"
+                  id="iracing"
+                  name="iracing"
+                  placeholder="Your iRacing username"
+                  autocomplete="off"
+                />
+                <div class="connection-help">
+                  Your iRacing username or customer ID. This is used to connect with the private league API.
+                  <strong style="color: #fbbf24; display: block; margin-top: 4px;">
+                    🔒 This information is private and will never be displayed on your public profile.
+                  </strong>
+                </div>
+              </div>
+
+              <div class="connection-field">
+                <label for="twitter">
+                  <span class="connection-icon">🐦</span>
+                  Twitter/X Username
+                </label>
+                <input
+                  type="text"
+                  id="twitter"
+                  name="twitter"
+                  placeholder="@username or username"
+                  autocomplete="off"
+                />
+                <div class="connection-help">
+                  Your Twitter/X username (with or without @)
+                </div>
+              </div>
+
+              <div class="connection-field">
+                <label for="solana-wallet">
+                  <span class="connection-icon">💎</span>
+                  Solana Wallet
+                </label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input
+                    type="text"
+                    id="solana-wallet"
+                    name="solanaWallet"
+                    placeholder="Connect your Solana wallet"
+                    autocomplete="off"
+                    readonly
+                    style="flex: 1;"
+                  />
+                  <button
+                    type="button"
+                    id="connect-wallet-btn"
+                    style="padding: 10px 16px; border-radius: 8px; border: 1px solid #22c55e; background: rgba(34, 197, 94, 0.1); color: #22c55e; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;"
+                  >
+                    Connect Wallet
+                  </button>
+                  <button
+                    type="button"
+                    id="disconnect-wallet-btn"
+                    style="display: none; padding: 10px 16px; border-radius: 8px; border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.1); color: #ef4444; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.2s ease;"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+                <div class="connection-help">
+                  Connect your Solana wallet (Phantom, Solflare, etc.) to link it to your account
+                </div>
+              </div>
+
+              <button type="submit" class="save-btn" id="save-btn">
+                Save Connections
+              </button>
+
+              <div id="status-message" class="status-message" role="alert"></div>
+            </form>
+          </div>
+        </div>
+      </main>
+
+      <!-- Global footer -->
+      <footer class="sgp-footer">
+        Solana Grand Prix
+      </footer>
+    </div>
+
+    <script src="/global-user.js"></script>
+    <!-- Solana Web3.js for wallet connection -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+
+    <script>
+      (function () {
+        const form = document.getElementById('connections-form');
+        const saveBtn = document.getElementById('save-btn');
+        const statusEl = document.getElementById('status-message');
+        const connectWalletBtn = document.getElementById('connect-wallet-btn');
+        const disconnectWalletBtn = document.getElementById('disconnect-wallet-btn');
+        const walletInput = document.getElementById('solana-wallet');
+        
+        let connectedWallet = null;
+
+        function getToken() {
+          return localStorage.getItem('sgp_token');
+        }
+
+        function showStatus(message, type) {
+          if (!statusEl) return;
+          statusEl.textContent = message;
+          statusEl.className = 'status-message ' + (type || 'info');
+        }
+
+        function hideStatus() {
+          if (statusEl) {
+            statusEl.className = 'status-message';
+            statusEl.textContent = '';
+          }
+        }
+
+        async function loadConnections() {
+          const token = getToken();
+          if (!token) {
+            showStatus('Please log in to view your connections.', 'error');
+            // Redirect to login after a moment
+            setTimeout(() => {
+              window.location.href = '/auth';
+            }, 2000);
+            return;
+          }
+
+          try {
+            const res = await fetch('/api/me', {
+              headers: { Authorization: 'Bearer ' + token },
+            });
+
+            if (!res.ok) {
+              throw new Error('Failed to load profile');
+            }
+
+            const data = await res.json();
+            const driver = data.user?.driver;
+
+            if (driver) {
+              // Fill form fields
+              const discordInput = document.getElementById('discord');
+              const iracingInput = document.getElementById('iracing');
+              const twitterInput = document.getElementById('twitter');
+
+            if (discordInput) discordInput.value = driver.discord || '';
+            if (iracingInput) iracingInput.value = driver.iracing || '';
+            if (twitterInput) twitterInput.value = driver.twitter || '';
+            
+            // Load Solana wallet if connected
+            if (driver.solanaWallet) {
+              walletInput.value = driver.solanaWallet;
+              connectedWallet = driver.solanaWallet;
+              updateWalletUI(true);
+            }
+            }
+          } catch (err) {
+            console.error('Error loading connections:', err);
+            showStatus('Error loading connections. Please refresh the page.', 'error');
+          }
+        }
+
+        async function saveConnections() {
+          const token = getToken();
+          if (!token) {
+            showStatus('Please log in to save connections.', 'error');
+            return;
+          }
+
+          const discord = document.getElementById('discord')?.value.trim() || '';
+          const iracing = document.getElementById('iracing')?.value.trim() || '';
+          const twitter = document.getElementById('twitter')?.value.trim() || '';
+          const solanaWallet = walletInput?.value.trim() || '';
+
+          // Remove @ from twitter if present
+          const cleanTwitter = twitter.replace(/^@/, '');
+
+          if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+          }
+
+          hideStatus();
+
+          try {
+            const res = await fetch('/api/driver/connections', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({
+                discord: discord || null,
+                iracing: iracing || null,
+                twitter: cleanTwitter || null,
+                solanaWallet: solanaWallet || null,
+              }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              throw new Error(data.message || 'Failed to save connections');
+            }
+
+            showStatus('Connections saved successfully!', 'success');
+            
+            // Dispatch event to update header if needed
+            window.dispatchEvent(new Event('sgp:driver-updated'));
+          } catch (err) {
+            console.error('Error saving connections:', err);
+            showStatus(err.message || 'Error saving connections. Please try again.', 'error');
+          } finally {
+            if (saveBtn) {
+              saveBtn.disabled = false;
+              saveBtn.textContent = 'Save Connections';
+            }
+          }
+        }
+
+        if (form) {
+          form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            saveConnections();
+          });
+        }
+
+        // Solana wallet connection functions
+        function updateWalletUI(isConnected) {
+          if (isConnected && connectedWallet) {
+            walletInput.value = connectedWallet;
+            walletInput.style.borderColor = '#22c55e';
+            connectWalletBtn.style.display = 'none';
+            disconnectWalletBtn.style.display = 'block';
+          } else {
+            walletInput.value = '';
+            walletInput.style.borderColor = '#1f2937';
+            connectWalletBtn.style.display = 'block';
+            disconnectWalletBtn.style.display = 'none';
+            connectedWallet = null;
+          }
+        }
+
+        async function connectSolanaWallet() {
+          try {
+            // Check if Phantom or other Solana wallet is installed
+            const provider = window.solana || window.phantom?.solana;
+            
+            if (!provider || !provider.isPhantom) {
+              // Check for other wallets
+              if (window.solflare) {
+                // Solflare wallet
+                try {
+                  const response = await window.solflare.connect();
+                  if (response.publicKey) {
+                    connectedWallet = response.publicKey.toString();
+                    updateWalletUI(true);
+                    showStatus('Wallet connected successfully!', 'success');
+                    return;
+                  }
+                } catch (err) {
+                  console.error('Solflare connection error:', err);
+                }
+              }
+              
+              showStatus('Please install Phantom wallet or another Solana wallet extension.', 'error');
+              window.open('https://phantom.app/', '_blank');
+              return;
+            }
+
+            // Connect to Phantom wallet
+            const resp = await provider.connect();
+            connectedWallet = resp.publicKey.toString();
+            updateWalletUI(true);
+            showStatus('Wallet connected successfully!', 'success');
+          } catch (err) {
+            console.error('Wallet connection error:', err);
+            if (err.code === 4001) {
+              showStatus('Wallet connection was rejected.', 'error');
+            } else {
+              showStatus('Error connecting wallet. Please try again.', 'error');
+            }
+          }
+        }
+
+        function disconnectSolanaWallet() {
+          connectedWallet = null;
+          updateWalletUI(false);
+          showStatus('Wallet disconnected.', 'info');
+        }
+
+        // Event listeners for wallet buttons
+        if (connectWalletBtn) {
+          connectWalletBtn.addEventListener('click', connectSolanaWallet);
+        }
+
+        if (disconnectWalletBtn) {
+          disconnectWalletBtn.addEventListener('click', disconnectSolanaWallet);
+        }
+
+        // Check if wallet is already connected on page load
+        async function checkWalletConnection() {
+          try {
+            const provider = window.solana || window.phantom?.solana;
+            if (provider && provider.isPhantom && provider.isConnected) {
+              const publicKey = provider.publicKey;
+              if (publicKey) {
+                connectedWallet = publicKey.toString();
+                // Only auto-fill if not already set from server
+                if (!walletInput.value) {
+                  updateWalletUI(true);
+                }
+              }
+            }
+          } catch (err) {
+            // Wallet not connected or not available
+            console.log('No wallet connection found');
+          }
+        }
+
+        // Load connections on page load
+        loadConnections();
+        
+        // Check for existing wallet connection
+        setTimeout(checkWalletConnection, 500);
+      })();
+    </script>
+  </body>
+</html>

@@ -82,6 +82,59 @@
   );
   pointer-events: none;
   z-index: 10;
+}
+
+/* Particles effect */
+.particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: float 10s infinite;
+  opacity: 0.6;
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0) translateX(0); 
+    opacity: 0; 
+  }
+  10% { 
+    opacity: 0.6; 
+  }
+  90% { 
+    opacity: 0.6; 
+  }
+  100% { 
+    transform: translateY(-100vh) translateX(50px); 
+    opacity: 0; 
+  }
+}
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 10;
   border-radius: inherit;
 }
 
@@ -130,6 +183,8 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;         /* space between header and main */
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 /* new wrapper for nav + user box */
@@ -137,6 +192,7 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 /* username box */
@@ -168,6 +224,7 @@ body {
 .sgp-logo {
   font-size: 26px;
   font-weight: 800;
+  line-height: 1.2;
 }
 
 .sgp-tagline {
@@ -175,20 +232,27 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.18em;
   color: #9ca3af;
+  line-height: 1.4;
 }
 
 .sgp-nav {
   display: flex;
   gap: 18px;
+  flex-wrap: wrap;
 }
 
 .sgp-nav-link {
   font-size: 14px;
   color: #9ca3af;
   text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
 }
 
 .sgp-nav-link:hover {
+  background-color: rgba(15, 23, 42, 0.6);
   color: #ffffff;
 }
 
@@ -374,3 +438,139 @@ body {
 }
 .sgp-user-menu a:hover { background: rgba(56, 189, 248, 0.12); }
 
+/* ----------------------------------------------------------
+   RESPONSIVE DESIGN - MOBILE OPTIMIZATION
+---------------------------------------------------------- */
+
+/* Mobile: screens smaller than 768px */
+@media (max-width: 768px) {
+  .sgp-shell {
+    padding: 12px 16px 20px;
+  }
+
+  .sgp-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .sgp-header-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sgp-logo {
+    font-size: 22px;
+  }
+
+  .sgp-tagline {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+  }
+
+  .sgp-nav {
+    gap: 12px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .sgp-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sgp-nav-link {
+    font-size: 13px;
+    padding: 6px 10px;
+    min-width: fit-content;
+  }
+
+  .sgp-userbox {
+    min-width: auto;
+    text-align: left;
+    font-size: 13px;
+  }
+
+  .sgp-main {
+    padding: 16px 0 24px;
+  }
+
+  .home-main {
+    padding-top: 40px;
+    padding-bottom: 32px;
+  }
+
+  .sgp-footer {
+    font-size: 10px;
+    padding-top: 10px;
+    margin-top: 16px;
+  }
+
+  /* Ensure touch targets are at least 44x44px */
+  .sgp-nav-link,
+  .sgp-user-trigger {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sgp-user-menu {
+    right: 0;
+    left: auto;
+    min-width: 200px;
+  }
+}
+
+/* Small mobile: screens smaller than 480px */
+@media (max-width: 480px) {
+  .sgp-shell {
+    padding: 10px 12px 16px;
+  }
+
+  .sgp-logo {
+    font-size: 20px;
+  }
+
+  .sgp-tagline {
+    font-size: 9px;
+  }
+
+  .sgp-nav {
+    gap: 8px;
+  }
+
+  .sgp-nav-link {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .sgp-main {
+    padding: 12px 0 20px;
+  }
+
+  .home-main {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+}
+
+/* Tablet: screens between 769px and 1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sgp-shell {
+    padding: 14px 18px 22px;
+  }
+
+  .sgp-nav {
+    gap: 14px;
+  }
+
+  .sgp-nav-link {
+    font-size: 13px;
+  }
+}

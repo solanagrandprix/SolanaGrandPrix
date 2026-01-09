@@ -2,7 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Driver leaderboard – SolanaGP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Driver Leaderboard – SolanaGP</title>
 
     <!-- Shared layout (header, footer, background) -->
     <link rel="stylesheet" href="/layout.css" />
@@ -141,12 +142,68 @@
       }
 
       @media (max-width: 900px) {
+        .lb-container {
+          padding: 0 12px;
+        }
+
+        .lb-header h1 {
+          font-size: 32px;
+        }
+
         table.lb-table {
           font-size: 13px;
         }
         table.lb-table th,
         table.lb-table td {
           padding: 8px 10px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .lb-header h1 {
+          font-size: 28px;
+        }
+
+        table.lb-table {
+          font-size: 12px;
+        }
+
+        table.lb-table th,
+        table.lb-table td {
+          padding: 8px 6px;
+        }
+
+        .lb-avatar {
+          width: 40px;
+          height: 40px;
+        }
+
+        .lb-name {
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .lb-header h1 {
+          font-size: 24px;
+        }
+
+        table.lb-table {
+          font-size: 11px;
+        }
+
+        table.lb-table th,
+        table.lb-table td {
+          padding: 6px 4px;
+        }
+
+        .lb-driver {
+          gap: 8px;
+        }
+
+        .lb-avatar {
+          width: 35px;
+          height: 35px;
         }
       }
     </style>
@@ -179,7 +236,7 @@
       <main class="sgp-main">
         <div class="lb-container">
           <div class="lb-header">
-            <h1>Driver leaderboard</h1>
+            <h1>Driver Leaderboard</h1>
             <div class="lb-subtitle">TBA.</div>
           </div>
 

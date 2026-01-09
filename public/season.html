@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SolanaGP Season Hub</title>
 
     <!-- Shared global layout -->
@@ -10,73 +11,443 @@
     <!-- Page-specific styles -->
     <style>
       .season-container {
-        width: 1100px;
-        max-width: 100%;
-        padding: 0 16px;
+        max-width: 1400px;
+        width: 100%;
+        padding: 0 24px;
+        margin: 0 auto;
       }
 
-      .season-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 20px;
+      .season-header {
+        margin-bottom: 32px;
+      }
+
+      .season-header h1 {
+        margin: 0 0 8px;
+        font-size: 32px;
+        font-weight: 700;
+        color: #e5e7eb;
+        letter-spacing: -0.02em;
       }
 
       .season-subtitle {
         color: #9ca3af;
-        font-size: 14px;
+        font-size: 15px;
+        font-weight: 400;
       }
 
-      .season-links {
-        font-size: 14px;
-        color: #9ca3af;
-      }
-
-      .season-links a {
-        color: #38bdf8;
-        text-decoration: none;
-      }
-
-      .season-links a:hover {
-        text-decoration: underline;
-      }
-
-      .season-layout {
+      .season-content-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-        gap: 20px;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+
+      .season-main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .season-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
       }
 
       .panel {
         background: #020617;
-        border-radius: 16px;
-        padding: 16px 18px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-        margin-bottom: 16px;
-        border: 1px solid #111827;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        border: 1px solid #1f2937;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .panel:hover {
+        border-color: #374151;
+      }
+
+      .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #1f2937;
       }
 
       .panel h2 {
-        margin-top: 0;
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #e5e7eb;
+        letter-spacing: -0.01em;
+      }
+
+      .panel h3 {
+        margin: 0;
         font-size: 16px;
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+
+      /* Calendar Widget */
+      .calendar-widget {
+        background: #020617;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        border: 1px solid #1f2937;
+      }
+
+      .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #1f2937;
+      }
+
+      .calendar-header h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+
+      .calendar-nav {
+        display: flex;
+        gap: 6px;
+      }
+
+      .calendar-nav button {
+        background: #0f172a;
+        border: 1px solid #1f2937;
+        color: #e5e7eb;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+
+      .calendar-nav button:hover {
+        background: #1e293b;
+        border-color: #374151;
+      }
+
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+
+      .calendar-day-header {
+        text-align: center;
+        font-size: 11px;
+        color: #6b7280;
+        padding: 8px 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        color: #e5e7eb;
+        cursor: pointer;
+        border-radius: 6px;
+        position: relative;
+        transition: all 0.2s;
+        font-weight: 500;
+      }
+
+      .calendar-day:hover {
+        background: #0f172a;
+      }
+
+      .calendar-day.other-month {
+        color: #4b5563;
+      }
+
+      .calendar-day.today {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: #fff;
+        font-weight: 700;
+        box-shadow: 0 0 0 2px #60a5fa, 0 4px 12px rgba(59, 130, 246, 0.4);
+        transform: scale(1.08);
+      }
+
+      .calendar-day.today::before {
+        content: '';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 6px;
+        height: 6px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .calendar-day.has-event {
+        background: rgba(34, 197, 94, 0.1);
+      }
+
+      .calendar-day.has-event::after {
+        content: '';
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background: #22c55e;
+        border-radius: 50%;
+      }
+
+      .calendar-events {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #1f2937;
+      }
+
+      .calendar-event-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        background: #0a0f1a;
+        border-radius: 8px;
+        border-left: 3px solid #3b82f6;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+
+      .calendar-event-item:hover {
+        background: #0f172a;
+        border-left-color: #60a5fa;
+      }
+
+      .calendar-event-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .calendar-event-date {
+        color: #9ca3af;
+        font-size: 10px;
+        margin-bottom: 4px;
+        font-weight: 500;
+      }
+
+      .calendar-event-title {
+        color: #e5e7eb;
+        font-weight: 600;
+        margin-bottom: 2px;
+        font-size: 12px;
+      }
+
+      .calendar-event-details {
+        color: #6b7280;
+        font-size: 11px;
+      }
+
+      /* Upcoming Events Box */
+      .upcoming-events-box {
+        background: #020617;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+        border: 1px solid #1f2937;
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .upcoming-events-box h3 {
+        margin: 0 0 16px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #e5e7eb;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #1f2937;
+      }
+
+      .upcoming-event-card {
+        background: #0a0f1a;
+        border: 1px solid #1f2937;
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 12px;
+        transition: all 0.2s;
+      }
+
+      .upcoming-event-card:hover {
+        border-color: #3b82f6;
+        background: #0f172a;
+        transform: translateX(2px);
+      }
+
+      .upcoming-event-card:last-child {
+        margin-bottom: 0;
+      }
+
+      .upcoming-event-date {
+        color: #3b82f6;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+      }
+
+      .upcoming-event-time {
+        color: #9ca3af;
+        font-size: 11px;
+        margin-bottom: 10px;
+        font-weight: 500;
+      }
+
+      .upcoming-event-title {
+        color: #e5e7eb;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+
+      .upcoming-event-description {
+        color: #9ca3af;
+        font-size: 12px;
+        line-height: 1.5;
         margin-bottom: 10px;
       }
 
+      .upcoming-event-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #1f2937;
+      }
+
+      .upcoming-event-detail {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: #6b7280;
+      }
+
+      .upcoming-event-detail-icon {
+        font-size: 12px;
+      }
+
+      .upcoming-event-type {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .upcoming-event-type.race {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+
+      .upcoming-event-type.practice {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      .upcoming-event-type.qualifier {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      .upcoming-event-type.special {
+        background: rgba(168, 85, 247, 0.15);
+        color: #a855f7;
+        border: 1px solid rgba(168, 85, 247, 0.3);
+      }
+
+      .upcoming-event-status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: capitalize;
+      }
+
+      .upcoming-event-status.scheduled {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+
+      .upcoming-event-status.completed {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      .upcoming-event-status.cancelled {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      .upcoming-event-status.postponed {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      /* Tables */
       table {
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
       }
 
-      th,
-      td {
-        padding: 4px;
+      thead {
+        border-bottom: 1px solid #1f2937;
       }
 
       th {
         text-align: left;
         color: #9ca3af;
-        font-weight: 500;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 12px 8px;
+      }
+
+      td {
+        padding: 12px 8px;
+        color: #e5e7eb;
+        border-bottom: 1px solid #1f2937;
+      }
+
+      tbody tr:hover {
+        background: rgba(15, 23, 42, 0.5);
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
       }
 
       td:nth-child(3),
@@ -87,36 +458,93 @@
 
       .pill {
         display: inline-block;
-        padding: 3px 8px;
-        border-radius: 999px;
+        padding: 4px 10px;
+        border-radius: 12px;
         font-size: 11px;
-        background: #0f172a;
-        color: #e5e7eb;
+        font-weight: 600;
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.3);
       }
 
+      /* Highlights */
       ul.season-highlights {
         margin: 0;
-        padding-left: 18px;
+        padding-left: 20px;
         font-size: 14px;
         color: #e5e7eb;
+        line-height: 1.8;
+      }
+
+      ul.season-highlights li {
+        margin-bottom: 8px;
+      }
+
+      ul.season-highlights li:last-child {
+        margin-bottom: 0;
       }
 
       .season-notes {
-        font-size: 13px;
+        font-size: 14px;
         color: #9ca3af;
+        line-height: 1.6;
       }
 
-      @media (max-width: 900px) {
-        .season-layout {
-          grid-template-columns: minmax(0, 1fr);
+      /* Responsive */
+      @media (max-width: 1200px) {
+        .season-content-grid {
+          grid-template-columns: 1fr;
         }
+
+        .season-sidebar {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 24px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .season-container {
+          padding: 0 16px;
+        }
+
+        .season-header h1 {
+          font-size: 28px;
+        }
+
+        .season-sidebar {
+          grid-template-columns: 1fr;
+        }
+
+        .panel {
+          padding: 20px;
+        }
+      }
+
+      /* Scrollbar styling */
+      .upcoming-events-box::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .upcoming-events-box::-webkit-scrollbar-track {
+        background: #0a0f1a;
+        border-radius: 3px;
+      }
+
+      .upcoming-events-box::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 3px;
+      }
+
+      .upcoming-events-box::-webkit-scrollbar-thumb:hover {
+        background: #4b5563;
       }
     </style>
   </head>
 
   <body>
     <div class="sgp-shell">
-      <!-- 🔵 Global header -->
+      <!-- Global header -->
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
@@ -127,7 +555,7 @@
           <nav class="sgp-nav">
             <a href="/" class="sgp-nav-link">Home</a>
             <a href="/tracker" class="sgp-nav-link">Drivers</a>
-            <a href="/season" class="sgp-nav-link active">Season hub</a>
+            <a href="/season" class="sgp-nav-link active">Season Hub</a>
             <a href="/card-builder" class="sgp-nav-link">Card builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
             <a href="/auth" class="sgp-nav-link">Account</a>
@@ -136,27 +564,24 @@
         </div>
       </header>
 
-      <!-- 🔵 Page content -->
+      <!-- Page content -->
       <main class="sgp-main">
-
         <div class="season-container">
-          <div class="season-top">
-            <div>
-              <h1 style="margin:0;">Season 1</h1>
-              <div class="season-subtitle">Schedule • Results • Standings • Highlights</div>
-            </div>
-
-            <div class="season-links">
-              <a href="/tracker">View live driver tracker</a> •
-              <a href="/card-builder">Open card builder</a>
-            </div>
+          <!-- Header -->
+          <div class="season-header">
+            <h1>Season 1</h1>
+            <div class="season-subtitle">Schedule • Results • Standings • Highlights</div>
           </div>
 
-          <div class="season-layout">
-            <!-- Left column -->
-            <div>
+          <!-- Main Content Grid -->
+          <div class="season-content-grid">
+            <!-- Main Content -->
+            <div class="season-main-content">
+              <!-- Season Schedule -->
               <div class="panel">
-                <h2>Season Schedule</h2>
+                <div class="panel-header">
+                  <h2>Season Schedule</h2>
+                </div>
                 <table>
                   <thead>
                     <tr>
@@ -176,20 +601,11 @@
                 </table>
               </div>
 
+              <!-- Driver Standings -->
               <div class="panel">
-                <h2>Latest Highlights</h2>
-                <ul class="season-highlights">
-                  <li><b>R1 – TBD:</b></li>
-                  <li><b>R1 – TBD:</b></li>
-                  <li><b>R2 – TBD:</b></li>
-                </ul>
-              </div>
-            </div>
-
-            <!-- Right column -->
-            <div>
-              <div class="panel">
-                <h2>Driver Standings</h2>
+                <div class="panel-header">
+                  <h2>Driver Standings</h2>
+                </div>
                 <table>
                   <thead>
                     <tr>
@@ -206,22 +622,297 @@
                 </table>
               </div>
 
+              <!-- Latest Highlights -->
               <div class="panel">
-                <h2>Season Notes</h2>
-                <p class="season-notes"></p>
+                <div class="panel-header">
+                  <h2>Latest Highlights</h2>
+                </div>
+                <ul class="season-highlights">
+                  <li><b>R1 – TBD:</b> Season opener details coming soon</li>
+                  <li><b>R2 – TBD:</b> Championship battle heats up</li>
+                  <li><b>R3 – TBD:</b> Mid-season showdown</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="season-sidebar">
+              <!-- Upcoming Events -->
+              <div class="upcoming-events-box">
+                <h3>Upcoming Events</h3>
+                <div id="upcoming-events-list">
+                  <div style="color: #9ca3af; font-size: 12px; text-align: center; padding: 20px;">Loading events...</div>
+                </div>
+              </div>
+
+              <!-- Calendar Widget -->
+              <div class="calendar-widget">
+                <div class="calendar-header">
+                  <h3 id="calendar-month-year">Loading...</h3>
+                  <div class="calendar-nav">
+                    <button id="calendar-prev-month">‹</button>
+                    <button id="calendar-today">Today</button>
+                    <button id="calendar-next-month">›</button>
+                  </div>
+                </div>
+                <div id="calendar-container"></div>
+                <div class="calendar-events" id="calendar-events">
+                  <div style="color: #9ca3af; font-size: 12px; text-align: center;">Loading events...</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
       </main>
 
-      <!-- 🔵 Global footer -->
+      <!-- Global footer -->
       <footer class="sgp-footer">Solana Grand Prix</footer>
     </div>
 
 <!-- shared username/dropdown logic for ALL pages -->
 <script src="/global-user.js"></script>
+
+<script>
+  (function() {
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let calendarEvents = [];
+
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    // Get current date in EST timezone
+    function getESTDate() {
+      const now = new Date();
+      const estString = now.toLocaleString('en-US', { timeZone: 'America/New_York' });
+      return new Date(estString);
+    }
+
+    // Format date to YYYY-MM-DD in EST
+    function formatESTDate(date) {
+      const estDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+      const year = estDate.getFullYear();
+      const month = String(estDate.getMonth() + 1).padStart(2, '0');
+      const day = String(estDate.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    async function loadCalendarEvents() {
+      try {
+        const res = await fetch('/api/calendar', { cache: 'no-store' });
+        if (res.ok) {
+          calendarEvents = await res.json();
+          renderCalendar();
+          renderUpcomingEvents();
+        }
+      } catch (err) {
+        console.error('Error loading calendar events:', err);
+      }
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById('calendar-container');
+      if (!container) return;
+
+      const firstDay = new Date(currentYear, currentMonth, 1);
+      const lastDay = new Date(currentYear, currentMonth + 1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startingDayOfWeek = firstDay.getDay();
+
+      // Update month/year header
+      const monthYearEl = document.getElementById('calendar-month-year');
+      if (monthYearEl) {
+        monthYearEl.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+      }
+
+      // Get today's date in EST
+      const todayEST = getESTDate();
+      const todayESTStr = formatESTDate(todayEST);
+      const todayMonth = todayEST.getMonth();
+      const todayYear = todayEST.getFullYear();
+      const todayDay = todayEST.getDate();
+
+      let html = '<div class="calendar-grid">';
+      
+      // Day headers
+      dayNames.forEach(day => {
+        html += `<div class="calendar-day-header">${day}</div>`;
+      });
+
+      // Empty cells for days before month starts
+      for (let i = 0; i < startingDayOfWeek; i++) {
+        html += '<div class="calendar-day other-month"></div>';
+      }
+
+      // Days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(currentYear, currentMonth, day);
+        const dateStr = formatESTDate(date);
+        
+        // Check if this day has events (compare dates in EST)
+        const hasEvent = calendarEvents.some(e => {
+          const eventDateStr = formatESTDate(new Date(e.eventDate));
+          return eventDateStr === dateStr;
+        });
+        
+        // Check if this is today in EST
+        const isToday = currentMonth === todayMonth && 
+                       currentYear === todayYear && 
+                       day === todayDay;
+        
+        let classes = 'calendar-day';
+        if (isToday) classes += ' today';
+        if (hasEvent) classes += ' has-event';
+        
+        html += `<div class="${classes}" data-date="${dateStr}">${day}</div>`;
+      }
+
+      // Empty cells for days after month ends
+      const totalCells = startingDayOfWeek + daysInMonth;
+      const remainingCells = 42 - totalCells;
+      for (let i = 0; i < remainingCells && totalCells + i < 42; i++) {
+        html += '<div class="calendar-day other-month"></div>';
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function renderUpcomingEvents() {
+      const calendarContainer = document.getElementById('calendar-events');
+      const upcomingContainer = document.getElementById('upcoming-events-list');
+      
+      const nowEST = getESTDate();
+      const upcoming = calendarEvents
+        .filter(e => {
+          const eventDate = new Date(e.eventDate);
+          const eventDateEST = new Date(eventDate.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+          return eventDateEST >= nowEST;
+        })
+        .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate))
+        .slice(0, 10);
+
+      // Render simplified list for calendar widget
+      if (calendarContainer) {
+        const calendarEventsList = upcoming.slice(0, 5);
+        if (calendarEventsList.length === 0) {
+          calendarContainer.innerHTML = '<div style="color: #9ca3af; font-size: 12px; text-align: center;">No upcoming events</div>';
+        } else {
+          let html = '';
+          calendarEventsList.forEach(event => {
+            const eventDate = new Date(event.eventDate);
+            const dateStr = eventDate.toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric', 
+              year: 'numeric',
+              timeZone: 'America/New_York'
+            });
+            const timeStr = eventDate.toLocaleTimeString('en-US', { 
+              hour: 'numeric', 
+              minute: '2-digit',
+              timeZone: 'America/New_York'
+            });
+            
+            html += `
+              <div class="calendar-event-item">
+                <div class="calendar-event-date">${dateStr} at ${timeStr} EST</div>
+                <div class="calendar-event-title">${escapeHtml(event.title)}</div>
+                ${event.track ? `<div class="calendar-event-details">${escapeHtml(event.track)}${event.carClass ? ' • ' + escapeHtml(event.carClass) : ''}</div>` : ''}
+              </div>
+            `;
+          });
+          calendarContainer.innerHTML = html;
+        }
+      }
+
+      // Render detailed list for upcoming events box
+      if (upcomingContainer) {
+        if (upcoming.length === 0) {
+          upcomingContainer.innerHTML = '<div style="color: #9ca3af; font-size: 12px; text-align: center; padding: 20px;">No upcoming events scheduled</div>';
+          return;
+        }
+
+        let html = '';
+        upcoming.forEach(event => {
+          const eventDate = new Date(event.eventDate);
+          const dateStr = eventDate.toLocaleDateString('en-US', { 
+            weekday: 'short',
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            timeZone: 'America/New_York'
+          });
+          const timeStr = eventDate.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            timeZone: 'America/New_York'
+          });
+          
+          const eventTypeClass = (event.eventType || 'race').toLowerCase();
+          const statusClass = (event.status || 'scheduled').toLowerCase();
+          
+          html += `
+            <div class="upcoming-event-card">
+              <div class="upcoming-event-date">${dateStr}</div>
+              <div class="upcoming-event-time">${timeStr} EST</div>
+              <div class="upcoming-event-title">${escapeHtml(event.title)}</div>
+              ${event.description ? `<div class="upcoming-event-description">${escapeHtml(event.description)}</div>` : ''}
+              <div class="upcoming-event-details">
+                ${event.eventType ? `<span class="upcoming-event-type ${eventTypeClass}">${escapeHtml(event.eventType)}</span>` : ''}
+                ${event.status ? `<span class="upcoming-event-status ${statusClass}">${escapeHtml(event.status)}</span>` : ''}
+              </div>
+              ${event.track || event.carClass ? `
+                <div class="upcoming-event-details">
+                  ${event.track ? `<div class="upcoming-event-detail"><span class="upcoming-event-detail-icon">📍</span><span>${escapeHtml(event.track)}</span></div>` : ''}
+                  ${event.carClass ? `<div class="upcoming-event-detail"><span class="upcoming-event-detail-icon">🏎️</span><span>${escapeHtml(event.carClass)}</span></div>` : ''}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        });
+        upcomingContainer.innerHTML = html;
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function changeMonth(delta) {
+      currentMonth += delta;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      } else if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+    }
+
+    function goToToday() {
+      const todayEST = getESTDate();
+      currentMonth = todayEST.getMonth();
+      currentYear = todayEST.getFullYear();
+      renderCalendar();
+    }
+
+    // Event listeners
+    document.getElementById('calendar-prev-month')?.addEventListener('click', () => changeMonth(-1));
+    document.getElementById('calendar-next-month')?.addEventListener('click', () => changeMonth(1));
+    document.getElementById('calendar-today')?.addEventListener('click', goToToday);
+
+    // Initial load
+    loadCalendarEvents();
+    renderCalendar();
+
+    // Refresh events every 30 seconds
+    setInterval(loadCalendarEvents, 30000);
+  })();
+</script>
 
   </body>
 </html>

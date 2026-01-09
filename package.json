@@ -14,7 +14,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "iracing-api": "^0.5.2",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "nodemailer": "^6.10.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.0",
