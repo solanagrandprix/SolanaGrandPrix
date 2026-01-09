@@ -514,12 +514,33 @@ app.post('/api/login', async (req, res) => {
     console.error('Error message:', err.message);
     console.error('Error code:', err.code);
     console.error('Error meta:', err.meta);
+    console.error('Full error stack:', err.stack);
     
     // Check if it's a missing column error (migration not run)
-    if (err.message && (err.message.includes('no such column') || err.message.includes('Unknown column'))) {
+    if (err.code === 'P2022' || err.code === 'P2019' || 
+        (err.message && (err.message.includes('no such column') || 
+         err.message.includes('Unknown column') || 
+         err.message.includes('does not exist in the current database')))) {
       return res.status(500).json({
-        message: 'Database migration required. Please stop the server and run: npx prisma generate && npx prisma migrate deploy',
-        error: 'Missing database columns. The schema was updated but migrations need to be applied.',
+        message: 'Database migration required. Please run: npx prisma generate && npx prisma migrate deploy',
+        error: 'Database schema mismatch. Missing columns detected.',
+        code: err.code || 'P2022'
+      });
+    }
+    
+    // Check if it's a Prisma client not generated error
+    if (err.message && err.message.includes('PrismaClient')) {
+      return res.status(500).json({
+        message: 'Prisma client not generated. Please run: npx prisma generate',
+        error: 'Prisma client needs to be regenerated.',
+      });
+    }
+    
+    // Check if it's a database connection error
+    if (err.code === 'P1001' || err.message.includes('Can\'t reach database server')) {
+      return res.status(500).json({
+        message: 'Database connection failed. Please check DATABASE_URL environment variable.',
+        error: 'Unable to connect to database.',
       });
     }
     
@@ -527,7 +548,8 @@ app.post('/api/login', async (req, res) => {
       message: 'Server error during login.',
       ...(process.env.NODE_ENV !== 'production' && { 
         error: err.message,
-        code: err.code 
+        code: err.code,
+        hint: 'Check server console for full error details'
       })
     });
   }
@@ -2366,19 +2388,41 @@ app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Test database connection on startup (async, non-blocking)
 prisma.$connect()
-  .then(() => {
+  .then(async () => {
     console.log('✅ Database connected successfully');
+    
+    // Test if we can query User table (catches missing columns early)
+    try {
+      await prisma.user.findFirst({
+        select: { id: true, username: true, passwordHash: true, isAdmin: true, createdAt: true }
+      });
+      console.log('✅ User table is accessible');
+    } catch (testErr) {
+      console.error('⚠️  WARNING: User table query failed:', testErr.message);
+      console.error('   Error code:', testErr.code || 'N/A');
+      if (testErr.code === 'P2022' || testErr.message.includes('does not exist')) {
+        console.error('   🔧 FIX: Run "npx prisma migrate deploy" to update database schema');
+      }
+    }
   })
   .catch((err) => {
     console.error('❌ DATABASE CONNECTION FAILED:', err.message);
     console.error('Error code:', err.code || 'N/A');
     console.error('This will cause all API endpoints to fail!');
-    console.error('\nFIX: Run these commands:');
-    console.error('1. npx prisma generate');
-    console.error('2. npx prisma migrate resolve --rolled-back 20260104000000_add_driver_profile_fields');
-    console.error('3. npx prisma migrate resolve --applied 20260104000000_add_driver_profile_fields');
-    console.error('4. npx prisma migrate deploy');
-    console.error('5. Restart the server\n');
+    
+    if (err.code === 'P1001' || err.message.includes('Can\'t reach')) {
+      console.error('\n🔧 FIX: Check your DATABASE_URL environment variable');
+      console.error('   Make sure the database file exists at the specified path');
+    } else if (err.code === 'P2022' || err.message.includes('does not exist')) {
+      console.error('\n🔧 FIX: Missing database columns detected');
+      console.error('   1. npx prisma generate');
+      console.error('   2. npx prisma migrate deploy');
+    } else {
+      console.error('\n🔧 FIX: Run these commands:');
+      console.error('   1. npx prisma generate');
+      console.error('   2. npx prisma migrate deploy');
+    }
+    console.error('   3. Restart the server\n');
   });
 
 app.listen(PORT, () => {
