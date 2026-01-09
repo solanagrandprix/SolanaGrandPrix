@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Account Settings – SolanaGP</title>
+
+    <!-- Shared global layout -->
+    <link rel="stylesheet" href="/layout.css" />
+
+    <style>
+      .account-container {
+        width: 1100px;
+        max-width: 100%;
+        padding: 0 16px;
+      }
+
+      .account-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 20px;
+      }
+
+      .account-title {
+        margin: 0;
+        font-size: 28px;
+      }
+
+      .account-subtitle {
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .account-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+        gap: 20px;
+      }
+
+      .account-panel {
+        background: #020617;
+        border-radius: 16px;
+        padding: 16px 18px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        border: 1px solid #111827;
+      }
+
+      .account-panel h2 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+
+      .account-panel p {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .account-fields {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+      }
+
+      .account-field label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin-bottom: 4px;
+      }
+
+      .account-field input,
+      .account-field select,
+      .account-field textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #111827;
+        background: #020617;
+        color: #e5e7eb;
+        font-size: 14px;
+        outline: none;
+      }
+
+      .account-field textarea {
+        min-height: 70px;
+        resize: vertical;
+      }
+
+      .account-checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #e5e7eb;
+      }
+
+      .account-checkbox-row input {
+        width: 16px;
+        height: 16px;
+      }
+
+      .account-actions {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .account-save-btn {
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: none;
+        background: #22c55e;
+        color: #020617;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .account-save-btn:hover {
+        background: #16a34a;
+      }
+
+      .account-status,
+      .cred-status {
+        font-size: 12px;
+        color: #9ca3af;
+      }
+
+      .cred-status.error {
+        color: #fca5a5;
+      }
+      .cred-status.success {
+        color: #bbf7d0;
+      }
+
+      .account-summary-row {
+        font-size: 14px;
+        margin-bottom: 6px;
+      }
+
+      .account-summary-label {
+        color: #9ca3af;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        display: block;
+        margin-bottom: 2px;
+      }
+
+      .account-summary-value {
+        color: #e5e7eb;
+      }
+
+      .danger-text {
+        font-size: 12px;
+        color: #fca5a5;
+      }
+
+      .danger-btn {
+        margin-top: 10px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid #b91c1c;
+        background: transparent;
+        color: #fecaca;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .danger-btn:hover {
+        background: rgba(185, 28, 28, 0.2);
+      }
+
+      @media (max-width: 900px) {
+        .account-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- 🔵 Global header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
+        </div>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
+      </header>
+
+      <!-- 🔵 Page content -->
+      <main class="sgp-main compact-main">
+        <div class="account-container">
+          <div class="account-header">
+            <div>
+              <h1 class="account-title">Account Settings</h1>
+              <div class="account-subtitle">
+                Manage your basic profile, login details and notification preferences.
+              </div>
+            </div>
+          </div>
+
+          <div class="account-layout">
+            <!-- LEFT: Profile & preferences -->
+            <section class="account-panel">
+              <h2>Profile</h2>
+              <p>These settings are stored locally for now. Backend wiring will come later.</p>
+
+              <form id="account-form">
+                <div class="account-fields">
+                  <div class="account-field">
+                    <label>Username</label>
+                    <div id="acc-username" style="font-size:14px;font-weight:600;">—</div>
+                  </div>
+
+                  <div class="account-field">
+                    <label for="acc-email">Email</label>
+                    <input id="acc-email" type="email" placeholder="you@example.com" />
+                  </div>
+
+                  <div class="account-field">
+                    <label for="acc-timezone">Timezone</label>
+                    <select id="acc-timezone">
+                      <option value="">Select timezone…</option>
+                      <option value="UTC-8">Pacific</option>
+                      <option value="UTC-7">Mountain</option>
+                      <option value="UTC-6">Central</option>
+                      <option value="UTC-5">Eastern</option>
+                      <option value="UTC+1">Central Europe</option>
+                      <option value="UTC+9">Japan</option>
+                    </select>
+                  </div>
+
+                  <div class="account-field">
+                    <label>Notifications</label>
+                    <div class="account-checkbox-row">
+                      <input id="acc-email-notifs" type="checkbox" />
+                      <label for="acc-email-notifs" style="margin:0;font-size:13px;">
+                        Email me about new seasons and special events
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="account-actions">
+                  <button type="submit" class="account-save-btn">Save changes</button>
+                  <div id="acc-status" class="account-status"></div>
+                </div>
+              </form>
+            </section>
+
+            <!-- RIGHT: summary + security -->
+            <div>
+              <!-- Profile summary -->
+              <section class="account-panel">
+                <h2>Profile Summary</h2>
+                <div class="account-summary-row">
+                  <span class="account-summary-label">Username</span>
+                  <span id="summary-username" class="account-summary-value">—</span>
+                </div>
+                <div class="account-summary-row">
+                  <span class="account-summary-label">Email</span>
+                  <span id="summary-email" class="account-summary-value">—</span>
+                </div>
+                <div class="account-summary-row">
+                  <span class="account-summary-label">Timezone</span>
+                  <span id="summary-timezone" class="account-summary-value">—</span>
+                </div>
+              </section>
+
+              <!-- Login & Security -->
+              <section class="account-panel">
+                <h2>Login & Security</h2>
+                <p>Change your username and/or password for the demo auth system.</p>
+
+                <form id="credentials-form">
+                  <div class="account-fields">
+                    <div class="account-field">
+                      <label for="cred-current">Current password</label>
+                      <input
+                        id="cred-current"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Enter current password"
+                      />
+                    </div>
+
+                    <div class="account-field">
+                      <label for="cred-username">New username (optional)</label>
+                      <input
+                        id="cred-username"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Leave blank to keep current"
+                      />
+                    </div>
+
+                    <div class="account-field">
+                      <label for="cred-password">New password (optional)</label>
+                      <input
+                        id="cred-password"
+                        type="password"
+                        autocomplete="new-password"
+                        placeholder="Leave blank to keep current"
+                      />
+                    </div>
+
+                    <div class="account-field">
+                      <label for="cred-password-2">Confirm new password</label>
+                      <input
+                        id="cred-password-2"
+                        type="password"
+                        autocomplete="new-password"
+                        placeholder="Repeat new password"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="account-actions">
+                    <button type="submit" class="account-save-btn">
+                      Update login details
+                    </button>
+                    <div id="cred-status" class="cred-status"></div>
+                  </div>
+                </form>
+              </section>
+
+              <!-- Danger zone -->
+              <section class="account-panel">
+                <h2>Danger Zone</h2>
+                <p class="danger-text">
+                  Full account deletion will be added once a real database is wired up.
+                  For now, this only clears your local browser settings.
+                </p>
+                <button type="button" id="acc-clear-local" class="danger-btn">
+                  Clear local account data
+                </button>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 🔵 Global footer -->
+      <footer class="sgp-footer">Solana Grand Prix</footer>
+    </div>
+
+    <!-- Per-page JS -->
+    <script>
+      (function () {
+        const username = localStorage.getItem('sgp_user') || 'Guest';
+
+        const usernameEls = [
+          document.getElementById('acc-username'),
+          document.getElementById('summary-username'),
+        ];
+        usernameEls.forEach(function (el) {
+          if (el) el.textContent = username;
+        });
+
+        const emailInput = document.getElementById('acc-email');
+        const tzSelect = document.getElementById('acc-timezone');
+        const emailNotifs = document.getElementById('acc-email-notifs');
+
+        const summaryEmail = document.getElementById('summary-email');
+        const summaryTz = document.getElementById('summary-timezone');
+        const statusEl = document.getElementById('acc-status');
+        const clearBtn = document.getElementById('acc-clear-local');
+
+        const STORAGE_KEYS = {
+          email: 'sgp_account_email',
+          tz: 'sgp_account_timezone',
+          emailNotifs: 'sgp_account_email_notifs',
+        };
+
+        function loadFromLocal() {
+          if (emailInput) {
+            const v = localStorage.getItem(STORAGE_KEYS.email) || '';
+            emailInput.value = v;
+            if (summaryEmail) summaryEmail.textContent = v || '—';
+          }
+
+          if (tzSelect) {
+            const v = localStorage.getItem(STORAGE_KEYS.tz) || '';
+            tzSelect.value = v;
+            if (summaryTz) summaryTz.textContent = v || '—';
+          }
+
+          if (emailNotifs) {
+            emailNotifs.checked =
+              localStorage.getItem(STORAGE_KEYS.emailNotifs) === '1';
+          }
+        }
+
+        function saveToLocal(evt) {
+          if (evt) evt.preventDefault();
+
+          if (!emailInput || !tzSelect) return;
+
+          localStorage.setItem(STORAGE_KEYS.email, emailInput.value.trim());
+          localStorage.setItem(STORAGE_KEYS.tz, tzSelect.value);
+          localStorage.setItem(
+            STORAGE_KEYS.emailNotifs,
+            emailNotifs.checked ? '1' : '0'
+          );
+
+          if (summaryEmail)
+            summaryEmail.textContent = emailInput.value.trim() || '—';
+          if (summaryTz)
+            summaryTz.textContent = tzSelect.value || '—';
+
+          if (statusEl) {
+            statusEl.textContent = 'Saved locally ✔';
+            setTimeout(function () {
+              statusEl.textContent = '';
+            }, 1500);
+          }
+        }
+
+        function clearLocal() {
+          Object.values(STORAGE_KEYS).forEach(function (key) {
+            localStorage.removeItem(key);
+          });
+          loadFromLocal();
+          if (statusEl) statusEl.textContent = 'Local data cleared.';
+        }
+
+        const form = document.getElementById('account-form');
+        if (form) form.addEventListener('submit', saveToLocal);
+        if (clearBtn) clearBtn.addEventListener('click', clearLocal);
+
+        loadFromLocal();
+
+        // --------------------------
+        // LOGIN / SECURITY FORM
+        // --------------------------
+        const credForm = document.getElementById('credentials-form');
+        const credStatus = document.getElementById('cred-status');
+        const currentPwInput = document.getElementById('cred-current');
+        const newUserInput = document.getElementById('cred-username');
+        const newPwInput = document.getElementById('cred-password');
+        const newPw2Input = document.getElementById('cred-password-2');
+
+        function setCredStatus(msg, type) {
+          if (!credStatus) return;
+          credStatus.textContent = msg || '';
+          credStatus.classList.remove('error', 'success');
+          if (type) credStatus.classList.add(type);
+        }
+
+        async function submitCredentials(evt) {
+          if (evt) evt.preventDefault();
+          if (!credForm) return;
+
+          const currentPassword = currentPwInput.value;
+          const newUsername = newUserInput.value.trim();
+          const newPassword = newPwInput.value;
+          const newPassword2 = newPw2Input.value;
+
+          if (!currentPassword) {
+            setCredStatus('Enter your current password.', 'error');
+            return;
+          }
+
+          if (!newUsername && !newPassword) {
+            setCredStatus('Nothing to update. Add a new username or password.', 'error');
+            return;
+          }
+
+          if (newPassword && newPassword !== newPassword2) {
+            setCredStatus('New passwords do not match.', 'error');
+            return;
+          }
+
+          const token = localStorage.getItem('sgp_token');
+          if (!token) {
+            setCredStatus('You need to log in again to update credentials.', 'error');
+            return;
+          }
+
+          setCredStatus('Updating…');
+
+          try {
+            const res = await fetch('/api/account/credentials', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({
+                currentPassword,
+                newUsername: newUsername || null,
+                newPassword: newPassword || null,
+              }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+              setCredStatus(data.message || 'Update failed.', 'error');
+              return;
+            }
+
+            if (data.user && data.user.username) {
+              localStorage.setItem('sgp_user', data.user.username);
+
+              usernameEls.forEach(function (el) {
+                if (el) el.textContent = data.user.username;
+              });
+            }
+
+            currentPwInput.value = '';
+            newUserInput.value = '';
+            newPwInput.value = '';
+            newPw2Input.value = '';
+
+            setCredStatus(data.message || 'Credentials updated.', 'success');
+
+            // Easy way to sync header dropdown everywhere
+            setTimeout(function () {
+              window.location.reload();
+            }, 800);
+          } catch (err) {
+            console.error(err);
+            setCredStatus('Network error while updating credentials.', 'error');
+          }
+        }
+
+        if (credForm) {
+          credForm.addEventListener('submit', submitCredentials);
+        }
+      })();
+    </script>
+
+    <!-- Shared header user dropdown -->
+    <script src="/global-user.js"></script>
+  </body>
+</html>

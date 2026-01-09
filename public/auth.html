@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Solana Grand Prix – Account</title>
+    <link rel="stylesheet" href="/layout.css" />
+
+    <style>
+      .auth-grid {
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
+      }
+
+      .auth-card {
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid #111827;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.6);
+      }
+
+      .auth-card h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      .auth-card p {
+        margin: 0 0 12px;
+        color: #9ca3af;
+        font-size: 14px;
+      }
+
+      .auth-card label {
+        display: block;
+        font-size: 13px;
+        margin: 8px 0 4px;
+        color: #cbd5e1;
+      }
+
+      .auth-card input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #1f2937;
+        background: #020617;
+        color: #e5e7eb;
+      }
+
+      .auth-card button {
+        margin-top: 12px;
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        background: #22c55e;
+        color: #020617;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .auth-card button:hover {
+        box-shadow: 0 12px 24px rgba(34, 197, 94, 0.4);
+      }
+
+      .auth-status {
+        margin-top: 14px;
+        padding: 12px;
+        background: #0b1224;
+        border: 1px solid #1f2937;
+        border-radius: 10px;
+        color: #a5b4fc;
+        font-size: 13px;
+      }
+
+      #auth-mode-toggle button[style*="transparent"]:hover {
+        background: rgba(34, 197, 94, 0.15) !important;
+        color: #22c55e !important;
+      }
+
+      #auth-mode-toggle button:active {
+        transform: scale(0.98);
+      }
+
+      #auth-mode-toggle button {
+        transition: all 0.2s ease;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- Header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
+        </div>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link active">Account</a>
+          </nav>
+
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
+      </header>
+
+      <!-- Page content -->
+      <main class="sgp-main">
+        <h1>Account</h1>
+        <p style="color: #9ca3af; margin-top: -6px">
+          Sign in to your account or create a new one.
+        </p>
+
+        <div class="auth-grid">
+          <!-- LOG IN / SIGN UP -->
+          <div class="auth-card" style="max-width: 400px; margin: 0 auto;">
+            <div id="auth-mode-toggle" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #1f2937; padding-bottom: 12px;">
+              <button id="toggle-login" style="flex: 1; padding: 8px; border: none; background: #22c55e; color: #020617; border-radius: 8px; font-weight: 600; cursor: pointer;">Log In</button>
+              <button id="toggle-signup" style="flex: 1; padding: 8px; border: none; background: transparent; color: #9ca3af; border-radius: 8px; font-weight: 600; cursor: pointer;">Sign Up</button>
+            </div>
+
+            <div id="login-form">
+              <h2>Log In</h2>
+              <p style="margin-bottom: 20px;">Sign in to your account</p>
+
+              <label for="login-username">Username</label>
+              <input
+                id="login-username"
+                name="username"
+                autocomplete="username"
+              />
+
+              <label for="login-password">Password</label>
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+              />
+
+              <button id="login-submit">Log In</button>
+              <div
+                id="login-status"
+                class="auth-status"
+                aria-live="polite"
+              >
+                &nbsp;
+              </div>
+            </div>
+
+            <div id="signup-form" style="display: none;">
+              <h2>Create Account</h2>
+              <p style="margin-bottom: 20px;">Register a new account</p>
+
+              <label for="signup-username">Username</label>
+              <input
+                id="signup-username"
+                name="username"
+                autocomplete="username"
+              />
+
+              <label for="signup-password">Password</label>
+              <input
+                id="signup-password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+              />
+
+              <button id="signup-submit">Create Account</button>
+              <div
+                id="signup-status"
+                class="auth-status"
+                aria-live="polite"
+              >
+                &nbsp;
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="sgp-footer">
+        Solana Grand Prix
+      </footer>
+    </div>
+
+    <!-- shared username dropdown / header logic -->
+    <script src="/global-user.js"></script>
+
+    <script>
+      (function () {
+        /* ----------------------------------------
+           SMALL HELPERS
+        ---------------------------------------- */
+        function setToken(token) {
+          localStorage.setItem('sgp_token', token);
+        }
+
+        function getToken() {
+          return localStorage.getItem('sgp_token');
+        }
+
+        function updateStatus(el, message) {
+          if (!el) return;
+          el.textContent = message;
+        }
+
+        /* ----------------------------------------
+           SIGNUP / LOGIN HANDLER
+        ---------------------------------------- */
+        function handleAuth(type, evt) {
+          if (evt) evt.preventDefault();
+
+          var prefix = type === 'signup' ? 'signup' : 'login';
+          var usernameInput = document.getElementById(prefix + '-username');
+          var passwordInput = document.getElementById(prefix + '-password');
+          var statusEl = document.getElementById(prefix + '-status');
+
+          if (!usernameInput || !passwordInput || !statusEl) {
+            console.error('Auth inputs not found for', prefix);
+            return;
+          }
+
+          updateStatus(statusEl, 'Submitting…');
+
+          fetch('/api/' + type, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username: usernameInput.value,
+              password: passwordInput.value,
+            }),
+          })
+            .then(function (res) {
+              return res.json().then(function (data) {
+                return { ok: res.ok, data: data };
+              });
+            })
+            .then(function (result) {
+              if (!result.ok) {
+                updateStatus(
+                  statusEl,
+                  result.data.message || 'Request failed.'
+                );
+                return;
+              }
+
+              updateStatus(
+                statusEl,
+                result.data.message || 'Success!'
+              );
+
+              if (result.data.token) {
+                setToken(result.data.token);
+              }
+
+              if (result.data.user && result.data.user.username) {
+                localStorage.setItem('sgp_user', result.data.user.username);
+              }
+
+              // After successful signup or login, send them home
+              if (type === 'signup' || type === 'login') {
+                updateStatus(statusEl, 'Logged in! Redirecting…');
+                setTimeout(function () {
+                  window.location.href = '/';
+                }, 700);
+              }
+            })
+            .catch(function () {
+              updateStatus(statusEl, 'Network error.');
+            });
+        }
+
+        /* ----------------------------------------
+           FORM TOGGLE
+        ---------------------------------------- */
+        function switchToLogin() {
+          document.getElementById('login-form').style.display = 'block';
+          document.getElementById('signup-form').style.display = 'none';
+          document.getElementById('toggle-login').style.background = '#22c55e';
+          document.getElementById('toggle-login').style.color = '#020617';
+          document.getElementById('toggle-signup').style.background = 'transparent';
+          document.getElementById('toggle-signup').style.color = '#9ca3af';
+        }
+
+        function switchToSignup() {
+          document.getElementById('login-form').style.display = 'none';
+          document.getElementById('signup-form').style.display = 'block';
+          document.getElementById('toggle-signup').style.background = '#22c55e';
+          document.getElementById('toggle-signup').style.color = '#020617';
+          document.getElementById('toggle-login').style.background = 'transparent';
+          document.getElementById('toggle-login').style.color = '#9ca3af';
+        }
+
+        /* ----------------------------------------
+           WIRE UP BUTTONS
+        ---------------------------------------- */
+        var signupBtn = document.getElementById('signup-submit');
+        var loginBtn = document.getElementById('login-submit');
+        var toggleLoginBtn = document.getElementById('toggle-login');
+        var toggleSignupBtn = document.getElementById('toggle-signup');
+
+        if (toggleLoginBtn) {
+          toggleLoginBtn.addEventListener('click', switchToLogin);
+        }
+
+        if (toggleSignupBtn) {
+          toggleSignupBtn.addEventListener('click', switchToSignup);
+        }
+
+        if (signupBtn) {
+          signupBtn.addEventListener('click', function (evt) {
+            handleAuth('signup', evt);
+          });
+        }
+
+        if (loginBtn) {
+          loginBtn.addEventListener('click', function (evt) {
+            handleAuth('login', evt);
+          });
+        }
+
+        /* ----------------------------------------
+           ENTER KEY SUBMISSION
+        ---------------------------------------- */
+        document
+          .querySelectorAll('#login-form input, #signup-form input')
+          .forEach(function (inputEl) {
+            inputEl.addEventListener('keydown', function (evt) {
+              if (evt.key === 'Enter') {
+                var isLoginVisible = document.getElementById('login-form').style.display !== 'none';
+                var submitBtn = isLoginVisible 
+                  ? document.getElementById('login-submit')
+                  : document.getElementById('signup-submit');
+                if (submitBtn) {
+                  submitBtn.click();
+                  evt.preventDefault();
+                }
+              }
+            });
+          });
+
+        /* ----------------------------------------
+           INITIALIZE
+        ---------------------------------------- */
+        // Start with login form by default
+        switchToLogin();
+      })();
+    </script>
+  </body>
+</html>

@@ -160,14 +160,19 @@
           <div class="sgp-logo">Solana Grand Prix</div>
           <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
         </div>
-        <nav class="sgp-nav">
-          <a href="/" class="sgp-nav-link">Home</a>
-          <a href="/tracker" class="sgp-nav-link">Drivers</a>
-          <a href="/season" class="sgp-nav-link">Season hub</a>
-          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-          <!-- use .active so layout.css highlights it -->
-          <a href="/leaderboard" class="sgp-nav-link active">Leaderboard</a>
-        </nav>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <!-- use .active so layout.css highlights it -->
+            <a href="/leaderboard" class="sgp-nav-link active">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
       </header>
 
       <!-- Page content -->
@@ -175,9 +180,7 @@
         <div class="lb-container">
           <div class="lb-header">
             <h1>Driver leaderboard</h1>
-            <div class="lb-subtitle">
-              TBA.
-            </div>
+            <div class="lb-subtitle">TBA.</div>
           </div>
 
           <div class="lb-table-wrap">
@@ -203,31 +206,29 @@
       </main>
 
       <!-- Global footer (same as home page) -->
-      <footer class="sgp-footer">
-        Solana Grand Prix • IRacing automation coming soon.
-      </footer>
+      <footer class="sgp-footer">Solana Grand Prix</footer>
     </div>
 
-    <script>
-      async function loadLeaderboard() {
-        try {
-          const res = await fetch('/api/drivers');
-          const drivers = await res.json();
+<script>
+  async function loadLeaderboard() {
+    try {
+      const res = await fetch('/api/drivers');
+      const drivers = await res.json();
 
-          // sort by iRating desc
-          drivers.sort((a, b) => b.irating - a.irating);
+      // sort by iRating desc
+      drivers.sort((a, b) => b.irating - a.irating);
 
-          const tbody = document.getElementById('lb-body');
+      const tbody = document.getElementById('lb-body');
 
-          const rows = drivers
-            .map(
-              (d, index) => `
+      const rows = drivers
+        .map(
+          (d, index) => `
           <tr class="${index === 0 ? 'lb-top' : ''}">
             <td class="lb-pos">${index + 1}</td>
 
             <td>
               <div class="lb-driver">
-                <img src="${d.avatar}" alt="${d.name}" class="lb-avatar" />
+                <img src="${d.avatar || '/images/riley.png'}" alt="${d.name || 'Driver'}" class="lb-avatar" />
                 <div class="lb-meta">
                   <div class="lb-name"><span class="lb-num">#${d.number}</span> ${d.name}</div>
                   <div class="lb-team">${d.team}</div>
@@ -246,23 +247,32 @@
             </td>
           </tr>
         `
-            )
-            .join('');
+        )
+        .join('');
 
-          tbody.innerHTML = rows;
-        } catch (err) {
-          console.error(err);
-          document.getElementById('lb-body').innerHTML = `
-          <tr>
-            <td colspan="8" style="padding:12px; text-align:center; color:#fca5a5;">
-              Error loading leaderboard.
-            </td>
-          </tr>
-        `;
-        }
-      }
+      tbody.innerHTML = rows;
+    } catch (err) {
+      console.error(err);
+      document.getElementById('lb-body').innerHTML = `
+        <tr>
+          <td colspan="8" style="padding:12px; text-align:center; color:#fca5a5;">
+            Error loading leaderboard.
+          </td>
+        </tr>
+      `;
+    }
+  }
 
-      loadLeaderboard();
-    </script>
+  loadLeaderboard();
+
+  // Listen for driver profile updates and refresh leaderboard
+  window.addEventListener('sgp:driver-updated', function() {
+    loadLeaderboard();
+  });
+</script>
+
+<!-- shared username/dropdown logic for ALL pages -->
+<script src="/global-user.js"></script>
+
   </body>
 </html>

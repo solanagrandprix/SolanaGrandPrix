@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Panel – SolanaGP</title>
+    <link rel="stylesheet" href="/layout.css" />
+
+    <style>
+      .admin-container {
+        width: 1200px;
+        max-width: 100%;
+        padding: 0 16px;
+      }
+
+      .admin-header {
+        margin-bottom: 24px;
+      }
+
+      .admin-header h1 {
+        margin: 0 0 4px;
+        font-size: 32px;
+        color: #fca5a5;
+      }
+
+      .admin-subtitle {
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .admin-stat-card {
+        background: #020617;
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid #111827;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      }
+
+      .admin-stat-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #9ca3af;
+        margin-bottom: 8px;
+      }
+
+      .admin-stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #e5e7eb;
+      }
+
+      .admin-users-section {
+        background: #020617;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #111827;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+      }
+
+      .admin-section-title {
+        margin: 0 0 16px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      .admin-table thead {
+        background: rgba(15, 23, 42, 0.8);
+      }
+
+      .admin-table th {
+        text-align: left;
+        padding: 12px;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        border-bottom: 1px solid #1f2937;
+      }
+
+      .admin-table td {
+        padding: 12px;
+        border-bottom: 1px solid #1f2937;
+        color: #e5e7eb;
+      }
+
+      .admin-table tbody tr:hover {
+        background: rgba(15, 23, 42, 0.5);
+      }
+
+      .admin-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .admin-badge.admin {
+        background: rgba(251, 146, 60, 0.15);
+        color: #fb923c;
+        border: 1px solid rgba(251, 146, 60, 0.3);
+      }
+
+      .admin-badge.user {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+
+      .admin-badge.driver {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38bdf8;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+      }
+
+      .admin-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .admin-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #1f2937;
+        background: rgba(15, 23, 42, 0.8);
+        color: #e5e7eb;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .admin-btn:hover {
+        background: rgba(15, 23, 42, 1);
+        border-color: #22c55e;
+      }
+
+      .admin-btn.danger {
+        color: #fca5a5;
+      }
+
+      .admin-btn.danger:hover {
+        border-color: #fca5a5;
+      }
+
+      .admin-status {
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 13px;
+      }
+
+      .admin-status.error {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      .admin-status.info {
+        background: rgba(56, 189, 248, 0.15);
+        color: #7dd3fc;
+        border: 1px solid rgba(56, 189, 248, 0.3);
+      }
+
+      .admin-loading {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+      }
+
+      .admin-empty {
+        text-align: center;
+        padding: 40px;
+        color: #6b7280;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="sgp-shell">
+      <!-- Global header -->
+      <header class="sgp-header">
+        <div class="sgp-logo-block">
+          <div class="sgp-logo">Solana Grand Prix</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • ADMIN</div>
+        </div>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
+      </header>
+
+      <!-- Page content -->
+      <main class="sgp-main">
+        <div class="admin-container">
+          <div class="admin-header">
+            <h1>🔒 Admin Panel</h1>
+            <div class="admin-subtitle">Manage users and monitor the platform</div>
+          </div>
+
+          <div id="admin-status"></div>
+
+          <!-- Featured Driver Selection -->
+          <div class="admin-users-section" style="margin-bottom: 24px;">
+            <h2 class="admin-section-title">🎯 Featured Driver Settings</h2>
+            <p style="font-size: 13px; color: #9ca3af; margin: 0 0 16px;">
+              Select which driver's card should be displayed on the home page.
+            </p>
+            <div style="display: flex; gap: 12px; align-items: flex-end;">
+              <div style="flex: 1;">
+                <label for="featured-driver-select" style="display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #9ca3af; margin-bottom: 6px;">
+                  Featured Driver
+                </label>
+                <select id="featured-driver-select" style="width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #111827; background: #020617; color: #e5e7eb; font-size: 14px;">
+                  <option value="">Loading drivers...</option>
+                </select>
+              </div>
+              <button id="save-featured-btn" class="admin-btn" style="padding: 8px 18px; white-space: nowrap;">
+                Save Featured Driver
+              </button>
+            </div>
+            <div id="featured-status" style="margin-top: 12px; font-size: 12px; color: #9ca3af;"></div>
+          </div>
+
+          <!-- Stats Cards -->
+          <div class="admin-stats" id="admin-stats">
+            <div class="admin-loading">Loading statistics...</div>
+          </div>
+
+          <!-- Users Table -->
+          <div class="admin-users-section">
+            <h2 class="admin-section-title">All Users</h2>
+            <div id="admin-users-content">
+              <div class="admin-loading">Loading users...</div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="sgp-footer">
+        Solana Grand Prix
+      </footer>
+    </div>
+
+    <script src="/global-user.js"></script>
+
+    <script>
+      (function () {
+        function getToken() {
+          return localStorage.getItem('sgp_token');
+        }
+
+        function checkAdminAccess() {
+          const token = getToken();
+          if (!token) {
+            showStatus('error', 'You must be logged in to access the admin panel.');
+            setTimeout(() => {
+              window.location.href = '/auth';
+            }, 2000);
+            return false;
+          }
+
+          // Check if user is admin
+          fetch('/api/me', {
+            headers: { Authorization: 'Bearer ' + token },
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (!data.user || !data.user.isAdmin) {
+                showStatus('error', 'Admin access required. You do not have permission to access this page.');
+                setTimeout(() => {
+                  window.location.href = '/';
+                }, 3000);
+                return false;
+              }
+              // User is admin, load data
+              loadAdminData();
+            })
+            .catch((err) => {
+              console.error(err);
+              showStatus('error', 'Error verifying admin access.');
+            });
+        }
+
+        function showStatus(type, message) {
+          const statusEl = document.getElementById('admin-status');
+          if (!statusEl) return;
+
+          statusEl.className = `admin-status ${type}`;
+          statusEl.textContent = message;
+
+          if (type === 'info') {
+            setTimeout(() => {
+              statusEl.textContent = '';
+              statusEl.className = '';
+            }, 3000);
+          }
+        }
+
+        async function loadAdminData() {
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            // Load stats, users, drivers, and featured driver in parallel
+            const [statsRes, usersRes, driversRes, featuredRes] = await Promise.all([
+              fetch('/api/admin/stats', {
+                headers: { Authorization: 'Bearer ' + token },
+              }),
+              fetch('/api/admin/users', {
+                headers: { Authorization: 'Bearer ' + token },
+              }),
+              fetch('/api/drivers'),
+              fetch('/api/featured-driver'),
+            ]);
+
+            if (!statsRes.ok || !usersRes.ok) {
+              const errorData = await statsRes.json().catch(() => ({}));
+              showStatus('error', errorData.message || 'Failed to load admin data.');
+              return;
+            }
+
+            const stats = await statsRes.json();
+            const usersData = await usersRes.json();
+            const drivers = await driversRes.json().catch(() => []);
+            const featured = await featuredRes.json().catch(() => ({ driverKey: '' }));
+
+            renderStats(stats.stats);
+            renderUsers(usersData.users);
+            renderFeaturedDriverSelect(drivers, featured.driverKey || '');
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error loading admin data.');
+          }
+        }
+
+        function renderFeaturedDriverSelect(drivers, currentFeatured) {
+          const select = document.getElementById('featured-driver-select');
+          if (!select) return;
+
+          if (!drivers || drivers.length === 0) {
+            select.innerHTML = '<option value="">No drivers found</option>';
+            return;
+          }
+
+          select.innerHTML = '<option value="">Select a driver...</option>';
+          
+          drivers.forEach((driver) => {
+            const option = document.createElement('option');
+            option.value = driver.key || driver.driverKey;
+            option.textContent = `#${driver.number || ''} ${driver.name || driver.displayName || driver.key}`;
+            if (currentFeatured && (option.value.toLowerCase() === currentFeatured.toLowerCase())) {
+              option.selected = true;
+            }
+            select.appendChild(option);
+          });
+        }
+
+        function renderStats(stats) {
+          const statsEl = document.getElementById('admin-stats');
+          if (!statsEl) return;
+
+          statsEl.innerHTML = `
+            <div class="admin-stat-card">
+              <div class="admin-stat-label">Total Users</div>
+              <div class="admin-stat-value">${stats.totalUsers || 0}</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-label">Admins</div>
+              <div class="admin-stat-value">${stats.totalAdmins || 0}</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-label">Drivers</div>
+              <div class="admin-stat-value">${stats.totalDrivers || 0}</div>
+            </div>
+            <div class="admin-stat-card">
+              <div class="admin-stat-label">New (7 days)</div>
+              <div class="admin-stat-value">${stats.recentUsers || 0}</div>
+            </div>
+          `;
+        }
+
+        function renderUsers(users) {
+          const usersContentEl = document.getElementById('admin-users-content');
+          if (!usersContentEl) return;
+
+          if (!users || users.length === 0) {
+            usersContentEl.innerHTML = '<div class="admin-empty">No users found.</div>';
+            return;
+          }
+
+          const tableHTML = `
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Driver Profile</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${users
+                  .map(
+                    (user) => `
+                  <tr>
+                    <td>${user.id}</td>
+                    <td>${escapeHtml(user.username)}</td>
+                    <td>
+                      <span class="admin-badge ${user.isAdmin ? 'admin' : 'user'}">
+                        ${user.isAdmin ? 'Admin' : 'User'}
+                      </span>
+                    </td>
+                    <td>
+                      ${
+                        user.driver
+                          ? `<span class="admin-badge driver">${escapeHtml(user.driver.displayName || user.driver.driverKey)}</span>`
+                          : '<span style="color: #6b7280;">No profile</span>'
+                      }
+                    </td>
+                    <td>${formatDate(user.createdAt)}</td>
+                    <td>
+                      <div class="admin-actions">
+                        <button class="admin-btn" onclick="viewUserDetails(${user.id})">
+                          View
+                        </button>
+                        ${!user.isAdmin ? `<button class="admin-btn" onclick="toggleAdmin(${user.id}, true)">Make Admin</button>` : ''}
+                        ${user.isAdmin ? `<button class="admin-btn danger" onclick="toggleAdmin(${user.id}, false)">Remove Admin</button>` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                `
+                  )
+                  .join('')}
+              </tbody>
+            </table>
+          `;
+
+          usersContentEl.innerHTML = tableHTML;
+        }
+
+        function formatDate(dateString) {
+          const date = new Date(dateString);
+          return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHtml(text) {
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
+        }
+
+        window.viewUserDetails = async function (userId) {
+          const token = getToken();
+          if (!token) return;
+
+          try {
+            const res = await fetch(`/api/admin/users/${userId}`, {
+              headers: { Authorization: 'Bearer ' + token },
+            });
+
+            if (!res.ok) {
+              const error = await res.json().catch(() => ({}));
+              alert(error.message || 'Failed to load user details.');
+              return;
+            }
+
+            const data = await res.json();
+            const user = data.user;
+
+            const details = `
+User Details:
+- ID: ${user.id}
+- Username: ${user.username}
+- Admin: ${user.isAdmin ? 'Yes' : 'No'}
+- Created: ${formatDate(user.createdAt)}
+${user.driver ? `
+Driver Profile:
+- Display Name: ${user.driver.displayName || 'N/A'}
+- Team: ${user.driver.team || 'N/A'}
+- Number: ${user.driver.number || 'N/A'}
+- iRating: ${user.driver.irating || 0}
+- Starts: ${user.driver.starts || 0}
+` : ''}
+            `.trim();
+
+            alert(details);
+          } catch (err) {
+            console.error(err);
+            alert('Error loading user details.');
+          }
+        };
+
+        window.toggleAdmin = async function (userId, makeAdmin) {
+          const token = getToken();
+          if (!token) return;
+
+          const confirmMsg = makeAdmin
+            ? `Are you sure you want to make this user an admin?`
+            : `Are you sure you want to remove admin privileges from this user?`;
+
+          if (!confirm(confirmMsg)) return;
+
+          try {
+            const res = await fetch(`/api/admin/users/${userId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({ isAdmin: makeAdmin }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              showStatus('error', data.message || 'Failed to update user.');
+              return;
+            }
+
+            showStatus('info', data.message || 'User updated successfully.');
+            // Reload the user list
+            setTimeout(() => {
+              loadAdminData();
+            }, 1000);
+          } catch (err) {
+            console.error(err);
+            showStatus('error', 'Error updating user.');
+          }
+        };
+
+        // Save featured driver
+        async function saveFeaturedDriver() {
+          const token = getToken();
+          if (!token) return;
+
+          const select = document.getElementById('featured-driver-select');
+          const statusEl = document.getElementById('featured-status');
+          
+          if (!select || !select.value) {
+            if (statusEl) {
+              statusEl.textContent = 'Please select a driver.';
+              statusEl.style.color = '#fca5a5';
+            }
+            return;
+          }
+
+          if (statusEl) {
+            statusEl.textContent = 'Saving...';
+            statusEl.style.color = '#9ca3af';
+          }
+
+          try {
+            const res = await fetch('/api/admin/featured-driver', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({ driverKey: select.value }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              if (statusEl) {
+                statusEl.textContent = data.message || 'Failed to save featured driver.';
+                statusEl.style.color = '#fca5a5';
+              }
+              return;
+            }
+
+            if (statusEl) {
+              statusEl.textContent = '✓ Featured driver updated successfully!';
+              statusEl.style.color = '#22c55e';
+            }
+            
+            showStatus('info', 'Featured driver updated successfully.');
+          } catch (err) {
+            console.error(err);
+            if (statusEl) {
+              statusEl.textContent = 'Error saving featured driver.';
+              statusEl.style.color = '#fca5a5';
+            }
+            showStatus('error', 'Error saving featured driver.');
+          }
+        }
+
+        // Check admin access on page load
+        checkAdminAccess();
+
+        // Wire up save button after page loads
+        window.addEventListener('load', function() {
+          const saveBtn = document.getElementById('save-featured-btn');
+          if (saveBtn) {
+            saveBtn.addEventListener('click', saveFeaturedDriver);
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

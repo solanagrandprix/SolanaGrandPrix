@@ -10,13 +10,16 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@prisma/client": "^5.19.1",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "iracing-api": "^0.5.2"
+    "iracing-api": "^0.5.2",
+    "multer": "^2.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.0",
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "prisma": "^5.19.1"
   },
   "engines": {
     "node": "18.x"

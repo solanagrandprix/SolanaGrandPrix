@@ -148,38 +148,37 @@
         line-height: 1.4;
       }
 
-      /* Free Agent YES/NO pill row */
-.free-agent-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: 12px;
-}
+      /* -------- Free Agent YES/NO pill row -------- */
+      .free-agent-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+        font-size: 12px;
+      }
 
-.free-agent-label {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #9ca3af;
-}
+      .free-agent-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+      }
 
-.free-agent-pill {
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid #1f2937;
-  font-size: 11px;
-  cursor: default;
-  color: #9ca3af;
-  background: #020617;
-}
+      .free-agent-pill {
+        padding: 2px 10px;
+        border-radius: 999px;
+        border: 1px solid #1f2937;
+        font-size: 11px;
+        cursor: default;
+        color: #9ca3af;
+        background: #020617;
+      }
 
-.free-agent-pill.active {
-  background: #22c55e;
-  color: #020617;
-  border-color: #22c55e;
-  font-weight: 600;
-}
-
+      .free-agent-pill.active {
+        background: #22c55e;
+        color: #020617;
+        border-color: #22c55e;
+        font-weight: 600;
+      }
 
       .profile-link {
         margin-top: 10px;
@@ -207,62 +206,74 @@
       }
 
       .progress-title {
-        font-size: 14px;
-        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #9ca3af;
         margin-bottom: 8px;
       }
 
       .progress-level-row {
         display: flex;
         justify-content: space-between;
-        font-size: 12px;
-        color: #9ca3af;
+        font-size: 13px;
         margin-bottom: 6px;
       }
 
+      .progress-level-row span:first-child {
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+
+      .progress-level-row span:last-child {
+        color: #a5b4fc;
+      }
+
       .progress-bar {
-        width: 100%;
+        position: relative;
         height: 6px;
         border-radius: 999px;
         background: #020617;
         overflow: hidden;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
       }
 
       .progress-bar-fill {
         height: 100%;
         border-radius: 999px;
-        background: linear-gradient(90deg, #22c55e, #a855f7);
+        background: linear-gradient(90deg, #22c55e, #06b6d4, #8b5cf6);
+        transition: width 0.4s ease;
       }
 
       .progress-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px 16px;
-        margin-bottom: 10px;
+        gap: 10px 18px;
+        margin-top: 10px;
       }
 
       .progress-stat .label {
         font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.09em;
         color: #6b7280;
       }
 
       .progress-stat .value {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
+        color: #e5e7eb;
       }
 
       .progress-footer {
+        margin-top: 14px;
         display: flex;
         justify-content: space-between;
         align-items: baseline;
-        margin-top: 4px;
       }
 
       .progress-footer .label {
-        font-size: 11px;
+        font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 0.08em;
         color: #6b7280;
@@ -284,13 +295,18 @@
           <div class="sgp-logo">Solana Grand Prix</div>
           <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
         </div>
-        <nav class="sgp-nav">
-          <a href="/" class="sgp-nav-link">Home</a>
-          <a href="/tracker" class="sgp-nav-link">Drivers</a>
-          <a href="/season" class="sgp-nav-link">Season hub</a>
-          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-        </nav>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link active">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
       </header>
 
       <!-- 🔵 Page content -->
@@ -311,89 +327,84 @@
             <div class="output" id="output">Waiting...</div>
 
             <!-- Driver Progress panel (hidden until stats load) -->
-            <div class="output" id="races" style="display: none;"></div>
+            <div class="output" id="races" style="display: none"></div>
           </div>
         </div>
       </main>
 
       <!-- 🔵 Global footer -->
       <footer class="sgp-footer">
-        Solana Grand Prix • IRacing automation coming soon.
+        Solana Grand Prix
       </footer>
     </div>
 
-    <script>
-      let lastDriverKey = "lemon";
+<script>
+  let lastDriverKey = 'lemon';
 
-      async function loadStats() {
-        const driverKey = document.getElementById("driverSelect").value;
-        lastDriverKey = driverKey;
+  async function loadStats() {
+    const driverKey = document.getElementById('driverSelect').value;
+    lastDriverKey = driverKey;
 
-        try {
-          const [statsRes, racesRes] = await Promise.all([
-            fetch("/api/stats?driver=" + encodeURIComponent(driverKey)),
-            fetch(
-              "/api/recent-races?driver=" + encodeURIComponent(driverKey)
-            ),
-          ]);
+    try {
+      const [statsRes, racesRes] = await Promise.all([
+        fetch('/api/stats?driver=' + encodeURIComponent(driverKey)),
+        fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey)),
+      ]);
 
-          const stats = await statsRes.json();
-          const races = await racesRes.json();
-          const isFree = !!stats.freeAgent;
+      const stats = await statsRes.json();
+      const races = await racesRes.json();
+      const isFree = !!stats.freeAgent;
 
-          /* ---------- Basic derived numbers ---------- */
-          const starts = stats.starts || races.length || 0;
-          const wins = stats.wins || 0;
-          const podiums = stats.podiums || 0;
-          const dnfs = stats.dnfs || 0;
-          const earnings =
-            typeof stats.earnings === "number" ? stats.earnings : 0;
-          const formattedEarnings = earnings.toLocaleString("en-US");
+      /* ---------- Basic derived numbers ---------- */
+      const starts = stats.starts || races.length || 0;
+      const wins = stats.wins || 0;
+      const podiums = stats.podiums || 0;
+      const dnfs = stats.dnfs || 0;
+      const earnings =
+        typeof stats.earnings === 'number' ? stats.earnings : 0;
+      const formattedEarnings = earnings.toLocaleString('en-US');
 
-          /* ---------- XP + level ---------- */
-          const xpFromStarts = starts * 50; // tweak if you want
-          const xpFromWins = wins * 150;
-          const baseXp = 200;
-          const totalXp = baseXp + xpFromStarts + xpFromWins;
+      /* ---------- XP + level ---------- */
+      const xpFromStarts = starts * 50; // tweak if you want
+      const xpFromWins = wins * 150;
+      const baseXp = 200;
+      const totalXp = baseXp + xpFromStarts + xpFromWins;
 
-          const xpPerLevel = 500;
-          const level = Math.floor(totalXp / xpPerLevel) + 1;
-          const xpIntoLevel = totalXp % xpPerLevel;
-          const progressPct = Math.min(
-            100,
-            Math.round((xpIntoLevel / xpPerLevel) * 100)
-          );
-          const xpText = `${xpIntoLevel}/${xpPerLevel} XP`;
+      const xpPerLevel = 500;
+      const level = Math.floor(totalXp / xpPerLevel) + 1;
+      const xpIntoLevel = totalXp % xpPerLevel;
+      const progressPct = Math.min(
+        100,
+        Math.round((xpIntoLevel / xpPerLevel) * 100)
+      );
+      const xpText = `${xpIntoLevel}/${xpPerLevel} XP`;
 
-          /* ---------- Win rate & best finish ---------- */
-          const totalRaces = races.length;
-          const winRate = totalRaces
-            ? Math.round((wins / totalRaces) * 100)
-            : 0;
+      /* ---------- Win rate & best finish ---------- */
+      const totalRaces = races.length;
+      const winRate = totalRaces
+        ? Math.round((wins / totalRaces) * 100)
+        : 0;
 
-          let bestFinish = null;
-          races.forEach((r) => {
-            if (bestFinish === null || r.finish < bestFinish) {
-              bestFinish = r.finish;
-            }
-          });
-          const bestFinishText = bestFinish === null ? "—" : "P" + bestFinish;
+      let bestFinish = null;
+      races.forEach((r) => {
+        if (bestFinish === null || r.finish < bestFinish) {
+          bestFinish = r.finish;
+        }
+      });
+      const bestFinishText = bestFinish === null ? '—' : 'P' + bestFinish;
 
-          /* ---------- Skill tier ---------- */
-          let skillTier = "Beginner";
-          if (level >= 3 && winRate >= 20) skillTier = "Club Racer";
-          if (level >= 5 && winRate >= 35) skillTier = "Hotlap Hero";
-          if (level >= 7 && winRate >= 50) skillTier = "Alien";
+      /* ---------- Skill tier ---------- */
+      let skillTier = 'Beginner';
+      if (level >= 3 && winRate >= 20) skillTier = 'Club Racer';
+      if (level >= 5 && winRate >= 35) skillTier = 'Hotlap Hero';
+      if (level >= 7 && winRate >= 50) skillTier = 'Alien';
 
-          /* ---------- DRIVER NFT CARD (top box) ---------- */
-          
-          // Determine free-agent state safely// 
-
-          document.getElementById("output").innerHTML = `
+      /* ---------- DRIVER NFT CARD (top box) ---------- */
+      document.getElementById('output').innerHTML = `
   <div class="nft-frame">
     <div class="nft-inner">
       <div class="driver-header">
-        <img src="${stats.avatar}" alt="${stats.name}" class="driver-avatar" />
+        <img src="${stats.avatar || '/images/riley.png'}" alt="${stats.name || 'Driver'}" class="driver-avatar" />
         
         <div class="driver-meta">
           <div class="driver-name">#${stats.number} ${stats.name}</div>
@@ -422,58 +433,78 @@
   </div>
 `;
 
-          /* ---------- DRIVER PROGRESS PANEL (bottom box) ---------- */
-          const racesBox = document.getElementById("races");
-
-          racesBox.innerHTML = `
-            <div class="progress-card">
-              <div class="progress-title">Driver Progress</div>
-
-              <div class="progress-level-row">
-                <span>Level ${level}</span>
-                <span>${xpText}</span>
-              </div>
-
-              <div class="progress-bar">
-                <div class="progress-bar-fill" style="width: ${progressPct}%;"></div>
-              </div>
-
-              <div class="progress-grid">
-                <div class="progress-stat">
-                  <div class="label">Starts</div>
-                  <div class="value">${starts}</div>
-                </div>
-                <div class="progress-stat">
-                  <div class="label">Win rate</div>
-                  <div class="value">${winRate}%</div>
-                </div>
-                <div class="progress-stat">
-                  <div class="label">Best finish</div>
-                  <div class="value">${bestFinishText}</div>
-                </div>
-                <div class="progress-stat">
-                  <div class="label">Skill</div>
-                  <div class="value">${skillTier}</div>
-                </div>
-              </div>
-
-              <div class="progress-footer">
-                <div class="label">Total purse</div>
-                <div class="value">$${formattedEarnings}</div>
-              </div>
-            </div>
-          `;
-
-          // Show the progress box now that it has content
-          racesBox.style.display = "block";
-        } catch (err) {
-          console.error(err);
-          document.getElementById("output").innerText = "Error loading stats.";
-          document.getElementById("races").innerText =
-            "Error loading progress.";
-          document.getElementById("races").style.display = "block";
+      // Apply card customizations if they exist
+      if (typeof applyCardCustomization === 'function' && stats.cardCustomization) {
+        const cardElement = document.getElementById('output');
+        if (cardElement) {
+          applyCardCustomization(cardElement, stats.cardCustomization, stats);
         }
       }
-    </script>
+
+      /* ---------- DRIVER PROGRESS PANEL (bottom box) ---------- */
+      const racesBox = document.getElementById('races');
+
+      racesBox.innerHTML = `
+        <div class="progress-card">
+          <div class="progress-title">Driver Progress</div>
+
+          <div class="progress-level-row">
+            <span>Level ${level}</span>
+            <span>${xpText}</span>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-bar-fill" style="width: ${progressPct}%;"></div>
+          </div>
+
+          <div class="progress-grid">
+            <div class="progress-stat">
+              <div class="label">Starts</div>
+              <div class="value">${starts}</div>
+            </div>
+            <div class="progress-stat">
+              <div class="label">Win rate</div>
+              <div class="value">${winRate}%</div>
+            </div>
+            <div class="progress-stat">
+              <div class="label">Best finish</div>
+              <div class="value">${bestFinishText}</div>
+            </div>
+            <div class="progress-stat">
+              <div class="label">Skill</div>
+              <div class="value">${skillTier}</div>
+            </div>
+          </div>
+
+          <div class="progress-footer">
+            <div class="label">Total purse</div>
+            <div class="value">$${formattedEarnings}</div>
+          </div>
+        </div>
+      `;
+
+      // Show the progress box now that it has content
+      racesBox.style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      document.getElementById('output').innerText = 'Error loading stats.';
+      document.getElementById('races').innerText =
+        'Error loading progress.';
+      document.getElementById('races').style.display = 'block';
+    }
+  }
+
+  // Listen for driver profile updates
+  window.addEventListener('sgp:driver-updated', function() {
+    if (lastDriverKey) {
+      loadStats();
+    }
+  });
+</script>
+
+<!-- shared username/dropdown logic for ALL pages -->
+<script src="/global-user.js"></script>
+<script src="/card-customization.js"></script>
+
   </body>
 </html>

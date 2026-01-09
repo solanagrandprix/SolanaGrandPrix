@@ -45,6 +45,9 @@
         background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
         box-shadow: 0 0 26px rgba(0, 0, 0, 0.8);
         animation: glowPulse 4s ease-in-out infinite;
+        max-width: 380px;
+        width: 100%;
+        margin: 0 auto;
       }
 
       .nft-inner {
@@ -121,37 +124,160 @@
         margin-bottom: 10px;
       }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-      }
-
-      th,
-      td {
-        padding: 4px;
-      }
-
-      th {
-        text-align: left;
-        color: #9ca3af;
-        font-weight: 500;
-      }
-
-      td:nth-child(3),
-      td:nth-child(4) {
-        text-align: right;
-      }
-
       @media (max-width: 900px) {
         .layout {
           grid-template-columns: minmax(0, 1fr);
         }
       }
-    </style>
 
-    <!-- Chart.js for the iRating graph -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      /* -------- Driver Settings panel -------- */
+      .driver-panel {
+        background: #020617;
+        border-radius: 16px;
+        padding: 16px 18px;
+        border: 1px solid #111827;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        margin-top: 16px;
+      }
+
+      .driver-panel-title {
+        margin: 0 0 4px;
+        font-size: 16px;
+      }
+
+      .driver-panel-subtitle {
+        margin: 0 0 12px;
+        font-size: 13px;
+        color: #9ca3af;
+      }
+
+      .driver-settings-form {
+        font-size: 14px;
+      }
+
+      .ds-row {
+        margin-bottom: 10px;
+      }
+
+      .ds-row label {
+        display: block;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin-bottom: 4px;
+      }
+
+      .ds-row input,
+      .ds-row select,
+      .ds-row textarea {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid #1f2937;
+        background: #020617;
+        color: #e5e7eb;
+        font-size: 14px;
+      }
+
+      .ds-row-inline {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .ds-toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ds-toggle-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #22c55e;
+      }
+
+      .ds-toggle-row label {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .ds-save-btn {
+        margin-top: 8px;
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: none;
+        background: #22c55e;
+        color: #020617;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .ds-save-btn:hover {
+        box-shadow: 0 12px 24px rgba(34, 197, 94, 0.4);
+      }
+
+      .ds-status {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #a5b4fc;
+      }
+
+      /* -------- XP panel (right column) -------- */
+      .xp-level-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        margin-bottom: 8px;
+      }
+
+      .xp-bar {
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        background: #020617;
+        border: 1px solid #1f2937;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+
+      .xp-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #22c55e, #06b6d4, #8b5cf6);
+      }
+
+      .xp-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        font-size: 13px;
+      }
+
+      .xp-stat-label {
+        color: #9ca3af;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 2px;
+      }
+
+      .xp-stat-value {
+        font-weight: 600;
+      }
+
+      .ds-row input:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #0a0f1a;
+      }
+
+      .ds-row input:disabled::placeholder {
+        color: #4b5563;
+      }
+    </style>
   </head>
 
   <body>
@@ -162,13 +288,17 @@
           <div class="sgp-logo">Solana Grand Prix</div>
           <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
         </div>
-        <nav class="sgp-nav">
-          <a href="/" class="sgp-nav-link">Home</a>
-          <a href="/tracker" class="sgp-nav-link">Drivers</a>
-          <a href="/season" class="sgp-nav-link">Season hub</a>
-          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-        </nav>
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
       </header>
 
       <!-- 🔵 Page content -->
@@ -180,20 +310,300 @@
           </div>
 
           <div class="layout">
+            <!-- LEFT COLUMN -->
             <div>
               <div class="nft-frame">
                 <div class="nft-inner" id="driverCard">Loading driver...</div>
               </div>
 
-              <div class="panel" style="margin-top: 16px">
-                <h2>Driver Progress</h2>
-                <div id="racesPanel">Loading...</div>
+              <!-- Driver Settings -->
+              <div id="driver-settings-card" class="driver-panel">
+                <h2 class="driver-panel-title">Driver Settings</h2>
+                <p class="driver-panel-subtitle">
+                  Customize how you appear on the tracker, leaderboard, and driver cards.
+                </p>
+
+                <form id="driver-settings-form" class="driver-settings-form">
+                  <div class="ds-row">
+                    <label>Profile Picture</label>
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+                      <img id="ds-avatar-preview" src="/images/riley.png" alt="Avatar preview" style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 2px solid #1f2937; background: #020617;" />
+                      <div style="flex: 1;">
+                        <input id="ds-avatar-file" type="file" accept="image/*" style="display: none;" />
+                        <button type="button" onclick="document.getElementById('ds-avatar-file').click()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #1f2937; background: rgba(15, 23, 42, 0.9); color: #e5e7eb; font-size: 12px; cursor: pointer; width: 100%;">
+                          Upload Image
+                        </button>
+                        <div id="ds-avatar-status" style="font-size: 11px; color: #9ca3af; margin-top: 4px;"></div>
+                      </div>
+                    </div>
+                    <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">
+                      Max 5MB. JPG, PNG, GIF, or WebP
+                    </div>
+                  </div>
+
+                  <div class="ds-row">
+                    <label for="ds-name">Display name</label>
+                    <input id="ds-name" type="text" placeholder="Lemon" />
+                  </div>
+
+                  <div class="ds-row ds-row-inline">
+                    <div>
+                      <label for="ds-number">Car number</label>
+                      <input
+                        id="ds-number"
+                        type="number"
+                        min="0"
+                        max="999"
+                        placeholder="93"
+                      />
+                    </div>
+                    <div>
+                      <label for="ds-team">Team</label>
+                      <input id="ds-team" type="text" placeholder="SolanaGP" />
+                    </div>
+                  </div>
+
+                  <div class="ds-row">
+                    <label for="ds-car">Primary car / class</label>
+                    <select id="ds-car">
+                      <option value="">Select a car...</option>
+                      
+                      <optgroup label="NASCAR">
+                        <option value="NASCAR Truck Series Chevrolet Silverado">NASCAR Truck Series Chevrolet Silverado</option>
+                        <option value="NASCAR Truck Series Ford F150">NASCAR Truck Series Ford F150</option>
+                        <option value="NASCAR Truck Series Toyota Tundra TRD Pro">NASCAR Truck Series Toyota Tundra TRD Pro</option>
+                        <option value="NASCAR Xfinity Chevrolet Camaro">NASCAR Xfinity Chevrolet Camaro</option>
+                        <option value="NASCAR Xfinity Ford Mustang">NASCAR Xfinity Ford Mustang</option>
+                        <option value="NASCAR Xfinity Toyota Supra">NASCAR Xfinity Toyota Supra</option>
+                        <option value="NASCAR Cup Series Chevrolet Camaro ZL1">NASCAR Cup Series Chevrolet Camaro ZL1</option>
+                        <option value="NASCAR Cup Series Ford Fusion">NASCAR Cup Series Ford Fusion</option>
+                        <option value="NASCAR Cup Series Ford Mustang">NASCAR Cup Series Ford Mustang</option>
+                        <option value="NASCAR Cup Series Toyota Camry">NASCAR Cup Series Toyota Camry</option>
+                        <option value="NASCAR Next Gen Chevrolet Camaro ZL1">NASCAR Next Gen Chevrolet Camaro ZL1</option>
+                        <option value="NASCAR Next Gen Ford Mustang">NASCAR Next Gen Ford Mustang</option>
+                        <option value="NASCAR Next Gen Toyota Camry">NASCAR Next Gen Toyota Camry</option>
+                        <option value="Whelen Tour Modified">Whelen Tour Modified</option>
+                        <option value="SK Modified">SK Modified</option>
+                        <option value="JR Motorsports Street Stock">JR Motorsports Street Stock</option>
+                        <option value="Legends Ford '34 Coupe">Legends Ford '34 Coupe</option>
+                        <option value="NASCAR Xfinity Chevrolet Impala SS 2011">NASCAR Xfinity Chevrolet Impala SS 2011</option>
+                        <option value="NASCAR Xfinity Toyota Camry 2018">NASCAR Xfinity Toyota Camry 2018</option>
+                        <option value="NASCAR Xfinity Chevrolet Camaro 2018">NASCAR Xfinity Chevrolet Camaro 2018</option>
+                        <option value="NASCAR Xfinity Ford Mustang 2018">NASCAR Xfinity Ford Mustang 2018</option>
+                        <option value="NASCAR Truck Series Chevrolet Silverado 2013">NASCAR Truck Series Chevrolet Silverado 2013</option>
+                        <option value="NASCAR Chevrolet Impala SS 2013">NASCAR Chevrolet Impala SS 2013</option>
+                        <option value="NASCAR ARCA Menards Chevrolet Impala">NASCAR ARCA Menards Chevrolet Impala</option>
+                        <option value="Super Late Model">Super Late Model</option>
+                        <option value="NASCAR Late Model Stock">NASCAR Late Model Stock</option>
+                        <option value="1987 NASCAR Buick LeSabre">1987 NASCAR Buick LeSabre</option>
+                        <option value="1987 NASCAR Chevrolet Monte Carlo">1987 NASCAR Chevrolet Monte Carlo</option>
+                        <option value="1987 NASCAR Ford Thunderbird">1987 NASCAR Ford Thunderbird</option>
+                      </optgroup>
+                      
+                      <optgroup label="Formula / Open Wheel">
+                        <option value="Mercedes-AMG W13 F1">Mercedes-AMG W13 F1</option>
+                        <option value="Mercedes-AMG W12 F1">Mercedes-AMG W12 F1</option>
+                        <option value="McLaren MP4-30 F1">McLaren MP4-30 F1</option>
+                        <option value="Williams FW31 F1">Williams FW31 F1</option>
+                        <option value="Indy Pro 2000">Indy Pro 2000</option>
+                        <option value="Dallara iR-01">Dallara iR-01</option>
+                        <option value="Dallara iR05">Dallara iR05</option>
+                        <option value="Dallara IR18">Dallara IR18</option>
+                        <option value="Formula Renault 2.0">Formula Renault 2.0</option>
+                        <option value="Formula Renault 3.5">Formula Renault 3.5</option>
+                        <option value="Formula Vee">Formula Vee</option>
+                        <option value="Dallara F3">Dallara F3</option>
+                        <option value="Dallara DW12">Dallara DW12</option>
+                        <option value="iRacing Formula iR-04">iRacing Formula iR-04</option>
+                        <option value="Skip Barber Formula 2000">Skip Barber Formula 2000</option>
+                        <option value="USF 2000">USF 2000</option>
+                        <option value="Pro Mazda">Pro Mazda</option>
+                        <option value="Lotus 49">Lotus 49</option>
+                        <option value="Lotus 79">Lotus 79</option>
+                        <option value="C&R Racing Silver Crown">C&R Racing Silver Crown</option>
+                        <option value="Sprint Car">Sprint Car</option>
+                      </optgroup>
+                      
+                      <optgroup label="GT / Touring Cars">
+                        <option value="Aston Martin DBR9 GT1">Aston Martin DBR9 GT1</option>
+                        <option value="Aston Martin Vantage GT4">Aston Martin Vantage GT4</option>
+                        <option value="Audi R8 LMS GT3">Audi R8 LMS GT3</option>
+                        <option value="BMW M4 GT3">BMW M4 GT3</option>
+                        <option value="BMW M4 GT4">BMW M4 GT4</option>
+                        <option value="BMW M8 GTE">BMW M8 GTE</option>
+                        <option value="BMW Z4 GT3">BMW Z4 GT3</option>
+                        <option value="Chevrolet Corvette C6.R">Chevrolet Corvette C6.R</option>
+                        <option value="Chevrolet Corvette C8.R">Chevrolet Corvette C8.R</option>
+                        <option value="Ferrari 488 GT3 Evo 2020">Ferrari 488 GT3 Evo 2020</option>
+                        <option value="Ferrari 488 GT3">Ferrari 488 GT3</option>
+                        <option value="Ferrari 488 GTE">Ferrari 488 GTE</option>
+                        <option value="Ford GT GT2">Ford GT GT2</option>
+                        <option value="Ford GT GT3">Ford GT GT3</option>
+                        <option value="Ford GT GTE">Ford GT GTE</option>
+                        <option value="Ford GT-R">Ford GT-R</option>
+                        <option value="Lamborghini Huracan GT3 EVO">Lamborghini Huracan GT3 EVO</option>
+                        <option value="McLaren MP4-12C GT3">McLaren MP4-12C GT3</option>
+                        <option value="McLaren 570S GT4">McLaren 570S GT4</option>
+                        <option value="Mercedes-AMG GT3">Mercedes-AMG GT3</option>
+                        <option value="Mercedes-AMG GT3 2020">Mercedes-AMG GT3 2020</option>
+                        <option value="Mercedes-AMG GT4">Mercedes-AMG GT4</option>
+                        <option value="Porsche 718 Cayman GT4 Clubsport">Porsche 718 Cayman GT4 Clubsport</option>
+                        <option value="Porsche 911 GT3 Cup">Porsche 911 GT3 Cup</option>
+                        <option value="Porsche 911 GT3 Cup (992)">Porsche 911 GT3 Cup (992)</option>
+                        <option value="Porsche 911 GT3 R">Porsche 911 GT3 R</option>
+                        <option value="Porsche 911 RSR">Porsche 911 RSR</option>
+                        <option value="Porsche Mission R">Porsche Mission R</option>
+                      </optgroup>
+                      
+                      <optgroup label="Prototype / LMP">
+                        <option value="Audi R18">Audi R18</option>
+                        <option value="BMW M Hybrid V8">BMW M Hybrid V8</option>
+                        <option value="Chevrolet Corvette C7 Daytona">Chevrolet Corvette C7 Daytona</option>
+                        <option value="Dallara P217">Dallara P217</option>
+                        <option value="Honda Performance Development ARX 01c">Honda Performance Development ARX 01c</option>
+                        <option value="Nissan GTP ZX-T">Nissan GTP ZX-T</option>
+                        <option value="Porsche 919">Porsche 919</option>
+                        <option value="Radical SR8 V8">Radical SR8 V8</option>
+                        <option value="Radical SR10">Radical SR10</option>
+                        <option value="Riley Mk XX Daytona">Riley Mk XX Daytona</option>
+                        <option value="SCCA Spec Racer Ford">SCCA Spec Racer Ford</option>
+                      </optgroup>
+                      
+                      <optgroup label="Touring / Production">
+                        <option value="Audi RS 3 LMS">Audi RS 3 LMS</option>
+                        <option value="Audi 90 GTO">Audi 90 GTO</option>
+                        <option value="Cadillac CTS-V">Cadillac CTS-V</option>
+                        <option value="Ford Mustang FR500S">Ford Mustang FR500S</option>
+                        <option value="Global Mazda MX-5 Cup">Global Mazda MX-5 Cup</option>
+                        <option value="Mazda MX-5 Cup 2015">Mazda MX-5 Cup 2015</option>
+                        <option value="Mazda MX-5 Roadster 2015">Mazda MX-5 Roadster 2015</option>
+                        <option value="Honda Civic Type R">Honda Civic Type R</option>
+                        <option value="Hyundai Elantra N TC">Hyundai Elantra N TC</option>
+                        <option value="Hyundai Veloster">Hyundai Veloster</option>
+                        <option value="Kia Optima">Kia Optima</option>
+                        <option value="Pontiac Solstice">Pontiac Solstice</option>
+                        <option value="Ruf RT 12 R">Ruf RT 12 R</option>
+                        <option value="Stock Car Brasil Chevrolet Cruze">Stock Car Brasil Chevrolet Cruze</option>
+                        <option value="Stock Car Brasil Toyota Corolla">Stock Car Brasil Toyota Corolla</option>
+                        <option value="Supercars Ford Mustang GT">Supercars Ford Mustang GT</option>
+                        <option value="Supercars Ford Falcon FG V8">Supercars Ford Falcon FG V8</option>
+                        <option value="Supercars Ford V8">Supercars Ford V8</option>
+                        <option value="Supercars Holden V8">Supercars Holden V8</option>
+                        <option value="Supercars Holden ZB Commodore">Supercars Holden ZB Commodore</option>
+                        <option value="Toyota GR86">Toyota GR86</option>
+                        <option value="Volkswagen Jetta TDI">Volkswagen Jetta TDI</option>
+                      </optgroup>
+                      
+                      <optgroup label="Dirt Oval">
+                        <option value="Dirt 358 Small Block Modified">Dirt 358 Small Block Modified</option>
+                        <option value="Dirt Big Block Modified">Dirt Big Block Modified</option>
+                        <option value="Dirt Midget">Dirt Midget</option>
+                        <option value="Dirt Car 305">Dirt Car 305</option>
+                        <option value="Dirt Car 360">Dirt Car 360</option>
+                        <option value="Dirt Car 410">Dirt Car 410</option>
+                        <option value="Dirt Car Limited Late">Dirt Car Limited Late</option>
+                        <option value="Dirt Car Pro Late">Dirt Car Pro Late</option>
+                        <option value="Dirt Street Stock">Dirt Street Stock</option>
+                        <option value="Dirt Legends Ford '34 Coupe">Dirt Legends Ford '34 Coupe</option>
+                        <option value="NASCAR Dirt Chevrolet Silverado">NASCAR Dirt Chevrolet Silverado</option>
+                        <option value="NASCAR Dirt Toyota Tundra">NASCAR Dirt Toyota Tundra</option>
+                        <option value="UMP Modified">UMP Modified</option>
+                        <option value="USAC 360 Sprint">USAC 360 Sprint</option>
+                        <option value="USAC 410 Sprint">USAC 410 Sprint</option>
+                        <option value="World of Outlaws Super Late">World of Outlaws Super Late</option>
+                      </optgroup>
+                      
+                      <optgroup label="Rally">
+                        <option value="Ford Fiesta RS WRC">Ford Fiesta RS WRC</option>
+                        <option value="Subaru WRX STI">Subaru WRX STI</option>
+                        <option value="Volkswagen Beetle">Volkswagen Beetle</option>
+                      </optgroup>
+                      
+                      <optgroup label="Off Road">
+                        <option value="Lucas Oil Off Road Pro 2">Lucas Oil Off Road Pro 2</option>
+                        <option value="Lucas Oil Off Road Pro 2 Lite">Lucas Oil Off Road Pro 2 Lite</option>
+                        <option value="Lucas Oil Off Road Pro 4">Lucas Oil Off Road Pro 4</option>
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <div class="ds-row" style="padding: 12px; background: rgba(15, 23, 42, 0.5); border-radius: 8px; border: 1px solid #1f2937;">
+                    <div class="ds-toggle-row" style="margin: 0;">
+                      <input id="ds-free-agent" type="checkbox" />
+                      <label for="ds-free-agent" style="margin: 0; font-size: 14px; color: #e5e7eb; cursor: pointer; flex: 1;">
+                        Free Agent (available for teams)
+                      </label>
+                    </div>
+                    <div style="font-size: 11px; color: #9ca3af; margin-top: 6px; margin-left: 22px;">
+                      When checked, team field will be cleared and locked
+                    </div>
+                  </div>
+
+                  <div class="ds-row ds-row-inline">
+                    <div>
+                      <label for="ds-timezone">Timezone</label>
+                      <select id="ds-timezone">
+                        <option value="">Select timezone</option>
+                        <option value="UTC-8">Pacific (UTC-8)</option>
+                        <option value="UTC-5">Eastern (UTC-5)</option>
+                        <option value="UTC">UTC</option>
+                        <option value="UTC+1">Central Europe (UTC+1)</option>
+                        <option value="UTC+9">Japan (UTC+9)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="ds-row ds-row-inline">
+                    <div>
+                      <label for="ds-twitch">Twitch</label>
+                      <input
+                        id="ds-twitch"
+                        type="text"
+                        placeholder="twitch.tv/yourchannel"
+                      />
+                    </div>
+                    <div>
+                      <label for="ds-twitter">X / Twitter</label>
+                      <input
+                        id="ds-twitter"
+                        type="text"
+                        placeholder="@yourhandle"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="ds-row">
+                    <label for="ds-discord">Discord</label>
+                    <input id="ds-discord" type="text" placeholder="Lemon#1234" />
+                  </div>
+
+                  <div class="ds-row">
+                    <label for="ds-notes">Driver notes / bio</label>
+                    <textarea
+                      id="ds-notes"
+                      rows="3"
+                      placeholder="Strengths, favourite tracks, what kind of races you’re looking for…"
+                    ></textarea>
+                  </div>
+
+                  <button type="submit" class="ds-save-btn">
+                    Save driver profile
+                  </button>
+                  <div
+                    id="driver-settings-status"
+                    class="ds-status"
+                    aria-live="polite"
+                  >
+                    You must be logged in to actually save changes.
+                  </div>
+                </form>
               </div>
             </div>
 
-            <div class="panel">
-              <h2>iRating History</h2>
-              <canvas id="irChart" height="200"></canvas>
+            <!-- RIGHT COLUMN: XP / GAMIFIED PANEL -->
+            <div class="panel" id="xp-panel">
+              <h2>Driver XP &amp; Tier</h2>
+              <div>Loading…</div>
             </div>
           </div>
         </div>
@@ -201,114 +611,324 @@
 
       <!-- 🔵 Global footer -->
       <footer class="sgp-footer">
-        Solana Grand Prix • IRacing automation coming soon.
+        Solana Grand Prix
       </footer>
     </div>
 
-    <script>
-      const pathParts = window.location.pathname.split('/');
-      const driverKey = pathParts[pathParts.length - 1] || 'riley';
+    <script src="/global-user.js"></script>
+    <script src="/xp-utils.js"></script>
 
-      async function loadDriver() {
-        try {
-          const [statsRes, racesRes, irRes] = await Promise.all([
-            fetch('/api/stats?driver=' + encodeURIComponent(driverKey)),
-            fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey)),
-            fetch('/api/irating-history?driver=' + encodeURIComponent(driverKey)),
-          ]);
+<script>
+  (function () {
+    const pathParts = window.location.pathname.split('/');
+    const driverKey = (pathParts[pathParts.length - 1] || 'lemon').toLowerCase();
 
-          const stats = await statsRes.json();
-          const races = await racesRes.json();
-          const irHistory = await irRes.json();
+    const driverCardEl = document.getElementById('driverCard');
+    const settingsFormEl = document.getElementById('driver-settings-form');
+    const settingsStatusEl = document.getElementById('driver-settings-status');
+    const xpPanelEl = document.getElementById('xp-panel');
 
-          // Update title
-          document.getElementById('pageTitle').innerText = `${stats.name} – Driver Profile`;
+    function getToken() {
+      return localStorage.getItem('sgp_token');
+    }
 
-          // Driver card
-          document.getElementById('driverCard').innerHTML = `
-          <div class="driver-header">
-            <img src="${stats.avatar}" alt="${stats.name}" class="driver-avatar">
-            <div class="driver-meta">
-              <div class="driver-name">#${stats.number} ${stats.name}</div>
-              <div class="driver-team">${stats.team}</div>
-              <div class="driver-car">${stats.primaryCar}</div>
-            </div>
-          </div>
-          <div class="driver-stats">
-            <b>iRating:</b> ${stats.irating}<br>
-            <b>License:</b> ${stats.license}<br>
-            <b>Starts:</b> ${stats.starts}
-          </div>
-        `;
+    function updateTeamFieldState() {
+      const freeAgentCheckbox = document.getElementById('ds-free-agent');
+      const teamInput = document.getElementById('ds-team');
+      
+      if (!freeAgentCheckbox || !teamInput) return;
 
-          // Races table
-          const rows = races
-            .map(
-              (race) => `
-          <tr>
-            <td>${race.track}</td>
-            <td>${race.car}</td>
-            <td>${race.finish}</td>
-            <td>${race.srChange}</td>
-          </tr>
-        `
-            )
-            .join('');
+      if (freeAgentCheckbox.checked) {
+        // Free agent is checked: disable and clear team field
+        teamInput.disabled = true;
+        teamInput.value = '';
+        teamInput.placeholder = 'Free Agent (no team)';
+      } else {
+        // Free agent is unchecked: enable team field
+        teamInput.disabled = false;
+        teamInput.placeholder = 'SolanaGP';
+      }
+    }
 
-          document.getElementById('racesPanel').innerHTML = `
-          <table>
-            <thead>
-              <tr>
-                <th>Track</th>
-                <th>Car</th>
-                <th>Finish</th>
-                <th>SR Δ</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        `;
-
-          // iRating chart
-          const labels = irHistory.map((p) => p.label);
-          const values = irHistory.map((p) => p.value);
-
-          const ctx = document.getElementById('irChart').getContext('2d');
-          new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels,
-              datasets: [
-                {
-                  label: 'iRating',
-                  data: values,
-                  fill: false,
-                  tension: 0.3,
-                },
-              ],
-            },
-            options: {
-              plugins: {
-                legend: { display: false },
-              },
-              scales: {
-                x: {
-                  ticks: { color: '#9ca3af' },
-                },
-                y: {
-                  ticks: { color: '#9ca3af' },
-                },
-              },
-            },
-          });
-        } catch (err) {
-          console.error(err);
-          document.getElementById('driverCard').innerText = 'Error loading driver.';
-          document.getElementById('racesPanel').innerText = 'Error loading races.';
+    function fillSettingsForm(stats) {
+      const avatarPreview = document.getElementById('ds-avatar-preview');
+      if (avatarPreview) {
+        avatarPreview.src = stats.avatar || '/images/riley.png';
+      }
+      document.getElementById('ds-name').value = stats.name || '';
+      document.getElementById('ds-number').value = stats.number ?? '';
+      document.getElementById('ds-team').value = stats.team || '';
+      // Set primary car - try to match exact value, or leave empty if no match
+      const carSelect = document.getElementById('ds-car');
+      if (carSelect && stats.primaryCar) {
+        carSelect.value = stats.primaryCar;
+        // If the value doesn't match any option, keep the saved value as a custom option
+        if (carSelect.value !== stats.primaryCar) {
+          // Value doesn't match any option - this could happen with old data
+          // The select will show "Select a car..." but the save will preserve the custom value
+          carSelect.value = '';
         }
+      } else if (carSelect) {
+        carSelect.value = '';
+      }
+      document.getElementById('ds-free-agent').checked = !!stats.freeAgent;
+
+      // Set timezone select - only set if value exists and matches an option
+      const timezoneSelect = document.getElementById('ds-timezone');
+      if (timezoneSelect && stats.timezone) {
+        timezoneSelect.value = stats.timezone;
+        // If the value doesn't match any option, keep it empty but store it as a data attribute
+        if (timezoneSelect.value !== stats.timezone) {
+          timezoneSelect.setAttribute('data-original-value', stats.timezone);
+        }
+      } else if (timezoneSelect) {
+        timezoneSelect.value = '';
+      }
+      document.getElementById('ds-twitch').value = stats.twitch || '';
+      document.getElementById('ds-twitter').value = stats.twitter || '';
+      document.getElementById('ds-discord').value = stats.discord || '';
+      document.getElementById('ds-notes').value = stats.driverNotes || '';
+
+      // Update team field state based on free agent status
+      updateTeamFieldState();
+    }
+
+    async function loadDriver() {
+      try {
+        const [statsRes, racesRes] = await Promise.all([
+          fetch('/api/stats?driver=' + encodeURIComponent(driverKey), { cache: 'no-store' }),
+          fetch('/api/recent-races?driver=' + encodeURIComponent(driverKey), { cache: 'no-store' }),
+        ]);
+
+        const stats = await statsRes.json();
+        const races = await racesRes.json().catch(() => []);
+
+        const pageTitleEl = document.getElementById('pageTitle');
+        if (pageTitleEl) pageTitleEl.innerText = 'Driver Profile';
+
+        if (driverCardEl) {
+          driverCardEl.innerHTML = `
+            <div class="driver-header">
+              <img src="${stats.avatar || '/images/riley.png'}" alt="${stats.name || 'Driver'}" class="driver-avatar">
+              <div class="driver-meta">
+                <div class="driver-name">#${stats.number ?? ''} ${stats.name || ''}</div>
+                <div class="driver-team">${stats.team || ''}</div>
+                <div class="driver-car">${stats.primaryCar || ''}</div>
+              </div>
+            </div>
+            <div class="driver-stats">
+              <b>iRating:</b> ${stats.irating ?? 0}<br>
+              <b>License:</b> ${stats.license || '—'}<br>
+              <b>Starts:</b> ${stats.starts ?? 0}
+            </div>
+          `;
+
+          // Apply card customizations if they exist
+          if (typeof applyCardCustomization === 'function' && stats.cardCustomization) {
+            const nftFrame = document.querySelector('.nft-frame');
+            if (nftFrame) {
+              applyCardCustomization(nftFrame.parentElement || nftFrame, stats.cardCustomization, stats);
+            }
+          }
+        }
+
+        // Fill settings inputs
+        fillSettingsForm(stats);
+
+        if (settingsStatusEl) {
+          settingsStatusEl.textContent = getToken()
+            ? 'Edit your profile and click Save.'
+            : 'Log in to save changes.';
+        }
+      } catch (err) {
+        console.error(err);
+        if (driverCardEl) driverCardEl.textContent = 'Error loading driver.';
+        if (xpPanelEl) xpPanelEl.textContent = 'Error loading XP info.';
+      }
+    }
+
+    async function saveDriverSettings(evt) {
+      evt.preventDefault();
+
+      const token = getToken();
+      if (!token) {
+        settingsStatusEl.textContent =
+          'You must be logged in to update your driver. Go to the Account page and log in.';
+        return;
       }
 
-      loadDriver();
-    </script>
+      settingsStatusEl.textContent = 'Saving…';
+
+      const freeAgentChecked = document.getElementById('ds-free-agent').checked;
+
+      const body = {
+        name: document.getElementById('ds-name').value,
+        number: document.getElementById('ds-number').value,
+        team: freeAgentChecked ? '' : document.getElementById('ds-team').value, // Clear team if free agent
+        primaryCar: document.getElementById('ds-car').value,
+        freeAgent: freeAgentChecked,
+        timezone: document.getElementById('ds-timezone').value,
+        twitch: document.getElementById('ds-twitch').value,
+        twitter: document.getElementById('ds-twitter').value,
+        discord: document.getElementById('ds-discord').value,
+        driverNotes: document.getElementById('ds-notes').value,
+      };
+
+      try {
+        const res = await fetch('/api/driver/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token,
+          },
+          body: JSON.stringify(body),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          settingsStatusEl.textContent = data.message || 'Update failed.';
+          return;
+        }
+
+        settingsStatusEl.textContent = 'Saved! Driver profile updated.';
+
+        // Update local storage with new display name
+        if (body.name) {
+          localStorage.setItem('sgp_user', body.name);
+        }
+
+        // If username changed, update the page URL to reflect new driverKey
+        // The username is normalized and becomes the new driverKey
+        if (data.username) {
+          const currentPath = window.location.pathname;
+          const pathParts = currentPath.split('/');
+          const currentKey = pathParts[pathParts.length - 1];
+          
+          // If the username (driverKey) changed, update the URL
+          if (data.username !== currentKey.toLowerCase()) {
+            const newPath = '/driver/' + data.username;
+            window.history.replaceState({}, '', newPath);
+            // Update the driverKey variable for this page
+            // The loadDriver function will use the new key from the URL
+          }
+        }
+
+        // tell global-user.js to refresh header (it will pick up the new username)
+        window.dispatchEvent(new Event('sgp:driver-updated'));
+
+        // reload this page's data to get updated information
+        await loadDriver();
+      } catch (err) {
+        console.error(err);
+        settingsStatusEl.textContent = 'Network error while saving.';
+      }
+    }
+
+    if (settingsFormEl) {
+      settingsFormEl.addEventListener('submit', saveDriverSettings);
+    }
+
+    // Wire up avatar upload
+    const avatarFileInput = document.getElementById('ds-avatar-file');
+    const avatarPreview = document.getElementById('ds-avatar-preview');
+    const avatarStatus = document.getElementById('ds-avatar-status');
+    
+    if (avatarFileInput) {
+      avatarFileInput.addEventListener('change', async function() {
+        const file = this.files[0];
+        if (!file) return;
+
+        // Validate file
+        if (file.size > 5 * 1024 * 1024) {
+          avatarStatus.textContent = 'File too large (max 5MB)';
+          avatarStatus.style.color = '#fca5a5';
+          return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+          avatarStatus.textContent = 'Please select an image file';
+          avatarStatus.style.color = '#fca5a5';
+          return;
+        }
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          avatarPreview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // Upload file
+        avatarStatus.textContent = 'Uploading...';
+        avatarStatus.style.color = '#9ca3af';
+
+        const token = getToken();
+        if (!token) {
+          avatarStatus.textContent = 'Must be logged in';
+          avatarStatus.style.color = '#fca5a5';
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        try {
+          const res = await fetch('/api/driver/avatar', {
+            method: 'POST',
+            headers: {
+              Authorization: 'Bearer ' + token,
+            },
+            body: formData,
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            avatarStatus.textContent = data.message || 'Upload failed';
+            avatarStatus.style.color = '#fca5a5';
+            return;
+          }
+
+          avatarStatus.textContent = 'Uploaded successfully!';
+          avatarStatus.style.color = '#bbf7d0';
+
+          // Update preview immediately with new avatar
+          if (avatarPreview) {
+            avatarPreview.src = data.avatar;
+          }
+
+          // Reload driver to show updated avatar everywhere on the page
+          await loadDriver();
+
+          // Dispatch update event to refresh all other pages
+          window.dispatchEvent(new Event('sgp:driver-updated'));
+
+          // Clear file input after showing success message
+          setTimeout(() => {
+            this.value = '';
+            avatarStatus.textContent = '';
+          }, 2000);
+        } catch (err) {
+          console.error(err);
+          avatarStatus.textContent = 'Upload error';
+          avatarStatus.style.color = '#fca5a5';
+        }
+      });
+    }
+
+    // Wire up free agent checkbox to toggle team field
+    const freeAgentCheckbox = document.getElementById('ds-free-agent');
+    if (freeAgentCheckbox) {
+      freeAgentCheckbox.addEventListener('change', function() {
+        updateTeamFieldState();
+      });
+    }
+
+    loadDriver();
+  })();
+</script>
+<script src="/card-customization.js"></script>
+
   </body>
 </html>

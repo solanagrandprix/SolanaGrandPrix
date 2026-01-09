@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -83,8 +83,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: transform 0.18s ease, box-shadow 0.18s ease,
-          background 0.18s ease;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease;
       }
 
       .home-btn-primary {
@@ -136,6 +137,7 @@
         background: linear-gradient(135deg, #22c55e, #06b6d4, #a855f7);
         box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
         animation: frameGlow 7s ease-in-out infinite;
+        cursor: pointer;
       }
 
       @keyframes frameGlow {
@@ -190,6 +192,32 @@
         font-size: 11px;
         color: #9ca3af;
         margin-top: 6px;
+      }
+
+      /* Free Agent pills (if not already in layout.css) */
+      .home-free-agent-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+        font-size: 12px;
+        color: #9ca3af;
+      }
+      .home-free-agent-label {
+        color: #9ca3af;
+      }
+      .home-free-agent-pill {
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid #1f2937;
+        background: rgba(15, 23, 42, 0.7);
+        color: #e5e7eb;
+        font-size: 11px;
+      }
+      .home-free-agent-pill.home-active {
+        border-color: rgba(34, 197, 94, 0.7);
+        background: rgba(34, 197, 94, 0.15);
+        color: #bbf7d0;
       }
 
       /* --------- LEAGUE STATS STRIP --------- */
@@ -249,8 +277,9 @@
         padding: 14px 16px;
         box-shadow: 0 0 18px rgba(15, 23, 42, 0.8);
         border: 1px solid #111827;
-        transition: transform 0.18s ease, box-shadow 0.18s ease,
-          border-color 0.18s ease;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease;
       }
 
       .home-tile:hover {
@@ -356,7 +385,9 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: background 0.18s ease, transform 0.18s ease;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease;
       }
 
       .home-upcoming-btn:hover {
@@ -453,17 +484,22 @@
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
-          <div class="sgp-tagline">
-            IRACING • LEAGUE • STATS • CRYPTO
-          </div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
         </div>
-        <nav class="sgp-nav">
-          <a href="/" class="sgp-nav-link active">Home</a>
-          <a href="/tracker" class="sgp-nav-link">Drivers</a>
-          <a href="/season" class="sgp-nav-link">Season hub</a>
-          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-        </nav>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link active">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+
+          <!-- username slot -->
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
       </header>
 
       <!-- Page content -->
@@ -473,14 +509,13 @@
           <div>
             <div class="home-kicker">On-chain racing league</div>
             <h1 class="home-title">
-              The <span class="home-highlight">Solana Grand Prix</span> iRacing
-              league.
+              The <span class="home-highlight">Solana Grand Prix</span> iRacing league.
             </h1>
 
             <p class="home-sub">
-              Weekly degen race nights, Mazda Cup chaos, GT3 door-banging and
-              on-chain culture. Track live stats, season standings and
-              collectible driver cards built for the Solana community.
+              Weekly degen race nights, Mazda Cup chaos, GT3 door-banging and on-chain culture.
+              Track live stats, season standings and collectible driver cards built for the Solana
+              community.
             </p>
 
             <div class="home-buttons">
@@ -498,23 +533,29 @@
 
           <aside class="home-feature-card">
             <div class="home-feature-label">Featured driver</div>
-            <div class="home-feature-frame">
+
+            <!-- clickable frame -->
+            <div class="home-feature-frame" id="featured-link" role="button" tabindex="0">
               <div class="home-feature-inner">
                 <img
+                  id="featured-avatar"
                   src="/images/riley.png"
                   class="home-feature-avatar"
-                  alt="Riley McAlpine"
+                  alt="Featured driver"
                 />
                 <div class="home-feature-text">
-                  <div class="home-feature-name">#93 Lemon</div>
-                  <div class="home-feature-team">SolanaGP</div>
-                   <div class="home-free-agent-row">
-          <span class="home-free-agent-label">Free Agent:</span>
-          <span class="home-free-agent-pill home-active">Yes</span>
-          <span class="home-free-agent-pill">No</span>
-        </div>
-                  <div class="home-feature-footer"> Open Drivers to see full stats
-                    &amp; iRating history.
+                  <div id="featured-name" class="home-feature-name">#93 Lemon</div>
+                  <div id="featured-team" class="home-feature-team">SolanaGP</div>
+                  <div id="featured-car" class="home-feature-car">Mazda MX-5 Cup</div>
+
+                  <div class="home-free-agent-row">
+                    <span class="home-free-agent-label">Free Agent:</span>
+                    <span id="featured-fa-yes" class="home-free-agent-pill home-active">Yes</span>
+                    <span id="featured-fa-no" class="home-free-agent-pill">No</span>
+                  </div>
+
+                  <div class="home-feature-footer">
+                    Open Drivers to see full stats &amp; iRating history.
                   </div>
                 </div>
               </div>
@@ -553,9 +594,8 @@
             <div class="home-tile">
               <h3>Drivers</h3>
               <p>
-                See iRating, license, starts and recent results for every
-                SolanaGP driver. Deep-dive on dedicated profile pages with
-                graphs and history.
+                See iRating, license, starts and recent results for every SolanaGP driver. Deep-dive
+                on dedicated profile pages with graphs and history.
               </p>
               <a href="/tracker">Open drivers ↗</a>
             </div>
@@ -563,19 +603,17 @@
             <div class="home-tile">
               <h3>Season hub</h3>
               <p>
-                Follow the full calendar, results, standings and storylines for
-                each season. Perfect for race broadcasts, recap threads and
-                league docs.
+                Follow the full calendar, results, standings and storylines for each season. Perfect
+                for race broadcasts, recap threads and league docs.
               </p>
               <a href="/season">View Season 1 hub ↗</a>
             </div>
 
             <div class="home-tile">
-              <h3>SGP NFT Card Builder</h3>
+              <h3>Card Builder</h3>
               <p>
-                Generate animated driver cards with rarity frames, export
-                high-res PNGs and drop them on Solana. Use them for overlays,
-                merch or NFT drops.
+                Generate animated driver cards with rarity frames, export high-res PNGs and drop
+                them on Solana. Use them for overlays, merch or NFT drops.
               </p>
               <a href="/card-builder">Launch card builder ↗</a>
             </div>
@@ -587,13 +625,12 @@
           <!-- Upcoming -->
           <article class="home-card">
             <div class="home-card-header">
-              <div class="home-card-title">Next event </div>
+              <div class="home-card-title">Next event</div>
               <span class="home-pill">TBD</span>
             </div>
 
             <div class="home-upcoming-meta">
-              All dates / times are placeholder data until the live calendar is
-              wired in.
+              All dates / times are placeholder data until the live calendar is wired in.
             </div>
 
             <div class="home-upcoming-row">
@@ -627,9 +664,7 @@
                 <div class="home-step-number">1</div>
                 <div>
                   <div class="home-step-title">Mint or Purchase</div>
-                  <div class="home-step-text">
-                    Obtain one of the driver NFTs.
-                  </div>
+                  <div class="home-step-text">Obtain one of the driver NFTs.</div>
                 </div>
               </li>
               <li class="home-step">
@@ -637,7 +672,8 @@
                 <div>
                   <div class="home-step-title">Race, log, repeat</div>
                   <div class="home-step-text">
-                    As you participate in our events your driver will be rewarded and given custom stats.
+                    As you participate in our events your driver will be rewarded and given custom
+                    stats.
                   </div>
                 </div>
               </li>
@@ -663,8 +699,110 @@
 
       <!-- Shared footer -->
       <footer class="sgp-footer">
-        Solana Grand Prix • IRacing automation coming soon.
+        Solana Grand Prix
       </footer>
     </div>
+
+    <script src="/global-user.js"></script>
+    <script src="/card-customization.js"></script>
+
+    <script>
+      (function () {
+        function getToken() {
+          return localStorage.getItem('sgp_token');
+        }
+
+        function setFreeAgentUI(isFreeAgent) {
+          var yes = document.getElementById('featured-fa-yes');
+          var no = document.getElementById('featured-fa-no');
+          if (!yes || !no) return;
+
+          if (isFreeAgent) {
+            yes.classList.add('home-active');
+            no.classList.remove('home-active');
+          } else {
+            yes.classList.remove('home-active');
+            no.classList.add('home-active');
+          }
+        }
+
+        function wireFeaturedLink(driverKey) {
+          var linkEl = document.getElementById('featured-link');
+          if (!linkEl || !driverKey) return;
+
+          function go() {
+            window.location.href = '/driver/' + encodeURIComponent(driverKey);
+          }
+
+          linkEl.onclick = go;
+          linkEl.onkeydown = function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              go();
+            }
+          };
+        }
+
+        async function refreshFeaturedDriver() {
+          try {
+            // Get featured driver from API
+            var featuredRes = await fetch('/api/featured-driver');
+            if (!featuredRes.ok) {
+              // Fallback to default if API fails
+              return;
+            }
+
+            var featuredData = await featuredRes.json();
+            var driverKey = (featuredData.driverKey || 'lemon').toLowerCase();
+            if (!driverKey) return;
+
+            wireFeaturedLink(driverKey);
+
+            // Pull featured driver profile
+            var statsRes = await fetch('/api/stats?driver=' + encodeURIComponent(driverKey));
+            if (!statsRes.ok) return;
+
+            var stats = await statsRes.json();
+
+            var avatarEl = document.getElementById('featured-avatar');
+            var nameEl = document.getElementById('featured-name');
+            var teamEl = document.getElementById('featured-team');
+            var carEl = document.getElementById('featured-car');
+
+            if (avatarEl && stats.avatar) avatarEl.src = stats.avatar;
+            if (avatarEl && stats.name) avatarEl.alt = stats.name + ' avatar';
+
+            var number = typeof stats.number !== 'undefined' ? stats.number : '';
+            var display = stats.name || stats.displayName || 'Driver';
+
+            if (nameEl) nameEl.textContent = '#' + number + ' ' + display;
+            if (teamEl) teamEl.textContent = stats.team || 'Privateer';
+            if (carEl) carEl.textContent = stats.primaryCar || 'Mazda MX-5 Cup';
+
+            setFreeAgentUI(!!stats.freeAgent);
+
+            // Apply card customizations if available
+            if (stats.cardCustomization && window.applyCardCustomization) {
+              const featuredCardEl = document.getElementById('featured-link');
+              if (featuredCardEl) {
+                setTimeout(() => {
+                  window.applyCardCustomization(featuredCardEl, stats.cardCustomization, stats);
+                }, 100);
+              }
+            }
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+        // initial load
+        refreshFeaturedDriver();
+
+        // update live after save on profile page
+        window.addEventListener('sgp:driver-updated', function () {
+          refreshFeaturedDriver();
+        });
+      })();
+    </script>
   </body>
 </html>

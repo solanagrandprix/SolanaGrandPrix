@@ -120,25 +120,32 @@
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
-          <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
+          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
         </div>
-        <nav class="sgp-nav">
-          <a href="/" class="sgp-nav-link">Home</a>
-          <a href="/tracker" class="sgp-nav-link">Drivers</a>
-          <a href="/season" class="sgp-nav-link">Season hub</a>
-          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-        </nav>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link active">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
       </header>
 
       <!-- 🔵 Page content -->
       <main class="sgp-main">
+
         <div class="season-container">
           <div class="season-top">
             <div>
-              <h1 style="margin: 0">Season 1</h1>
+              <h1 style="margin:0;">Season 1</h1>
               <div class="season-subtitle">Schedule • Results • Standings • Highlights</div>
             </div>
+
             <div class="season-links">
               <a href="/tracker">View live driver tracker</a> •
               <a href="/card-builder">Open card builder</a>
@@ -161,34 +168,10 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>R1</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td><span class="pill">Upcoming</span></td>
-                    </tr>
-                    <tr>
-                      <td>R2</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td><span class="pill">Upcoming</span></td>
-                    </tr>
-                    <tr>
-                      <td>R3</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td><span class="pill">Upcoming</span></td>
-                    </tr>
-                    <tr>
-                      <td>R4</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td>TBD</td>
-                      <td><span class="pill">Upcoming</span></td>
-                    </tr>
+                    <tr><td>R1</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
+                    <tr><td>R2</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
+                    <tr><td>R3</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
+                    <tr><td>R4</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
                   </tbody>
                 </table>
               </div>
@@ -218,34 +201,27 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>1</td>
-                      <td>#93 Lemon</td>
-                      <td>0</td>
-                      <td>0</td>
-                      <td>0</td>
-                    </tr>
+                    <tr><td>1</td><td>#93 Lemon</td><td>0</td><td>0</td><td>0</td></tr>
                   </tbody>
                 </table>
               </div>
 
               <div class="panel">
                 <h2>Season Notes</h2>
-                <p class="season-notes">
-                  This page is currently using demo data. Later, your backend can feed this with
-                  real SGP race results, points, and schedule pulled automatically from the iRacing
-                  API and your custom scoring system.
-                </p>
+                <p class="season-notes"></p>
               </div>
             </div>
           </div>
         </div>
+
       </main>
 
       <!-- 🔵 Global footer -->
-      <footer class="sgp-footer">
-        Solana Grand Prix • IRacing automation coming soon.
-      </footer>
+      <footer class="sgp-footer">Solana Grand Prix</footer>
     </div>
+
+<!-- shared username/dropdown logic for ALL pages -->
+<script src="/global-user.js"></script>
+
   </body>
 </html>

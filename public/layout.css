@@ -1,4 +1,91 @@
 /* ----------------------------------------------------------
+   CARD CUSTOMIZATION ANIMATIONS & EFFECTS
+   Used by card-customization.js across the site
+---------------------------------------------------------- */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
+  }
+}
+
+@keyframes glowFlicker {
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+  25% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.6); }
+  50% { box-shadow: 0 0 30px rgba(34, 197, 94, 1); }
+  75% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.6); }
+}
+
+@keyframes glowBreath {
+  0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+  50% { box-shadow: 0 0 35px rgba(34, 197, 94, 0.9); }
+}
+
+@keyframes glowWave {
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(6, 182, 212, 0.4); }
+  33% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.6), 0 0 45px rgba(139, 92, 246, 0.4); }
+  66% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.6), 0 0 45px rgba(34, 197, 94, 0.4); }
+}
+
+@keyframes glowChaos {
+  0% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+  16% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); }
+  33% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.8); }
+  50% { box-shadow: 0 0 35px rgba(139, 92, 246, 0.8); }
+  66% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.8); }
+  83% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); }
+  100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 3s infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scanlines {
+  position: relative;
+}
+
+.scanlines::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 10;
+  border-radius: inherit;
+}
+
+/* ----------------------------------------------------------
    GLOBAL BASE STYLES
    These apply to the whole site (every page)
 ---------------------------------------------------------- */
@@ -11,8 +98,7 @@ body {
   min-height: 100vh;
   background:
     radial-gradient(circle at top left, #22c55e22, transparent 55%),
-    radial-gradient(circle at bottom right, #6366f122, transparent 55%),
-    #020617;
+    radial-gradient(circle at bottom right, #6366f122, transparent 55%), #020617;
   color: #e5e7eb;
   font-family: Arial, sans-serif;
 }
@@ -23,18 +109,17 @@ body {
    - Controls overall padding from browser edges
 ---------------------------------------------------------- */
 .sgp-shell {
-  min-height: 100vh;          /* shell fills full screen height */
-  display: flex;              /* stack children vertically */
-  flex-direction: column;     /* header, main, footer order */
+  min-height: 100vh;           /* shell fills full screen height */
+  display: flex;               /* stack children vertically */
+  flex-direction: column;      /* header, main, footer order */
 
   /* 🔧 Outer padding around the whole app
-     top / right&left / bottom
-     ↓ Reduce these if you want LESS space at very top & bottom */
+     top / right&left / bottom */
   padding: 16px 20px 24px;
 
   max-width: 1100px;
   width: 100%;
-  margin: 0 auto;             /* center whole site horizontally */
+  margin: 0 auto;              /* center whole site horizontally */
 }
 
 /* ----------------------------------------------------------
@@ -44,10 +129,34 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;         /* space between header and main */
+}
 
-  /* Space between header and main content.
-     ↓ Reduce this to bring main content closer to header. */
-  margin-bottom: 16px;
+/* new wrapper for nav + user box */
+.sgp-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* username box */
+.sgp-userbox {
+  font-size: 14px;
+  color: #a5b4fc;
+  font-weight: 600;
+  min-width: 100px;
+  text-align: right;
+}
+
+/* clickable username text */
+.sgp-user-link {
+  color: #a5b4fc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sgp-user-link:hover {
+  text-decoration: underline;
 }
 
 .sgp-logo-block {
@@ -63,9 +172,9 @@ body {
 
 .sgp-tagline {
   font-size: 11px;
-  color: #9ca3af;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
+  color: #9ca3af;
 }
 
 .sgp-nav {
@@ -88,42 +197,43 @@ body {
   font-weight: bold;
 }
 
+/* Username box in top-right */
+.sgp-userbox {
+  font-size: 14px;
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
 /* ----------------------------------------------------------
    MAIN CONTENT AREA
    - Every page uses .sgp-main
    - Controls vertical space between header & footer
 ---------------------------------------------------------- */
 .sgp-main {
-  flex: 1;                    /* take remaining vertical space between header/footer */
+  flex: 1;                     /* take remaining vertical space */
   max-width: 1100px;
   width: 100%;
   margin: 0 auto;
 
   /* 🔧 Default vertical padding for most pages
-     top / right&left / bottom
-     ↓ These values directly control the “big empty space”
-       between header and footer on regular pages. */
+     top / right&left / bottom */
   padding: 24px 0 32px;
 
   box-sizing: border-box;
 }
 
-/* Optional compact variant:
-   - Add class="sgp-main compact-main" for tighter pages
-   - Great for Driver Tracker, Leaderboard, etc. */
+/* Optional compact variant (tracker, leaderboard, etc.) */
 .compact-main {
-  padding-top: 5px;   /* almost no gap below the header */
+  padding-top: 5px;            /* almost no gap below the header */
   padding-bottom: 10px;
 }
 
 /* ----------------------------------------------------------
    HOME PAGE ONLY
    - The home page main tag has: class="sgp-main home-main"
-   - Keeps hero pushed down a bit more for that “landing page” feel
 ---------------------------------------------------------- */
 .home-main {
-  /* Extra top padding compared to normal pages */
-  padding-top: 80px;   /* was 120px, you can tweak this */
+  padding-top: 80px;           /* was 120px, tweak if needed */
   padding-bottom: 48px;
 }
 
@@ -131,14 +241,18 @@ body {
    FOOTER
 ---------------------------------------------------------- */
 .sgp-footer {
-  margin-top: 12px;        /* gap between main content and footer */
+  margin-top: 12px;            /* gap between main content and footer */
   font-size: 11px;
   color: #6b7280;
   text-align: center;
   border-top: 1px solid #111827;
-  padding-top: 12px;       /* space inside footer above the text */
+  padding-top: 12px;           /* space inside footer above the text */
 }
 
+/* ----------------------------------------------------------
+   SHARED: FREE AGENT LABELS
+   (Used by driver cards / tracker)
+---------------------------------------------------------- */
 .free-agent-row {
   display: flex;
   align-items: center;
@@ -162,33 +276,101 @@ body {
 
 .free-agent-pill.active {
   background: #22c55e22;
-  color: #22c55e;
   border-color: #22c55e;
+  color: #bbf7d0;
 }
 
-/* --- Home featured driver: Free Agent pills --- */
-.home-free-agent-row {
+/* ----------------------------------------------------------
+   USER DROPDOWN MENU
+---------------------------------------------------------- */
+
+.sgp-user-dropdown {
+  position: relative;
+  user-select: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #a5b4fc;
+}
+
+.sgp-user-trigger {
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: 0.15s;
+}
+
+.sgp-user-trigger:hover {
+  background: #1e293b;
+}
+
+.sgp-user-menu {
+  position: absolute;
+  right: 0;
+  top: 120%;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 180px;
+  display: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  z-index: 50;
+}
+
+.sgp-user-menu.show {
+  display: block;
+}
+
+.sgp-user-menu a {
+  display: block;
+  padding: 8px 14px;
+  text-decoration: none;
+  color: #e5e7eb;
+  font-size: 14px;
+  transition: 0.15s;
+}
+
+.sgp-user-menu a:hover {
+  background: #1e293b;
+  color: #38bdf8;
+}
+
+/* Header user dropdown */
+.sgp-user-dropdown { position: relative; }
+.sgp-user-trigger {
+  background: transparent;
+  border: none;
+  color: #e5e7eb;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
-  font-size: 12px;
 }
+.sgp-user-caret { font-size: 10px; opacity: 0.8; }
 
-.home-free-agent-label {
-  color: #9ca3af;
+.sgp-user-menu {
+  position: absolute;
+  right: 0;
+  top: 30px;
+  min-width: 180px;
+  background: rgba(2, 6, 23, 0.95);
+  border: 1px solid #111827;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+  display: none;
+  z-index: 50;
 }
+.sgp-user-menu.open { display: block; }
 
-.home-free-agent-pill {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: #020617;
-  border: 1px solid #1f2937;
-  color: #9ca3af;
+.sgp-user-menu a {
+  display: block;
+  padding: 10px 10px;
+  border-radius: 10px;
+  color: #e5e7eb;
+  text-decoration: none;
+  font-size: 14px;
 }
+.sgp-user-menu a:hover { background: rgba(56, 189, 248, 0.12); }
 
-.home-free-agent-pill.home-active {
-  background: #22c55e;
-  border-color: #22c55e;
-  color: #020617;
-}

@@ -1,32 +1,50 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Card Builder</title>
-
-    <!-- Shared global layout -->
+    <title>Solana Grand Prix – Card Builder</title>
     <link rel="stylesheet" href="/layout.css" />
 
-    <!-- Page-specific styles -->
     <style>
       .card-builder-layout {
-        width: 1100px;
-        max-width: 100%;
-        padding: 0 16px;
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+        grid-template-columns: 360px 1fr;
         gap: 24px;
+        height: calc(100vh - 200px); /* Account for header/footer */
+        max-height: 1200px;
       }
 
-      h1 {
-        margin-top: 0;
-        margin-bottom: 6px;
+      @media (max-width: 900px) {
+        .card-builder-layout {
+          grid-template-columns: minmax(0, 1fr);
+          height: auto;
+        }
       }
 
-      .subheadline {
-        color: #9ca3af;
-        font-size: 14px;
-        margin-bottom: 20px;
+      .card-builder-left {
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 8px; /* Space for scrollbar */
+        max-height: calc(100vh - 180px); /* Account for header/footer, allow scrolling */
+      }
+
+      /* Custom scrollbar styling */
+      .card-builder-left::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .card-builder-left::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 4px;
+      }
+
+      .card-builder-left::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.5);
+        border-radius: 4px;
+      }
+
+      .card-builder-left::-webkit-scrollbar-thumb:hover {
+        background: rgba(59, 130, 246, 0.7);
       }
 
       .panel {
@@ -34,455 +52,1691 @@
         border-radius: 16px;
         padding: 16px 18px;
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-        margin-bottom: 16px;
         border: 1px solid #111827;
+        margin-bottom: 20px;
       }
 
       .panel h2 {
-        margin-top: 0;
+        margin: 0 0 12px;
         font-size: 16px;
-        margin-bottom: 10px;
       }
 
-      label {
-        font-size: 13px;
+      .panel label {
         display: block;
-        margin-bottom: 4px;
+        font-size: 13px;
+        margin: 12px 0 4px;
+        color: #cbd5e1;
       }
 
-      select {
+      .panel input,
+      .panel select,
+      .panel textarea {
         width: 100%;
         padding: 8px 10px;
         border-radius: 8px;
-        border: none;
-        background: #0b1120;
+        border: 1px solid #1f2937;
+        background: #020617;
         color: #e5e7eb;
-        margin-bottom: 10px;
-      }
-
-      button {
-        padding: 9px 18px;
-        border-radius: 999px;
-        border: none;
-        background: #22c55e;
-        color: #000;
-        font-weight: bold;
-        cursor: pointer;
         font-size: 14px;
       }
 
-      button.secondary {
-        background: #0f172a;
+      .panel textarea {
+        min-height: 70px;
+        resize: vertical;
+      }
+
+      .panel button {
+        padding: 10px 18px;
+        border-radius: 999px;
+        border: none;
+        background: #22c55e;
+        color: #020617;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 12px;
+        width: 100%;
+      }
+
+      .panel button:hover {
+        background: #16a34a;
+      }
+
+      .panel button.secondary {
+        background: rgba(15, 23, 42, 0.9);
         color: #e5e7eb;
-        border: 1px solid #1e293b;
-        margin-left: 8px;
+        border: 1px solid #1f2937;
       }
 
-      /* CARD PREVIEW AREA */
-
-      .preview-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+      .panel button.secondary:hover {
+        background: rgba(15, 23, 42, 1);
       }
 
-      #cardCapture {
-        width: 420px;
-        height: 260px;
-        position: relative;
-      }
-
-      .card-frame {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        padding: 3px;
-        border-radius: 18px;
-        overflow: hidden;
-      }
-
-      .card-inner {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        border-radius: 15px;
-        background: radial-gradient(circle at top left, #1f2937, #020617 70%);
-        display: flex;
-        padding: 14px 16px;
-        box-sizing: border-box;
-        gap: 14px;
-      }
-
-      /* Background animations */
-
-      .bg-static {
-        background: radial-gradient(circle at top left, #1f2937, #020617 70%);
-      }
-
-      .bg-neon-grid {
-        background:
-          linear-gradient(90deg, rgba(148, 163, 184, 0.35) 1px, transparent 1px),
-          linear-gradient(180deg, rgba(148, 163, 184, 0.35) 1px, transparent 1px),
-          radial-gradient(circle at top left, #22c55e33, #020617 70%);
-        background-size:
-          20px 20px,
-          20px 20px,
-          auto;
-        animation: gridMove 10s linear infinite;
-      }
-      @keyframes gridMove {
-        0% {
-          background-position:
-            0 0,
-            0 0,
-            0 0;
-        }
-        100% {
-          background-position:
-            40px 40px,
-            40px 40px,
-            0 0;
-        }
-      }
-
-      .bg-solar {
-        background:
-          radial-gradient(circle at 10% 10%, #f9731633, transparent 55%),
-          radial-gradient(circle at 90% 80%, #22c55e33, transparent 55%),
-          radial-gradient(circle at 50% 120%, #0ea5e933, transparent 55%), #020617;
-        animation: solarPulse 6s ease-in-out infinite;
-      }
-      @keyframes solarPulse {
-        0%,
-        100% {
-          filter: brightness(1);
-        }
-        50% {
-          filter: brightness(1.25);
-        }
-      }
-
-      .bg-ice {
-        background:
-          radial-gradient(circle at 0% 0%, #7dd3fc33, transparent 55%),
-          radial-gradient(circle at 100% 100%, #a855f733, transparent 55%), #020617;
-        animation: iceShift 9s linear infinite;
-      }
-      @keyframes iceShift {
-        0% {
-          background-position:
-            0 0,
-            100% 100%;
-        }
-        50% {
-          background-position:
-            10% 5%,
-            90% 95%;
-        }
-        100% {
-          background-position:
-            0 0,
-            100% 100%;
-        }
-      }
-
-      /* Rarity frames */
-
-      .rarity-common {
-        background: linear-gradient(135deg, #4b5563, #111827);
-        box-shadow: 0 0 12px rgba(31, 41, 55, 0.6);
-      }
-      .rarity-rare {
-        background: linear-gradient(135deg, #0ea5e9, #6366f1);
-        box-shadow: 0 0 14px rgba(56, 189, 248, 0.7);
-      }
-      .rarity-legendary {
-        background: linear-gradient(135deg, #f97316, #facc15);
-        box-shadow: 0 0 18px rgba(250, 204, 21, 0.8);
-      }
-      .rarity-mythic {
-        background: conic-gradient(from 0deg, #22c55e, #0ea5e9, #a855f7, #f97316, #22c55e);
-        box-shadow: 0 0 22px rgba(168, 85, 247, 0.9);
-        animation: mythicSpin 8s linear infinite;
-      }
-      @keyframes mythicSpin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      .card-inner-content {
-        position: relative;
-        z-index: 1;
-        display: flex;
-        gap: 14px;
-        width: 100%;
-      }
-
-      .card-avatar {
-        width: 90px;
-        height: 90px;
-        border-radius: 14px;
-        object-fit: cover;
-        background: #020617;
-        box-shadow: 0 0 10px rgba(15, 23, 42, 0.9);
-      }
-
-      .card-text {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding-top: 4px;
-      }
-
-      .card-name-line {
-        font-size: 16px;
-        font-weight: bold;
-      }
-      .card-team {
-        font-size: 13px;
-        color: #e5e7eb;
-      }
-      .card-car {
+      .status-message {
+        margin-top: 10px;
         font-size: 12px;
-        color: #c4b5fd;
-      }
-      .card-footer {
-        font-size: 11px;
         color: #9ca3af;
       }
 
-      .badge {
-        display: inline-block;
-        padding: 3px 8px;
-        border-radius: 999px;
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-bottom: 4px;
-      }
-      .badge-common {
-        background: #111827;
-        color: #e5e7eb;
-      }
-      .badge-rare {
-        background: #0ea5e9;
-        color: #0b1120;
-      }
-      .badge-legendary {
-        background: #facc15;
-        color: #451a03;
-      }
-      .badge-mythic {
-        background: #a855f7;
-        color: #fdf2ff;
+      .status-message.success {
+        color: #bbf7d0;
       }
 
-      .controls-header {
+      .status-message.error {
+        color: #fca5a5;
+      }
+
+      .preview-wrapper {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-      .controls-header a {
-        color: #38bdf8;
-        font-size: 12px;
-        text-decoration: none;
-      }
-      .controls-header a:hover {
-        text-decoration: underline;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 600px; /* Increased to accommodate larger card */
+        padding: 20px;
       }
 
-      @media (max-width: 900px) {
-        .card-builder-layout {
-          grid-template-columns: minmax(0, 1fr);
+      /* Driver card preview styles (same as driver.html and index.html) */
+      .nft-frame {
+        position: relative;
+        padding: 2px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #22c55e, #06b6d4, #8b5cf6);
+        box-shadow: 0 0 26px rgba(0, 0, 0, 0.8);
+        animation: glowPulse 4s ease-in-out infinite;
+        max-width: 630px; /* Increased from 420px by 50% */
+        width: 100%;
+        transform-origin: center top; /* Scale from top center */
+      }
+
+      .nft-inner {
+        background: #0b1120;
+        border-radius: 16px;
+        padding: 24px 27px; /* Increased from 16px 18px by 50% */
+      }
+
+      @keyframes glowPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 22px rgba(56, 189, 248, 0.6);
         }
+        50% {
+          box-shadow: 0 0 30px rgba(34, 197, 94, 0.8);
+        }
+      }
+
+      .driver-header {
+        display: flex;
+        align-items: center;
+        gap: 21px; /* Increased from 14px by 50% */
+        margin-bottom: 18px; /* Increased from 12px by 50% */
+        text-align: left;
+      }
+
+      .driver-avatar {
+        width: 120px; /* Increased from 80px by 50% */
+        height: 120px; /* Increased from 80px by 50% */
+        border-radius: 16px;
+        object-fit: cover;
+        background: #020617;
+      }
+
+      .driver-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .driver-name {
+        font-weight: bold;
+        font-size: 27px; /* Increased from 18px by 50% */
+      }
+
+      .driver-team {
+        font-size: 19.5px; /* Increased from 13px by 50% */
+        color: #9ca3af;
+      }
+
+      .driver-car {
+        font-size: 19.5px; /* Increased from 13px by 50% */
+        color: #d1fae5;
+      }
+
+      .driver-stats {
+        margin-top: 12px; /* Increased from 8px */
+        font-size: 21px; /* Increased from 14px by 50% */
+        text-align: left;
+        line-height: 1.4;
+      }
+
+      .free-agent-row {
+        display: flex;
+        align-items: center;
+        gap: 9px; /* Increased from 6px by 50% */
+        margin-top: 6px; /* Increased from 4px by 50% */
+        font-size: 18px; /* Increased from 12px by 50% */
+      }
+
+      .free-agent-label {
+        color: #9ca3af;
+        font-size: 16.5px; /* Increased from 11px by 50% */
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .free-agent-pill {
+        padding: 3px 12px; /* Increased from 2px 8px by 50% */
+        border-radius: 999px;
+        border: 1px solid #1f2937;
+        background: rgba(15, 23, 42, 0.7);
+        color: #9ca3af;
+        font-size: 16.5px; /* Increased from 11px by 50% */
+      }
+
+      .free-agent-pill.active {
+        border-color: rgba(34, 197, 94, 0.7);
+        background: rgba(34, 197, 94, 0.15);
+        color: #bbf7d0;
+      }
+
+      .ds-row-inline {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 10px;
+      }
+
+      .ds-toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ds-toggle-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #22c55e;
+      }
+
+      .ds-toggle-row label {
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .subheadline {
+        font-size: 13px;
+        color: #9ca3af;
+        margin-bottom: 20px;
+      }
+
+      .panel input:disabled,
+      .panel select:disabled,
+      .panel button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #0a0f1a;
+      }
+
+      .panel input:disabled::placeholder {
+        color: #4b5563;
+      }
+
+      .panel button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #1f2937 !important;
+        color: #6b7280 !important;
+      }
+
+      .panel input[type="color"] {
+        width: 100%;
+        height: 40px;
+        border: 1px solid #1f2937;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #020617;
+        padding: 2px;
+      }
+
+      .panel input[type="range"] {
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #1f2937;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+
+      .panel input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #22c55e;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .panel input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: #22c55e;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Customization styles for preview */
+      .custom-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .shimmer-effect {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .shimmer-effect::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shimmer 3s infinite;
+      }
+
+      @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+      }
+
+      .scanlines {
+        position: relative;
+      }
+
+      .scanlines::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.15),
+          rgba(0, 0, 0, 0.15) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        border-radius: 16px;
+        pointer-events: none;
+      }
+
+      .particle {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: #22c55e;
+        border-radius: 50%;
+        animation: float 10s infinite;
+        opacity: 0.6;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+        10% { opacity: 0.6; }
+        90% { opacity: 0.6; }
+        100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+      }
+
+      @keyframes glowPulse {
+        0%, 100% { box-shadow: 0 0 22px rgba(56, 189, 248, 0.6); }
+        50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.8); }
+      }
+
+      @keyframes glowFlicker {
+        0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+        25% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.6); }
+        50% { box-shadow: 0 0 30px rgba(34, 197, 94, 1); }
+        75% { box-shadow: 0 0 25px rgba(34, 197, 94, 0.6); }
+      }
+
+      @keyframes glowBreath {
+        0%, 100% { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+        50% { box-shadow: 0 0 35px rgba(34, 197, 94, 0.9); }
+      }
+
+      @keyframes glowWave {
+        0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6), 0 0 40px rgba(6, 182, 212, 0.4); }
+        33% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.6), 0 0 45px rgba(139, 92, 246, 0.4); }
+        66% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.6), 0 0 45px rgba(34, 197, 94, 0.4); }
+      }
+
+      @keyframes glowChaos {
+        0% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+        16% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); }
+        33% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.8); }
+        50% { box-shadow: 0 0 35px rgba(139, 92, 246, 0.8); }
+        66% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.8); }
+        83% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); }
+        100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.8); }
+      }
+
+      .name-gradient {
+        background: linear-gradient(135deg, #fff, #22c55e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .name-glow {
+        text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+      }
+
+      .name-neon {
+        text-shadow: 
+          0 0 5px currentColor,
+          0 0 10px currentColor,
+          0 0 15px currentColor,
+          0 0 20px currentColor;
+      }
+
+      .name-anaglyph {
+        text-shadow: 
+          2px 2px 0px #ff0000,
+          -2px -2px 0px #00ffff;
       }
     </style>
 
-    <!-- html2canvas for exporting PNG -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   </head>
 
   <body>
     <div class="sgp-shell">
-      <!-- 🔵 Global header -->
+      <!-- 🔵 Global Header -->
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
           <div class="sgp-tagline">IRACING • LEAGUE • STATS • NFT CARDS</div>
         </div>
-        <nav class="sgp-nav">
-          <a href="/" class="sgp-nav-link">Home</a>
-          <a href="/tracker" class="sgp-nav-link">Drivers</a>
-          <a href="/season" class="sgp-nav-link">Season hub</a>
-          <a href="/card-builder" class="sgp-nav-link">Card builder</a>
-          <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-        </nav>
+
+        <div class="sgp-header-right">
+          <nav class="sgp-nav">
+            <a href="/" class="sgp-nav-link">Home</a>
+            <a href="/tracker" class="sgp-nav-link">Drivers</a>
+            <a href="/season" class="sgp-nav-link">Season hub</a>
+            <a href="/card-builder" class="sgp-nav-link active">Card builder</a>
+            <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
+            <a href="/auth" class="sgp-nav-link">Account</a>
+          </nav>
+          <div id="sgp-user" class="sgp-userbox"></div>
+        </div>
       </header>
 
-      <!-- 🔵 Page content -->
+      <!-- 🔵 Page Content -->
       <main class="sgp-main">
         <div class="card-builder-layout">
-          <div>
+          <!-- Left side (controls) -->
+          <div class="card-builder-left">
             <h1>Card Builder</h1>
             <div class="subheadline">Design SolanaGP driver cards and export them as PNGs.</div>
 
             <div class="panel">
-              <div class="controls-header">
-                <h2>Card Settings</h2>
-                <a href="/tracker" class="sgp-nav-link active">Live tracker</a>
-              </div>
-
+              <h2>Select Driver</h2>
+              <p style="font-size: 12px; color: #6b7280; margin: 0 0 12px;">
+                View any driver's card design. You can only edit and save your own card customizations.
+              </p>
               <label for="driverSelect">Driver</label>
               <select id="driverSelect">
-                <option value="lemon">Lemon</option>
+                <option value="">Loading drivers...</option>
+              </select>
+              <div id="ownership-status" style="font-size: 12px; margin-top: 8px; padding: 8px; border-radius: 6px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); display: none;"></div>
+            </div>
+
+            <div class="panel">
+              <h2>🎨 Border & Glow</h2>
+              
+              <label for="borderPreset">Glow Preset</label>
+              <select id="borderPreset">
+                <option value="green-blue-purple">Green → Blue → Purple</option>
+                <option value="fire">🔥 Fire (Red/Orange)</option>
+                <option value="ice">❄️ Ice (Cyan/Blue)</option>
+                <option value="electric">⚡ Electric (Yellow/Purple)</option>
+                <option value="neon-pink">💗 Neon Pink</option>
+                <option value="gold">✨ Gold</option>
+                <option value="rainbow">🌈 Rainbow</option>
+                <option value="custom">Custom Colors</option>
               </select>
 
+              <div id="customColorControls" style="display: none; margin-top: 12px;">
+                <label for="borderColor1">Glow Color 1</label>
+                <input type="color" id="borderColor1" value="#22c55e" />
+                
+                <label for="borderColor2" style="margin-top: 8px;">Glow Color 2</label>
+                <input type="color" id="borderColor2" value="#06b6d4" />
+                
+                <label for="borderColor3" style="margin-top: 8px;">Glow Color 3</label>
+                <input type="color" id="borderColor3" value="#8b5cf6" />
+              </div>
 
-              <label for="raritySelect">Rarity</label>
-              <select id="raritySelect">
-                <option value="common">Common</option>
-                <option value="rare">Rare</option>
-                <option value="legendary" selected>Legendary</option>
-                <option value="mythic">Mythic</option>
+              <label for="glowIntensity" style="margin-top: 12px;">Glow Intensity</label>
+              <input type="range" id="glowIntensity" min="0" max="100" value="50" />
+              <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Current: <span id="glowIntensityValue">50</span>%</div>
+
+              <label for="glowAnimation" style="margin-top: 12px;">Glow Animation</label>
+              <select id="glowAnimation">
+                <option value="pulse">Pulse</option>
+                <option value="flicker">Flicker</option>
+                <option value="breath">Breathing</option>
+                <option value="wave">Wave</option>
+                <option value="static">Static</option>
+                <option value="chaos">Chaos (Random)</option>
               </select>
 
-              <label for="bgSelect">Background Style</label>
-              <select id="bgSelect">
-                <option value="static">Static cosmic</option>
-                <option value="neon-grid" selected>Neon grid</option>
-                <option value="solar">Solar flare</option>
-                <option value="ice">Ice storm</option>
+              <label for="borderWidth" style="margin-top: 12px;">Border Width</label>
+              <input type="range" id="borderWidth" min="1" max="8" value="2" />
+              <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Current: <span id="borderWidthValue">2</span>px</div>
+            </div>
+
+            <div class="panel">
+              <h2>🎭 Card Background</h2>
+              
+              <label for="bgTheme">Background Theme</label>
+              <select id="bgTheme">
+                <option value="dark">Dark Solid</option>
+                <option value="darker">Darker Solid</option>
+                <option value="gradient-dark">Dark Gradient</option>
+                <option value="gradient-purple">Purple Gradient</option>
+                <option value="gradient-blue">Blue Gradient</option>
+                <option value="gradient-green">Green Gradient</option>
+                <option value="grid">Grid Pattern</option>
+                <option value="stars">Starry Night</option>
+                <option value="nebula">Nebula</option>
+                <option value="matrix">Matrix Style</option>
               </select>
 
-              <div style="margin-top: 12px">
-                <button onclick="updatePreview()">Update Preview</button>
-                <button class="secondary" onclick="exportPNG()">Export PNG</button>
+              <div id="bgColorControls" style="margin-top: 12px;">
+                <label for="bgColor1">Background Color 1</label>
+                <input type="color" id="bgColor1" value="#0b1120" />
+                
+                <label for="bgColor2" style="margin-top: 8px;">Background Color 2</label>
+                <input type="color" id="bgColor2" value="#020617" />
               </div>
             </div>
 
             <div class="panel">
-              <h2>Tips</h2>
-              <p style="font-size: 13px; color: #9ca3af">
-                • Use <b>Mythic</b> for crazy animated borders.<br />
-                • Change background to match team colors or event theme.<br />
-                • After exporting PNG, you can drop it into Photoshop, Canva, or your NFT pipeline.
+              <h2>✨ Text Colors</h2>
+              
+              <label for="nameColor">Driver Name Color</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="color" id="nameColor" value="#ffffff" style="flex: 1;" />
+                <select id="nameEffect" style="flex: 1;">
+                  <option value="solid">Solid</option>
+                  <option value="gradient">Gradient</option>
+                  <option value="glow">Glow</option>
+                  <option value="neon">Neon</option>
+                  <option value="anaglyph">3D Effect</option>
+                </select>
+              </div>
+
+              <label for="teamColor" style="margin-top: 12px;">Team Color</label>
+              <input type="color" id="teamColor" value="#9ca3af" />
+
+              <label for="carColor" style="margin-top: 12px;">Car/Class Color</label>
+              <input type="color" id="carColor" value="#d1fae5" />
+
+              <label for="statsColor" style="margin-top: 12px;">Stats Text Color</label>
+              <input type="color" id="statsColor" value="#e5e7eb" />
+            </div>
+
+            <div class="panel">
+              <h2>🌟 Special Effects</h2>
+              
+              <div class="ds-toggle-row" style="margin-bottom: 12px;">
+                <input type="checkbox" id="enableParticles" />
+                <label for="enableParticles" style="margin: 0; cursor: pointer;">Particle Effects</label>
+              </div>
+
+              <div class="ds-toggle-row" style="margin-bottom: 12px;">
+                <input type="checkbox" id="enableShimmer" />
+                <label for="enableShimmer" style="margin: 0; cursor: pointer;">Shimmer Effect</label>
+              </div>
+
+              <div class="ds-toggle-row" style="margin-bottom: 12px;">
+                <input type="checkbox" id="enableScanlines" />
+                <label for="enableScanlines" style="margin: 0; cursor: pointer;">Scanline Overlay</label>
+              </div>
+
+              <label for="cardRotation">Card Tilt (3D Effect)</label>
+              <input type="range" id="cardRotation" min="-15" max="15" value="0" />
+              <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Current: <span id="cardRotationValue">0</span>°</div>
+            </div>
+
+            <div class="panel">
+              <h2>💾 Save & Export</h2>
+              <p style="font-size: 12px; color: #6b7280; margin: 0 0 12px;">
+                Save your card design to apply it across the entire site for this driver.
+              </p>
+              
+              <button onclick="saveCardCustomization()" style="margin-top: 0; background: #22c55e; color: #020617;">
+                💾 Save Card Design
+              </button>
+              <div id="save-status" class="status-message" style="margin-top: 8px;"></div>
+
+              <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="secondary" onclick="exportPNG()" style="flex: 1;">Export as PNG</button>
+                <button class="secondary" onclick="exportGIF()" style="flex: 1;">Export as GIF</button>
+              </div>
+              <button class="secondary" onclick="resetCustomizations()" style="margin-top: 8px; background: rgba(239, 68, 68, 0.1); color: #fca5a5; border-color: rgba(239, 68, 68, 0.3); width: 100%;">
+                Reset to Default
+              </button>
+            </div>
+
+            <div class="panel">
+              <h2>💡 Tips</h2>
+              <p style="font-size: 12px; color: #9ca3af; line-height: 1.6;">
+                • Try different glow presets for unique card styles<br />
+                • Adjust glow intensity for subtle or dramatic effects<br />
+                • Use particle effects and shimmer for premium looks<br />
+                • Custom colors let you match your team branding<br />
+                • Export PNG for use in social media or NFTs<br />
+                • <b>Note:</b> Edit profile info on the Driver Profile page
               </p>
             </div>
           </div>
 
+          <!-- Right side (preview) -->
           <div class="panel">
             <h2>Preview</h2>
             <div class="preview-wrapper">
-              <div id="cardCapture">
-                <!-- Card gets rendered here -->
-              </div>
+              <div id="cardCapture"></div>
             </div>
           </div>
         </div>
       </main>
 
-      <!-- 🔵 Global footer -->
-      <footer class="sgp-footer">
-        Solana Grand Prix • IRacing automation coming soon.
-      </footer>
+      <!-- 🔵 Footer -->
+      <footer class="sgp-footer">Solana Grand Prix</footer>
     </div>
-
+    
+    <!-- html2canvas for exporting PNG/GIF - Load before inline scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- gif.js for creating animated GIFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    
+    <script src="/global-user.js"></script>
+    
     <script>
-      // Frontend copy of basic driver info for the card builder
-      const driverData = {
-        riley: {
-          name: 'Lemon',
-          number: 93,
-          team: 'SolanaGP',
-          car: 'Mazda MX-5 Cup',
-          avatar: '/images/riley.png',
-        },
-      };
+      (function () {
+        let currentDriverKey = '';
+        let currentStats = null;
 
-      function rarityClasses(rarity) {
-        switch (rarity) {
-          case 'rare':
-            return { frame: 'rarity-rare', badge: 'badge-rare', label: 'RARE' };
-          case 'legendary':
-            return { frame: 'rarity-legendary', badge: 'badge-legendary', label: 'LEGENDARY' };
-          case 'mythic':
-            return { frame: 'rarity-mythic', badge: 'badge-mythic', label: 'MYTHIC' };
-          default:
-            return { frame: 'rarity-common', badge: 'badge-common', label: 'COMMON' };
+        function getToken() {
+          return localStorage.getItem('sgp_token');
         }
-      }
 
-      function bgClass(bg) {
-        switch (bg) {
-          case 'neon-grid':
-            return 'bg-neon-grid';
-          case 'solar':
-            return 'bg-solar';
-          case 'ice':
-            return 'bg-ice';
-          default:
-            return 'bg-static';
+        async function loadDefaultDriver() {
+          // Try to load current user's driver if logged in
+          const token = getToken();
+          if (token) {
+            try {
+              const meRes = await fetch('/api/me', {
+                headers: { Authorization: 'Bearer ' + token },
+              });
+
+              if (meRes.ok) {
+                const meData = await meRes.json();
+                const me = (meData && meData.user) || {};
+                const driverKey = (me.driverKey || '').toLowerCase();
+                
+                if (driverKey) {
+                  loggedInDriverKey = driverKey;
+                  currentDriverKey = driverKey;
+                  await loadDriverStats(driverKey);
+                  updateDriverSelect(driverKey);
+                  updateOwnershipStatus();
+                  return;
+                }
+              }
+            } catch (err) {
+              console.error(err);
+            }
+          }
+
+          // If not logged in or no driver profile, load first available driver
+          try {
+            const res = await fetch('/api/drivers');
+            const drivers = await res.json();
+            if (drivers && drivers.length > 0) {
+              const firstDriver = drivers[0];
+              currentDriverKey = firstDriver.key;
+              await loadDriverStats(firstDriver.key);
+              updateDriverSelect(firstDriver.key);
+              updateOwnershipStatus();
+            }
+          } catch (err) {
+            console.error(err);
+          }
         }
-      }
 
-      function updatePreview() {
-        const driverKey = document.getElementById('driverSelect').value;
-        const rarity = document.getElementById('raritySelect').value;
-        const bg = document.getElementById('bgSelect').value;
+        function updateOwnershipStatus() {
+          const ownershipStatusEl = document.getElementById('ownership-status');
+          if (!ownershipStatusEl) return;
 
-        const d = driverData[driverKey];
-        const r = rarityClasses(rarity);
-        const bgCls = bgClass(bg);
+          const isOwnCard = loggedInDriverKey && currentDriverKey && 
+                           loggedInDriverKey.toLowerCase() === currentDriverKey.toLowerCase();
+          
+          if (!loggedInDriverKey) {
+            ownershipStatusEl.textContent = '⚠️ Not logged in. You can view cards but cannot save customizations.';
+            ownershipStatusEl.style.background = 'rgba(251, 191, 36, 0.1)';
+            ownershipStatusEl.style.borderColor = 'rgba(251, 191, 36, 0.3)';
+            ownershipStatusEl.style.color = '#fbbf24';
+            ownershipStatusEl.style.display = 'block';
+            setCustomizationControlsEnabled(false);
+          } else if (!isOwnCard) {
+            ownershipStatusEl.textContent = '👁️ Viewing another driver\'s card. You can preview but cannot save changes.';
+            ownershipStatusEl.style.background = 'rgba(59, 130, 246, 0.1)';
+            ownershipStatusEl.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+            ownershipStatusEl.style.color = '#3b82f6';
+            ownershipStatusEl.style.display = 'block';
+            setCustomizationControlsEnabled(false);
+          } else {
+            ownershipStatusEl.textContent = '✏️ Editing your own card. Changes can be saved.';
+            ownershipStatusEl.style.background = 'rgba(34, 197, 94, 0.1)';
+            ownershipStatusEl.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+            ownershipStatusEl.style.color = '#22c55e';
+            ownershipStatusEl.style.display = 'block';
+            setCustomizationControlsEnabled(true);
+          }
+        }
 
-        const container = document.getElementById('cardCapture');
-        container.innerHTML = `
-        <div class="card-frame ${r.frame}">
-          <div class="card-inner ${bgCls}">
-            <div class="card-inner-content">
-              <img src="${d.avatar}" class="card-avatar" alt="${d.name}">
-              <div class="card-text">
-                <div>
-                  <div class="badge ${r.badge}">${r.label}</div>
-                  <div class="card-name-line">#${d.number} ${d.name}</div>
-                  <div class="card-team">${d.team}</div>
-                  <div class="card-car">${d.car}</div>
+        function setCustomizationControlsEnabled(enabled) {
+          // Enable/disable all customization controls
+          const controls = [
+            'borderPreset', 'borderColor1', 'borderColor2', 'borderColor3',
+            'glowIntensity', 'glowAnimation', 'borderWidth',
+            'bgTheme', 'bgColor1', 'bgColor2',
+            'nameColor', 'nameEffect', 'teamColor', 'carColor', 'statsColor',
+            'enableParticles', 'enableShimmer', 'enableScanlines', 'cardRotation'
+          ];
+
+          controls.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.disabled = !enabled;
+              if (el.type === 'checkbox') {
+                el.style.opacity = enabled ? '1' : '0.5';
+                el.style.cursor = enabled ? 'pointer' : 'not-allowed';
+              }
+            }
+          });
+
+          // Disable save button if not enabled
+          const saveButton = document.querySelector('button[onclick="saveCardCustomization()"]');
+          if (saveButton) {
+            saveButton.disabled = !enabled;
+            saveButton.style.opacity = enabled ? '1' : '0.5';
+            saveButton.style.cursor = enabled ? 'pointer' : 'not-allowed';
+          }
+        }
+
+        async function loadAllDrivers() {
+          try {
+            const res = await fetch('/api/drivers');
+            const drivers = await res.json();
+            
+            const select = document.getElementById('driverSelect');
+            select.innerHTML = '<option value="">Select a driver...</option>';
+            
+            drivers.forEach((driver) => {
+              const option = document.createElement('option');
+              option.value = driver.key;
+              option.textContent = `#${driver.number} ${driver.name || driver.displayName}`;
+              select.appendChild(option);
+            });
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+        function updateDriverSelect(selectedKey) {
+          const select = document.getElementById('driverSelect');
+          if (select && selectedKey) {
+            select.value = selectedKey;
+          }
+        }
+
+        async function loadDriverStats(driverKey) {
+          if (!driverKey) return;
+
+          try {
+            const statsRes = await fetch('/api/stats?driver=' + encodeURIComponent(driverKey));
+            if (!statsRes.ok) return;
+
+            const stats = await statsRes.json();
+            currentStats = stats;
+            currentDriverKey = driverKey;
+            
+            // Load saved customizations if they exist
+            if (stats.cardCustomization) {
+              loadCustomizations(stats.cardCustomization);
+            }
+            
+            updatePreview(stats);
+            updateOwnershipStatus();
+          } catch (err) {
+            console.error(err);
+          }
+        }
+
+        function loadCustomizations(saved) {
+          if (!saved) return;
+          
+          // Update state with saved customizations
+          if (saved.borderPreset !== undefined) customizationState.borderPreset = saved.borderPreset;
+          if (saved.borderColor1 !== undefined) customizationState.borderColor1 = saved.borderColor1;
+          if (saved.borderColor2 !== undefined) customizationState.borderColor2 = saved.borderColor2;
+          if (saved.borderColor3 !== undefined) customizationState.borderColor3 = saved.borderColor3;
+          if (saved.glowIntensity !== undefined) customizationState.glowIntensity = saved.glowIntensity;
+          if (saved.glowAnimation !== undefined) customizationState.glowAnimation = saved.glowAnimation;
+          if (saved.borderWidth !== undefined) customizationState.borderWidth = saved.borderWidth;
+          if (saved.bgTheme !== undefined) customizationState.bgTheme = saved.bgTheme;
+          if (saved.bgColor1 !== undefined) customizationState.bgColor1 = saved.bgColor1;
+          if (saved.bgColor2 !== undefined) customizationState.bgColor2 = saved.bgColor2;
+          if (saved.nameColor !== undefined) customizationState.nameColor = saved.nameColor;
+          if (saved.nameEffect !== undefined) customizationState.nameEffect = saved.nameEffect;
+          if (saved.teamColor !== undefined) customizationState.teamColor = saved.teamColor;
+          if (saved.carColor !== undefined) customizationState.carColor = saved.carColor;
+          if (saved.statsColor !== undefined) customizationState.statsColor = saved.statsColor;
+          if (saved.enableParticles !== undefined) customizationState.enableParticles = saved.enableParticles;
+          if (saved.enableShimmer !== undefined) customizationState.enableShimmer = saved.enableShimmer;
+          if (saved.enableScanlines !== undefined) customizationState.enableScanlines = saved.enableScanlines;
+          if (saved.cardRotation !== undefined) customizationState.cardRotation = saved.cardRotation;
+
+          // Update form controls
+          document.getElementById('borderPreset').value = customizationState.borderPreset;
+          document.getElementById('customColorControls').style.display = 
+            customizationState.borderPreset === 'custom' ? 'block' : 'none';
+          document.getElementById('borderColor1').value = customizationState.borderColor1;
+          document.getElementById('borderColor2').value = customizationState.borderColor2;
+          document.getElementById('borderColor3').value = customizationState.borderColor3;
+          document.getElementById('glowIntensity').value = customizationState.glowIntensity;
+          document.getElementById('glowIntensityValue').textContent = customizationState.glowIntensity;
+          document.getElementById('glowAnimation').value = customizationState.glowAnimation;
+          document.getElementById('borderWidth').value = customizationState.borderWidth;
+          document.getElementById('borderWidthValue').textContent = customizationState.borderWidth;
+          document.getElementById('bgTheme').value = customizationState.bgTheme;
+          document.getElementById('bgColor1').value = customizationState.bgColor1;
+          document.getElementById('bgColor2').value = customizationState.bgColor2;
+          document.getElementById('nameColor').value = customizationState.nameColor;
+          document.getElementById('nameEffect').value = customizationState.nameEffect;
+          document.getElementById('teamColor').value = customizationState.teamColor;
+          document.getElementById('carColor').value = customizationState.carColor;
+          document.getElementById('statsColor').value = customizationState.statsColor;
+          document.getElementById('enableParticles').checked = customizationState.enableParticles;
+          document.getElementById('enableShimmer').checked = customizationState.enableShimmer;
+          document.getElementById('enableScanlines').checked = customizationState.enableScanlines;
+          document.getElementById('cardRotation').value = customizationState.cardRotation;
+          document.getElementById('cardRotationValue').textContent = customizationState.cardRotation;
+        }
+
+        async function saveCardCustomization() {
+          const token = getToken();
+          if (!token) {
+            document.getElementById('save-status').textContent = 'You must be logged in to save.';
+            document.getElementById('save-status').className = 'status-message error';
+            return;
+          }
+
+          if (!currentDriverKey) {
+            document.getElementById('save-status').textContent = 'Please select a driver first.';
+            document.getElementById('save-status').className = 'status-message error';
+            return;
+          }
+
+          // Security: Only allow saving your own card
+          if (!loggedInDriverKey || loggedInDriverKey.toLowerCase() !== currentDriverKey.toLowerCase()) {
+            document.getElementById('save-status').textContent = 'You can only save customizations for your own card.';
+            document.getElementById('save-status').className = 'status-message error';
+            return;
+          }
+
+          const statusEl = document.getElementById('save-status');
+          statusEl.textContent = 'Saving...';
+          statusEl.className = 'status-message';
+
+          try {
+            const res = await fetch('/api/driver/card-customization', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token,
+              },
+              body: JSON.stringify({
+                customization: customizationState,
+              }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+              statusEl.textContent = data.message || 'Save failed.';
+              statusEl.className = 'status-message error';
+              return;
+            }
+
+            statusEl.textContent = 'Card design saved! It will appear across the site.';
+            statusEl.className = 'status-message success';
+
+            // Dispatch event to refresh all pages
+            window.dispatchEvent(new Event('sgp:driver-updated'));
+
+            // Update current stats to include saved customization
+            if (currentStats) {
+              currentStats.cardCustomization = customizationState;
+            }
+          } catch (err) {
+            console.error(err);
+            statusEl.textContent = 'Network error while saving.';
+            statusEl.className = 'status-message error';
+          }
+        }
+
+
+        // Track logged-in user's driver key
+        let loggedInDriverKey = null;
+
+        // Customization state
+        let customizationState = {
+          borderPreset: 'green-blue-purple',
+          borderColor1: '#22c55e',
+          borderColor2: '#06b6d4',
+          borderColor3: '#8b5cf6',
+          glowIntensity: 50,
+          glowAnimation: 'pulse',
+          borderWidth: 2,
+          bgTheme: 'dark',
+          bgColor1: '#0b1120',
+          bgColor2: '#020617',
+          nameColor: '#ffffff',
+          nameEffect: 'solid',
+          teamColor: '#9ca3af',
+          carColor: '#d1fae5',
+          statsColor: '#e5e7eb',
+          enableParticles: false,
+          enableShimmer: false,
+          enableScanlines: false,
+          cardRotation: 0,
+        };
+
+        function getGlowColors() {
+          const preset = customizationState.borderPreset;
+          const intensity = customizationState.glowIntensity / 100;
+          
+          if (preset === 'custom') {
+            return {
+              color1: customizationState.borderColor1,
+              color2: customizationState.borderColor2,
+              color3: customizationState.borderColor3,
+            };
+          }
+
+          const presets = {
+            'green-blue-purple': { color1: '#22c55e', color2: '#06b6d4', color3: '#8b5cf6' },
+            'fire': { color1: '#ef4444', color2: '#f97316', color3: '#fbbf24' },
+            'ice': { color1: '#06b6d4', color2: '#3b82f6', color3: '#8b5cf6' },
+            'electric': { color1: '#fbbf24', color2: '#8b5cf6', color3: '#ec4899' },
+            'neon-pink': { color1: '#ec4899', color2: '#f472b6', color3: '#fb7185' },
+            'gold': { color1: '#fbbf24', color2: '#f59e0b', color3: '#d97706' },
+            'rainbow': { color1: '#ef4444', color2: '#fbbf24', color3: '#22c55e' },
+          };
+
+          return presets[preset] || presets['green-blue-purple'];
+        }
+
+        function getGlowAnimation() {
+          const anim = customizationState.glowAnimation;
+          const intensity = customizationState.glowIntensity / 100;
+          
+          if (anim === 'static') return 'none';
+          return anim;
+        }
+
+        function getBackgroundStyle() {
+          const theme = customizationState.bgTheme;
+          const color1 = customizationState.bgColor1;
+          const color2 = customizationState.bgColor2;
+
+          const styles = {
+            'dark': `background: #0b1120;`,
+            'darker': `background: #020617;`,
+            'gradient-dark': `background: linear-gradient(135deg, ${color1}, ${color2});`,
+            'gradient-purple': `background: linear-gradient(135deg, #1e1b4b, #312e81);`,
+            'gradient-blue': `background: linear-gradient(135deg, #0c4a6e, #075985);`,
+            'gradient-green': `background: linear-gradient(135deg, #064e3b, #065f46);`,
+            'grid': `background: 
+              linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
+              background-size: 20px 20px;
+              background-color: ${color1};`,
+            'stars': `background: 
+              radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+              radial-gradient(2px 2px at 60px 70px, rgba(255,255,255,0.8), transparent),
+              radial-gradient(1px 1px at 50px 50px, #fff, transparent),
+              radial-gradient(1px 1px at 90px 90px, rgba(255,255,255,0.6), transparent);
+              background-size: 200px 200px;
+              background-color: ${color1};
+              background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;`,
+            'nebula': `background: radial-gradient(ellipse at top, rgba(139, 92, 246, 0.3), transparent),
+              radial-gradient(ellipse at bottom, rgba(6, 182, 212, 0.3), transparent),
+              ${color1};`,
+            'matrix': `background: 
+              repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34, 197, 94, 0.03) 2px, rgba(34, 197, 94, 0.03) 4px),
+              ${color1};`,
+          };
+
+          return styles[theme] || styles['dark'];
+        }
+
+        function getNameStyle() {
+          const color = customizationState.nameColor;
+          const effect = customizationState.nameEffect;
+
+          if (effect === 'gradient') {
+            return `background: linear-gradient(135deg, ${color}, #22c55e); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;`;
+          } else if (effect === 'glow') {
+            return `color: ${color}; text-shadow: 0 0 10px ${color}, 0 0 20px ${color}, 0 0 30px ${color};`;
+          } else if (effect === 'neon') {
+            return `color: ${color}; text-shadow: 0 0 5px ${color}, 0 0 10px ${color}, 0 0 15px ${color}, 0 0 20px ${color};`;
+          } else if (effect === 'anaglyph') {
+            return `color: ${color}; text-shadow: 2px 2px 0px #ff0000, -2px -2px 0px #00ffff;`;
+          } else {
+            return `color: ${color};`;
+          }
+        }
+
+        function updatePreview(stats) {
+          if (!stats) stats = currentStats;
+          if (!stats) return;
+
+          const cardCapture = document.getElementById('cardCapture');
+          if (!cardCapture) return;
+
+          const isFree = !!stats.freeAgent;
+          const glowColors = getGlowColors();
+          const glowAnim = getGlowAnimation();
+          const intensity = customizationState.glowIntensity / 100;
+          const borderWidth = customizationState.borderWidth;
+          const bgStyle = getBackgroundStyle();
+          const nameStyle = getNameStyle();
+          const rotation = customizationState.cardRotation;
+
+          // Build border gradient
+          const borderGradient = `linear-gradient(135deg, ${glowColors.color1}, ${glowColors.color2}, ${glowColors.color3})`;
+          
+          // Build glow shadow based on animation
+          let glowShadow = '';
+          if (glowAnim !== 'none') {
+            const r1 = Math.round(parseInt(glowColors.color1.slice(1, 3), 16) * intensity);
+            const g1 = Math.round(parseInt(glowColors.color1.slice(3, 5), 16) * intensity);
+            const b1 = Math.round(parseInt(glowColors.color1.slice(5, 7), 16) * intensity);
+            const r2 = Math.round(parseInt(glowColors.color2.slice(1, 3), 16) * intensity);
+            const g2 = Math.round(parseInt(glowColors.color2.slice(3, 5), 16) * intensity);
+            const b2 = Math.round(parseInt(glowColors.color2.slice(5, 7), 16) * intensity);
+            glowShadow = `0 0 ${20 * intensity}px rgba(${r1}, ${g1}, ${b1}, 0.8), 0 0 ${40 * intensity}px rgba(${r2}, ${g2}, ${b2}, 0.6)`;
+          }
+
+          // Animation class
+          let animClass = '';
+          if (glowAnim === 'pulse') animClass = 'glowPulse';
+          else if (glowAnim === 'flicker') animClass = 'glowFlicker';
+          else if (glowAnim === 'breath') animClass = 'glowBreath';
+          else if (glowAnim === 'wave') animClass = 'glowWave';
+          else if (glowAnim === 'chaos') animClass = 'glowChaos';
+
+          const shimmerClass = customizationState.enableShimmer ? 'shimmer-effect' : '';
+          const scanlinesClass = customizationState.enableScanlines ? 'scanlines' : '';
+          const particlesHtml = customizationState.enableParticles ? '<div class="particles"></div>' : '';
+
+          cardCapture.innerHTML = `
+            <div class="nft-frame custom-card ${shimmerClass} ${scanlinesClass}" 
+                 id="cardPreview" 
+                 style="padding: ${borderWidth}px; 
+                        background: ${borderGradient}; 
+                        ${glowAnim === 'static' ? `box-shadow: ${glowShadow};` : ''}
+                        transform: perspective(1000px) rotateY(${rotation}deg);
+                        animation: ${animClass} 4s ease-in-out infinite;">
+              <div class="nft-inner" style="${bgStyle}">
+                ${particlesHtml}
+                <div class="driver-header">
+                  <img src="${stats.avatar || '/images/riley.png'}" alt="${stats.name || 'Driver'}" class="driver-avatar" crossOrigin="anonymous" />
+                  <div class="driver-meta">
+                    <div class="driver-name" style="${nameStyle}">#${stats.number ?? ''} ${stats.name || stats.displayName || 'Driver'}</div>
+                    <div class="driver-team" style="color: ${customizationState.teamColor};">${stats.team || 'Privateer'}</div>
+                    <div class="driver-car" style="color: ${customizationState.carColor};">${stats.primaryCar || 'Mazda MX-5 Cup'}</div>
+                    <div class="free-agent-row">
+                      <span class="free-agent-label">Free Agent:</span>
+                      <span class="free-agent-pill ${isFree ? 'active' : ''}">Yes</span>
+                      <span class="free-agent-pill ${!isFree ? 'active' : ''}">No</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="card-footer">
-                  SolanaGP • Season 1<br>
-                  Generated with SGP Card Builder
+                <div class="driver-stats" style="color: ${customizationState.statsColor};">
+                  <b>iRating:</b> ${stats.irating ?? 0}<br>
+                  <b>License:</b> ${stats.license || 'Rookie'}<br>
+                  <b>Starts:</b> ${stats.starts ?? 0}<br>
+                  ${stats.wins !== undefined ? `<b>Wins:</b> ${stats.wins} &nbsp;&nbsp;` : ''}
+                  ${stats.podiums !== undefined ? `<b>Podiums:</b> ${stats.podiums}` : ''}
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      `;
-      }
+          `;
 
-      async function exportPNG() {
-        const driverKey = document.getElementById('driverSelect').value;
-        const rarity = document.getElementById('raritySelect').value;
+          // Add particles if enabled
+          if (customizationState.enableParticles) {
+            const particlesContainer = cardCapture.querySelector('.particles');
+            for (let i = 0; i < 15; i++) {
+              const particle = document.createElement('div');
+              particle.className = 'particle';
+              particle.style.left = Math.random() * 100 + '%';
+              particle.style.animationDelay = Math.random() * 10 + 's';
+              particle.style.animationDuration = (5 + Math.random() * 10) + 's';
+              particlesContainer.appendChild(particle);
+            }
+          }
+        }
 
-        const node = document.getElementById('cardCapture');
+        function applyCustomizations() {
+          updatePreview();
+        }
 
-        const canvas = await html2canvas(node, {
-          backgroundColor: null,
-          scale: 3,
+        function resetCustomizations() {
+          customizationState = {
+            borderPreset: 'green-blue-purple',
+            borderColor1: '#22c55e',
+            borderColor2: '#06b6d4',
+            borderColor3: '#8b5cf6',
+            glowIntensity: 50,
+            glowAnimation: 'pulse',
+            borderWidth: 2,
+            bgTheme: 'dark',
+            bgColor1: '#0b1120',
+            bgColor2: '#020617',
+            nameColor: '#ffffff',
+            nameEffect: 'solid',
+            teamColor: '#9ca3af',
+            carColor: '#d1fae5',
+            statsColor: '#e5e7eb',
+            enableParticles: false,
+            enableShimmer: false,
+            enableScanlines: false,
+            cardRotation: 0,
+          };
+          
+          // Update all form controls
+          document.getElementById('borderPreset').value = customizationState.borderPreset;
+          document.getElementById('borderColor1').value = customizationState.borderColor1;
+          document.getElementById('borderColor2').value = customizationState.borderColor2;
+          document.getElementById('borderColor3').value = customizationState.borderColor3;
+          document.getElementById('glowIntensity').value = customizationState.glowIntensity;
+          document.getElementById('glowIntensityValue').textContent = customizationState.glowIntensity;
+          document.getElementById('glowAnimation').value = customizationState.glowAnimation;
+          document.getElementById('borderWidth').value = customizationState.borderWidth;
+          document.getElementById('borderWidthValue').textContent = customizationState.borderWidth;
+          document.getElementById('bgTheme').value = customizationState.bgTheme;
+          document.getElementById('bgColor1').value = customizationState.bgColor1;
+          document.getElementById('bgColor2').value = customizationState.bgColor2;
+          document.getElementById('nameColor').value = customizationState.nameColor;
+          document.getElementById('nameEffect').value = customizationState.nameEffect;
+          document.getElementById('teamColor').value = customizationState.teamColor;
+          document.getElementById('carColor').value = customizationState.carColor;
+          document.getElementById('statsColor').value = customizationState.statsColor;
+          document.getElementById('enableParticles').checked = customizationState.enableParticles;
+          document.getElementById('enableShimmer').checked = customizationState.enableShimmer;
+          document.getElementById('enableScanlines').checked = customizationState.enableScanlines;
+          document.getElementById('cardRotation').value = customizationState.cardRotation;
+          document.getElementById('cardRotationValue').textContent = customizationState.cardRotation;
+          
+          document.getElementById('customColorControls').style.display = 'none';
+          applyCustomizations();
+        }
+
+
+        // Make exportPNG globally accessible for onclick handler
+        window.exportPNG = function exportPNG() {
+          // Try to find the card element - check multiple possible locations
+          let cardElement = document.getElementById('cardPreview');
+          
+          // Fallback: try finding it in cardCapture
+          if (!cardElement) {
+            const cardCapture = document.getElementById('cardCapture');
+            if (cardCapture) {
+              cardElement = cardCapture.querySelector('.nft-frame');
+              if (cardElement && !cardElement.id) {
+                cardElement.id = 'cardPreview'; // Add ID if missing
+              }
+            }
+          }
+
+          if (!cardElement) {
+            alert('Please load a driver profile first. Make sure a driver is selected.');
+            return;
+          }
+
+          // Wait for html2canvas to load if not available
+          if (typeof html2canvas === 'undefined') {
+            // Try loading it dynamically
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            script.onload = () => {
+              setTimeout(() => exportPNG(), 100); // Retry after loading
+            };
+            script.onerror = () => {
+              alert('Failed to load html2canvas library. Please check your internet connection and try again.');
+            };
+            document.head.appendChild(script);
+            const saveStatusEl = document.getElementById('save-status');
+            if (saveStatusEl) {
+              saveStatusEl.textContent = 'Loading export library...';
+              saveStatusEl.className = 'status-message';
+            }
+            return;
+          }
+
+          // Show loading state
+          const saveStatusEl = document.getElementById('save-status');
+          const originalText = saveStatusEl ? saveStatusEl.textContent : '';
+          if (saveStatusEl) {
+            saveStatusEl.textContent = 'Generating PNG...';
+            saveStatusEl.className = 'status-message';
+          }
+
+          // Temporarily pause animations for clean capture
+          const originalAnimation = cardElement.style.animation;
+          const originalAnimPlayState = cardElement.style.animationPlayState;
+          cardElement.style.animationPlayState = 'paused';
+          
+          // Wait a moment for animations to pause
+          setTimeout(() => {
+            // Use html2canvas with options for better rendering
+            html2canvas(cardElement, {
+              backgroundColor: '#020617', // Match page background for better rendering
+              scale: 2, // Higher quality (2x resolution)
+              logging: false,
+              useCORS: true, // Allow cross-origin images
+              allowTaint: false,
+              foreignObjectRendering: false,
+              removeContainer: true,
+              imageTimeout: 15000, // 15 second timeout for images
+              onclone: (clonedDoc) => {
+                // Ensure all styles are applied in the cloned document
+                const clonedElement = clonedDoc.getElementById('cardPreview');
+                if (clonedElement) {
+                  clonedElement.style.animationPlayState = 'paused';
+                  // Set all images to crossOrigin to avoid CORS issues
+                  const images = clonedElement.querySelectorAll('img');
+                  images.forEach(img => {
+                    if (!img.crossOrigin) {
+                      img.crossOrigin = 'anonymous';
+                    }
+                  });
+                }
+              }
+            }).then((canvas) => {
+              // Restore animation
+              cardElement.style.animationPlayState = originalAnimPlayState || 'running';
+
+              try {
+                // Convert canvas to data URL
+                const dataURL = canvas.toDataURL('image/png');
+                
+                if (!dataURL || dataURL === 'data:,') {
+                  throw new Error('Failed to generate image data');
+                }
+
+                // Create download link
+                const link = document.createElement('a');
+                link.href = dataURL;
+                link.download = `driver-card-${currentDriverKey || 'export'}-${Date.now()}.png`;
+                link.style.display = 'none';
+                
+                // Append to body first
+                document.body.appendChild(link);
+                
+                // Force focus and click - some browsers need this
+                link.focus();
+                
+                // Use requestAnimationFrame to ensure DOM is ready
+                requestAnimationFrame(() => {
+                  // Create and dispatch a click event
+                  const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                    button: 0
+                  });
+                  
+                  // Try both methods
+                  link.dispatchEvent(clickEvent);
+                  if (typeof link.click === 'function') {
+                    link.click();
+                  }
+                  
+                  // Clean up after a delay
+                  setTimeout(() => {
+                    if (link.parentNode) {
+                      document.body.removeChild(link);
+                    }
+                  }, 200);
+                });
+
+                // Update status
+                if (saveStatusEl) {
+                  saveStatusEl.textContent = 'PNG exported successfully!';
+                  saveStatusEl.className = 'status-message success';
+                  setTimeout(() => {
+                    saveStatusEl.textContent = originalText;
+                    saveStatusEl.className = 'status-message';
+                  }, 3000);
+                }
+              } catch (err) {
+                console.error('Error creating download:', err);
+                if (saveStatusEl) {
+                  saveStatusEl.textContent = 'Failed to generate image.';
+                  saveStatusEl.className = 'status-message error';
+                }
+                alert('Failed to export PNG: ' + (err.message || 'Please try again.'));
+              }
+            }).catch((err) => {
+              console.error('Export error:', err);
+              // Restore animation
+              cardElement.style.animationPlayState = originalAnimPlayState || 'running';
+              
+              if (saveStatusEl) {
+                saveStatusEl.textContent = 'Export failed: ' + (err.message || 'Unknown error');
+                saveStatusEl.className = 'status-message error';
+              }
+              alert('Failed to export PNG: ' + (err.message || 'Please try again.'));
+            });
+          }, 100); // Small delay to ensure animations pause
+        }
+
+        // Export as GIF (animated)
+        window.exportGIF = function exportGIF() {
+          // Try to find the card element
+          let cardElement = document.getElementById('cardPreview');
+          
+          if (!cardElement) {
+            const cardCapture = document.getElementById('cardCapture');
+            if (cardCapture) {
+              cardElement = cardCapture.querySelector('.nft-frame');
+              if (cardElement && !cardElement.id) {
+                cardElement.id = 'cardPreview';
+              }
+            }
+          }
+
+          if (!cardElement) {
+            alert('Please load a driver profile first. Make sure a driver is selected.');
+            return;
+          }
+
+          // Wait for html2canvas to load if not available
+          if (typeof html2canvas === 'undefined') {
+            // Try loading it dynamically
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            script.onload = () => {
+              setTimeout(() => exportPNG(), 100); // Retry after loading
+            };
+            script.onerror = () => {
+              alert('Failed to load html2canvas library. Please check your internet connection and try again.');
+            };
+            document.head.appendChild(script);
+            const saveStatusEl = document.getElementById('save-status');
+            if (saveStatusEl) {
+              saveStatusEl.textContent = 'Loading export library...';
+              saveStatusEl.className = 'status-message';
+            }
+            return;
+          }
+
+          // Wait for GIF.js to load if not available
+          if (typeof GIF === 'undefined') {
+            // Try loading it dynamically
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js';
+            script.onload = () => {
+              setTimeout(() => exportGIF(), 100); // Retry after loading
+            };
+            script.onerror = () => {
+              alert('Failed to load gif.js library. Please check your internet connection and try again.');
+            };
+            document.head.appendChild(script);
+            const saveStatusEl = document.getElementById('save-status');
+            if (saveStatusEl) {
+              saveStatusEl.textContent = 'Loading GIF library...';
+              saveStatusEl.className = 'status-message';
+            }
+            return;
+          }
+
+          const saveStatusEl = document.getElementById('save-status');
+          const originalText = saveStatusEl ? saveStatusEl.textContent : '';
+          if (saveStatusEl) {
+            saveStatusEl.textContent = 'Generating animated GIF (this may take a moment)...';
+            saveStatusEl.className = 'status-message';
+          }
+
+          // First capture to get dimensions
+          html2canvas(cardElement, {
+            backgroundColor: null,
+            scale: 2,
+            logging: false,
+            useCORS: true,
+            allowTaint: false,
+            foreignObjectRendering: false,
+            removeContainer: true,
+            imageTimeout: 15000,
+            onclone: (clonedDoc) => {
+              const clonedElement = clonedDoc.getElementById('cardPreview');
+              if (clonedElement) {
+                clonedElement.style.animationPlayState = 'running';
+                const images = clonedElement.querySelectorAll('img');
+                images.forEach(img => {
+                  if (!img.crossOrigin) {
+                    img.crossOrigin = 'anonymous';
+                  }
+                });
+              }
+            }
+          }).then((firstCanvas) => {
+            const canvasWidth = firstCanvas.width;
+            const canvasHeight = firstCanvas.height;
+
+            // Create GIF encoder with correct dimensions
+            const gif = new GIF({
+              workers: 2,
+              quality: 10,
+              width: canvasWidth,
+              height: canvasHeight,
+              workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+            });
+
+            // Capture frames over animation duration
+            const frameCount = 15; // Number of frames (reduced for faster export)
+            const frameDelay = 100; // ms between frames
+
+            let framesCaptured = 0;
+
+            // Add first frame
+            const ctx = firstCanvas.getContext('2d');
+            const firstImageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+            gif.addFrame(firstImageData, { delay: frameDelay });
+            framesCaptured++;
+
+            // Capture remaining frames
+            const captureFrame = () => {
+              html2canvas(cardElement, {
+                backgroundColor: null,
+                scale: 2,
+                logging: false,
+                useCORS: true,
+                allowTaint: false,
+                foreignObjectRendering: false,
+                removeContainer: true,
+                imageTimeout: 15000,
+                onclone: (clonedDoc) => {
+                  const clonedElement = clonedDoc.getElementById('cardPreview');
+                  if (clonedElement) {
+                    clonedElement.style.animationPlayState = 'running';
+                    const images = clonedElement.querySelectorAll('img');
+                    images.forEach(img => {
+                      if (!img.crossOrigin) {
+                        img.crossOrigin = 'anonymous';
+                      }
+                    });
+                  }
+                }
+              }).then((canvas) => {
+                // Add frame to GIF
+                const frameCtx = canvas.getContext('2d');
+                const imageData = frameCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+                gif.addFrame(imageData, { delay: frameDelay });
+
+                framesCaptured++;
+                
+                if (framesCaptured < frameCount) {
+                  // Capture next frame
+                  setTimeout(captureFrame, frameDelay);
+                } else {
+                  // All frames captured, render GIF
+                  if (saveStatusEl) {
+                    saveStatusEl.textContent = 'Rendering GIF...';
+                  }
+
+                  gif.on('finished', function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `driver-card-${currentDriverKey || 'export'}-${Date.now()}.gif`;
+                    link.style.display = 'none';
+                    
+                    document.body.appendChild(link);
+                    requestAnimationFrame(() => {
+                      link.click();
+                      setTimeout(() => {
+                        if (link.parentNode) {
+                          document.body.removeChild(link);
+                        }
+                        URL.revokeObjectURL(url);
+                      }, 200);
+                    });
+
+                    if (saveStatusEl) {
+                      saveStatusEl.textContent = 'GIF exported successfully!';
+                      saveStatusEl.className = 'status-message success';
+                      setTimeout(() => {
+                        saveStatusEl.textContent = originalText;
+                        saveStatusEl.className = 'status-message';
+                      }, 3000);
+                    }
+                  });
+
+                  gif.render();
+                }
+              }).catch((err) => {
+                console.error('Frame capture error:', err);
+                if (saveStatusEl) {
+                  saveStatusEl.textContent = 'Failed to capture frames.';
+                  saveStatusEl.className = 'status-message error';
+                }
+                alert('Failed to export GIF: ' + (err.message || 'Please try again.'));
+              });
+            };
+
+            // Start capturing remaining frames
+            setTimeout(captureFrame, frameDelay);
+          }).catch((err) => {
+            console.error('Initial capture error:', err);
+            if (saveStatusEl) {
+              saveStatusEl.textContent = 'Failed to initialize GIF export.';
+              saveStatusEl.className = 'status-message error';
+            }
+            alert('Failed to export GIF: ' + (err.message || 'Please try again.'));
+          });
+        }
+
+        // Wire up customization controls
+        document.getElementById('borderPreset').addEventListener('change', function() {
+          customizationState.borderPreset = this.value;
+          document.getElementById('customColorControls').style.display = 
+            this.value === 'custom' ? 'block' : 'none';
+          applyCustomizations();
         });
 
-        const link = document.createElement('a');
-        link.download = `sgp-card-${driverKey}-${rarity}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      }
+        document.getElementById('borderColor1').addEventListener('input', function() {
+          customizationState.borderColor1 = this.value;
+          applyCustomizations();
+        });
 
-      // Initialize once page loads
-      updatePreview();
+        document.getElementById('borderColor2').addEventListener('input', function() {
+          customizationState.borderColor2 = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('borderColor3').addEventListener('input', function() {
+          customizationState.borderColor3 = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('glowIntensity').addEventListener('input', function() {
+          customizationState.glowIntensity = parseInt(this.value);
+          document.getElementById('glowIntensityValue').textContent = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('glowAnimation').addEventListener('change', function() {
+          customizationState.glowAnimation = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('borderWidth').addEventListener('input', function() {
+          customizationState.borderWidth = parseInt(this.value);
+          document.getElementById('borderWidthValue').textContent = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('bgTheme').addEventListener('change', function() {
+          customizationState.bgTheme = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('bgColor1').addEventListener('input', function() {
+          customizationState.bgColor1 = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('bgColor2').addEventListener('input', function() {
+          customizationState.bgColor2 = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('nameColor').addEventListener('input', function() {
+          customizationState.nameColor = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('nameEffect').addEventListener('change', function() {
+          customizationState.nameEffect = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('teamColor').addEventListener('input', function() {
+          customizationState.teamColor = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('carColor').addEventListener('input', function() {
+          customizationState.carColor = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('statsColor').addEventListener('input', function() {
+          customizationState.statsColor = this.value;
+          applyCustomizations();
+        });
+
+        document.getElementById('enableParticles').addEventListener('change', function() {
+          customizationState.enableParticles = this.checked;
+          applyCustomizations();
+        });
+
+        document.getElementById('enableShimmer').addEventListener('change', function() {
+          customizationState.enableShimmer = this.checked;
+          applyCustomizations();
+        });
+
+        document.getElementById('enableScanlines').addEventListener('change', function() {
+          customizationState.enableScanlines = this.checked;
+          applyCustomizations();
+        });
+
+        document.getElementById('cardRotation').addEventListener('input', function() {
+          customizationState.cardRotation = parseInt(this.value);
+          document.getElementById('cardRotationValue').textContent = this.value;
+          applyCustomizations();
+        });
+
+        // Wire up driver select
+        const driverSelect = document.getElementById('driverSelect');
+        if (driverSelect) {
+          driverSelect.addEventListener('change', function() {
+            if (this.value) {
+              loadDriverStats(this.value);
+            } else {
+              currentDriverKey = null;
+              updateOwnershipStatus();
+            }
+          });
+        }
+
+        // Check login status on page load and when token changes
+        async function checkLoginStatus() {
+          const token = getToken();
+          if (token) {
+            try {
+              const meRes = await fetch('/api/me', {
+                headers: { Authorization: 'Bearer ' + token },
+              });
+              if (meRes.ok) {
+                const meData = await meRes.json();
+                const me = (meData && meData.user) || {};
+                loggedInDriverKey = (me.driverKey || '').toLowerCase();
+              } else {
+                loggedInDriverKey = null;
+              }
+            } catch (err) {
+              loggedInDriverKey = null;
+            }
+          } else {
+            loggedInDriverKey = null;
+          }
+          updateOwnershipStatus();
+        }
+
+        // Listen for login/logout events
+        window.addEventListener('sgp:driver-updated', checkLoginStatus);
+        window.addEventListener('storage', function(e) {
+          if (e.key === 'sgp_token') {
+            checkLoginStatus();
+          }
+        });
+
+        // Load data on page load
+        loadAllDrivers();
+        checkLoginStatus(); // Check login first
+        loadDefaultDriver();
+
+        // Expose functions globally for onclick handlers
+        window.exportPNG = exportPNG;
+        window.exportGIF = exportGIF;
+        window.resetCustomizations = resetCustomizations;
+        window.saveCardCustomization = saveCardCustomization;
+      })();
     </script>
-  </body>
+</body>
 </html>
