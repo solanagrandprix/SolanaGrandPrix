@@ -31,7 +31,7 @@ model Driver {
   number       Int      @default(0)
   team         String   @default("Privateer")
   primaryCar  String   @default("Mazda MX-5 Cup")
-  avatar      String   @default("/images/riley.png")
+  avatar      String   @default("/images/default-avatar.png")
 
   irating     Int      @default(0)
   license     String   @default("Rookie")

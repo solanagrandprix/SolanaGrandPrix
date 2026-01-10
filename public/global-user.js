@@ -38,7 +38,15 @@
     if (!el) return;
 
     const safeName = escapeHtml(displayName || 'Account');
-    const safeDriverKey = encodeURIComponent((driverKey || '').toLowerCase());
+    const safeDriverKey = driverKey ? encodeURIComponent(driverKey.toLowerCase()) : '';
+    
+    // Only show "My Driver Profile" link if driverKey exists
+    const driverProfileLink = safeDriverKey 
+      ? `<a class="sgp-usermenu-item" href="/driver/${safeDriverKey}"
+            style="display:block;padding:10px 10px;border-radius:10px;color:#e5e7eb;text-decoration:none;"
+            role="menuitem"
+          >My Driver Profile</a>`
+      : '';
 
     el.innerHTML = `
       <div class="sgp-userdropdown" style="position:relative;">
@@ -72,15 +80,12 @@
           "
           role="menu"
         >
-          <a class="sgp-usermenu-item" href="/driver/${safeDriverKey}"
-            style="display:block;padding:10px 10px;border-radius:10px;color:#e5e7eb;text-decoration:none;"
-            role="menuitem"
-          >My Driver Profile</a>
+          ${driverProfileLink}
 
           <a class="sgp-usermenu-item" href="/account"
             style="display:block;padding:10px 10px;border-radius:10px;color:#e5e7eb;text-decoration:none;"
             role="menuitem"
-          >Account</a>
+          >Account Settings</a>
 
           <a class="sgp-usermenu-item" href="/connections"
             style="display:block;padding:10px 10px;border-radius:10px;color:#e5e7eb;text-decoration:none;"

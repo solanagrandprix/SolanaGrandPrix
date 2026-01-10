@@ -566,7 +566,7 @@
               const driverNumber = stats.number ?? '';
               const driverTeam = stats.team || '';
               const driverCar = stats.primaryCar || 'Mazda MX-5 Cup';
-              const driverAvatar = stats.avatar || '/images/riley.png';
+              const driverAvatar = stats.avatar || '/images/default-avatar.png';
               const isFreeAgent = !!stats.freeAgent;
 
               // Create card element - EXACT match to driver profile page structure
@@ -584,7 +584,7 @@
                           alt="${escapeHtml(driverName)}" 
                           class="driver-avatar"
                           loading="lazy"
-                          onerror="this.src='/images/riley.png'"
+                          onerror="this.src='/images/default-avatar.png'"
                           style="width: 80px; height: 80px; object-fit: cover; border-radius: 16px; flex-shrink: 0;"
                         />
                         <div class="driver-meta">

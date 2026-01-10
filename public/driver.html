@@ -635,7 +635,7 @@
                   <div class="ds-row">
                     <label>Profile Picture</label>
                     <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
-                      <img id="ds-avatar-preview" src="/images/riley.png" alt="Avatar preview" style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 2px solid #1f2937; background: #020617;" />
+                      <img id="ds-avatar-preview" src="/images/default-avatar.png" alt="Avatar preview" style="width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 2px solid #1f2937; background: #020617;" />
                       <div style="flex: 1;">
                         <input id="ds-avatar-file" type="file" accept="image/*" style="display: none;" />
                         <button type="button" onclick="document.getElementById('ds-avatar-file').click()" style="padding: 8px 16px; border-radius: 8px; border: 1px solid #1f2937; background: rgba(15, 23, 42, 0.9); color: #e5e7eb; font-size: 12px; cursor: pointer; width: 100%;">
@@ -961,7 +961,7 @@
     function fillSettingsForm(stats) {
       const avatarPreview = document.getElementById('ds-avatar-preview');
       if (avatarPreview) {
-        avatarPreview.src = stats.avatar || '/images/riley.png';
+        avatarPreview.src = stats.avatar || '/images/default-avatar.png';
       }
       document.getElementById('ds-name').value = stats.name || '';
       document.getElementById('ds-number').value = stats.number ?? '';
@@ -1153,7 +1153,7 @@
           const isFreeAgent = !!stats.freeAgent;
           driverCardEl.innerHTML = `
             <div class="driver-header">
-              <img src="${stats.avatar || '/images/riley.png'}" alt="${stats.name || 'Driver'}" class="driver-avatar">
+              <img src="${stats.avatar || '/images/default-avatar.png'}" alt="${stats.name || 'Driver'}" class="driver-avatar">
               <div class="driver-meta">
                 <div class="driver-name">${stats.number ? `#${stats.number} ` : ''}${stats.name || ''}</div>
                 <div class="driver-team">${stats.team || ''}</div>
@@ -1184,17 +1184,34 @@
           }
         }
 
-        // Fill settings inputs
-        fillSettingsForm(stats);
+        // SECURITY: Hide edit form if user is not the owner
+        const driverSettingsCard = document.getElementById('driver-settings-card');
+        if (driverSettingsCard) {
+          if (stats.isOwnProfile && getToken()) {
+            // User is viewing their own profile and is logged in - show edit form
+            driverSettingsCard.style.display = 'block';
+            fillSettingsForm(stats);
+            
+            if (settingsStatusEl) {
+              settingsStatusEl.textContent = 'Edit your profile and click Save.';
+            }
+          } else {
+            // User is viewing someone else's profile or not logged in - hide edit form
+            driverSettingsCard.style.display = 'none';
+          }
+        } else {
+          // Fallback: fill form if it exists (for backwards compatibility)
+          fillSettingsForm(stats);
+          
+          if (settingsStatusEl) {
+            settingsStatusEl.textContent = getToken()
+              ? (stats.isOwnProfile ? 'Edit your profile and click Save.' : 'This is not your profile.')
+              : 'Log in to save changes.';
+          }
+        }
 
         // Load XP and achievements
         await loadXPAndAchievements();
-
-        if (settingsStatusEl) {
-          settingsStatusEl.textContent = getToken()
-            ? 'Edit your profile and click Save.'
-            : 'Log in to save changes.';
-        }
       } catch (err) {
         console.error(err);
         if (driverCardEl) driverCardEl.textContent = 'Error loading driver.';

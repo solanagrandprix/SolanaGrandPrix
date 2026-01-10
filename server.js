@@ -364,7 +364,7 @@ app.post('/api/signup', rateLimitAuth, async (req, res) => {
             number: 0,
             team: 'Privateer',
             primaryCar: 'Mazda MX-5 Cup',
-            avatar: '/images/riley.png',
+            avatar: '/images/default-avatar.png',
             irating: 0,
             license: 'Rookie',
             starts: 0,
@@ -1137,6 +1137,9 @@ app.get('/api/stats', async (req, res) => {
     
     // SECURITY: iRacing data is NEVER included in public responses
     // It is only available to the user themselves (isOwnProfile check above)
+    
+    // Add ownership flag so frontend can show/hide edit controls
+    publicStats.isOwnProfile = isOwnProfile;
 
     // Set cache headers to prevent caching
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -1574,25 +1577,95 @@ app.get('/card-builder', (req, res) =>
 app.get('/auth', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'auth.html'))
 );
-app.get('/account', (req, res) =>
-  res.sendFile(path.join(__dirname, 'public', 'account.html'))
-);
+// Account page: owner-only, but for now redirect to driver profile page
+app.get('/account', async (req, res) => {
+  const token = readToken(req);
+  
+  // If not logged in, redirect to login
+  if (!token || !sessions.has(token)) {
+    return res.redirect('/auth');
+  }
+  
+  try {
+    const session = sessions.get(token);
+    
+    // Check session expiration
+    if (Date.now() - session.createdAt > SESSION_EXPIRY_MS) {
+      sessions.delete(token);
+      return res.redirect('/auth');
+    }
+    
+    // Get user to find their driverKey
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: {
+        id: true,
+        username: true,
+        driver: {
+          select: {
+            driverKey: true,
+          },
+        },
+      },
+    });
+    
+    // For now: Always redirect authenticated users to their driver profile page
+    // Account editor should only be viewable by owner and accessed directly
+    if (user && user.driver && user.driver.driverKey) {
+      return res.redirect(`/driver/${encodeURIComponent(user.driver.driverKey.toLowerCase())}`);
+    }
+    
+    // If no driver profile yet, redirect to driver profile creation
+    // Use username as fallback driverKey
+    if (user && user.username) {
+      return res.redirect(`/driver/${encodeURIComponent(user.username.toLowerCase())}`);
+    }
+    
+    // Fallback: redirect to home
+    return res.redirect('/');
+  } catch (err) {
+    console.error('Account route error:', err);
+    // On error, redirect to login
+    return res.redirect('/auth');
+  }
+});
 app.get('/season', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'season.html'))
 );
 app.get('/leaderboard', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'leaderboard.html'))
 );
-app.get('/connections', (req, res) => {
-  console.log('Connections route hit:', req.url);
-  const filePath = path.join(__dirname, 'public', 'connections.html');
-  console.log('Sending file:', filePath);
-  res.sendFile(filePath, (err) => {
-    if (err) {
-      console.error('Error sending connections.html:', err);
-      res.status(500).send('Error loading connections page');
+// Connections page: only accessible to authenticated users (owners only)
+app.get('/connections', async (req, res) => {
+  const token = readToken(req);
+  
+  // If not logged in, redirect to login
+  if (!token || !sessions.has(token)) {
+    return res.redirect('/auth');
+  }
+  
+  try {
+    const session = sessions.get(token);
+    
+    // Check session expiration
+    if (Date.now() - session.createdAt > SESSION_EXPIRY_MS) {
+      sessions.delete(token);
+      return res.redirect('/auth');
     }
-  });
+    
+    // User is authenticated, allow access to connections page
+    const filePath = path.join(__dirname, 'public', 'connections.html');
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        console.error('Error sending connections.html:', err);
+        res.status(500).send('Error loading connections page');
+      }
+    });
+  } catch (err) {
+    console.error('Connections route error:', err);
+    // On error, redirect to login
+    return res.redirect('/auth');
+  }
 });
 
 app.get('/verify-email', (req, res) => {
