@@ -313,6 +313,53 @@ body {
   padding-top: 12px;           /* space inside footer above the text */
 }
 
+.sgp-footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.sgp-footer-brand {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.sgp-footer-social {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.sgp-social-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.2s ease, background 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.sgp-social-link:hover {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.sgp-social-handle {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.sgp-social-link:hover .sgp-social-handle {
+  color: #9ca3af;
+}
+
 /* ----------------------------------------------------------
    SHARED: FREE AGENT LABELS
    (Used by driver cards / tracker)

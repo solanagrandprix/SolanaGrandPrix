@@ -493,6 +493,54 @@
         text-decoration: underline;
       }
 
+      /* Footer social links styling */
+      .sgp-footer-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .sgp-footer-brand {
+        font-size: 12px;
+        font-weight: 600;
+        color: #9ca3af;
+      }
+
+      .sgp-footer-social {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .sgp-social-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #9ca3af;
+        text-decoration: none;
+        font-size: 12px;
+        transition: color 0.2s ease, background 0.2s ease;
+        padding: 4px 8px;
+        border-radius: 6px;
+      }
+
+      .sgp-social-link:hover {
+        color: #38bdf8;
+        background: rgba(56, 189, 248, 0.1);
+      }
+
+      .sgp-social-handle {
+        color: #6b7280;
+        font-size: 11px;
+      }
+
+      .sgp-social-link:hover .sgp-social-handle {
+        color: #9ca3af;
+      }
+
       /* --------- RESPONSIVE --------- */
       @media (max-width: 960px) {
         .home-hero {
@@ -554,7 +602,7 @@
       <header class="sgp-header">
         <div class="sgp-logo-block">
           <div class="sgp-logo">Solana Grand Prix</div>
-          <div class="sgp-tagline">IRACING • LEAGUE • STATS • CRYPTO</div>
+          <div class="sgp-tagline">RACING • LEAGUE • STATS • CRYPTO</div>
         </div>
 
         <div class="sgp-header-right">
@@ -764,16 +812,23 @@
           </article>
         </section>
 
-        <!-- COMMUNITY CTA -->
-        <section class="home-community">
-          <span>Want to help shape Season 1?</span>
-          <a href="/tracker">Add your driver and send feedback ↗</a>
-        </section>
       </main>
 
       <!-- Shared footer -->
       <footer class="sgp-footer">
-        Solana Grand Prix
+        <div class="sgp-footer-content">
+          <div class="sgp-footer-brand">Solana Grand Prix</div>
+          <div class="sgp-footer-social">
+            <a href="https://x.com/gp_solana" target="_blank" rel="noopener noreferrer" class="sgp-social-link" aria-label="Follow us on Twitter/X">
+              <span>Twitter/X</span>
+              <span class="sgp-social-handle">@gp_solana</span>
+            </a>
+            <a href="https://discord.gg/Dx4uXhCjFt" target="_blank" rel="noopener noreferrer" class="sgp-social-link" aria-label="Join our Discord">
+              <span>Discord</span>
+              <span class="sgp-social-handle">Join Server</span>
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
 
