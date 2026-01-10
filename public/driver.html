@@ -1184,10 +1184,40 @@
           }
         }
 
-        // SECURITY: Hide edit form if user is not the owner
+        // SECURITY: Show edit form only if user is viewing their own profile
         const driverSettingsCard = document.getElementById('driver-settings-card');
         if (driverSettingsCard) {
-          if (stats.isOwnProfile && getToken()) {
+          const token = getToken();
+          
+          // Check if this is the user's own profile
+          // Use server-side isOwnProfile flag, or fallback to checking if logged-in user's driverKey matches
+          let isOwnProfile = stats.isOwnProfile === true;
+          
+          // Fallback: If server didn't set isOwnProfile correctly, check client-side by comparing driverKeys
+          if (!isOwnProfile && token) {
+            try {
+              // Get current user's driverKey from /api/me
+              const meRes = await fetch('/api/me', {
+                headers: { Authorization: 'Bearer ' + token },
+                cache: 'no-store',
+              });
+              if (meRes.ok) {
+                const meData = await meRes.json();
+                const loggedInDriverKey = (meData.user?.driverKey || meData.user?.username || '').toLowerCase();
+                const currentDriverKey = driverKey.toLowerCase();
+                isOwnProfile = loggedInDriverKey === currentDriverKey;
+                
+                // Debug: log if we're using fallback check
+                if (isOwnProfile && stats.isOwnProfile !== true) {
+                  console.log('[Driver Profile] Using fallback ownership check - server did not set isOwnProfile flag');
+                }
+              }
+            } catch (err) {
+              console.error('Error checking ownership:', err);
+            }
+          }
+          
+          if (isOwnProfile && token) {
             // User is viewing their own profile and is logged in - show edit form
             driverSettingsCard.style.display = 'block';
             fillSettingsForm(stats);
@@ -1204,7 +1234,8 @@
           fillSettingsForm(stats);
           
           if (settingsStatusEl) {
-            settingsStatusEl.textContent = getToken()
+            const token = getToken();
+            settingsStatusEl.textContent = token
               ? (stats.isOwnProfile ? 'Edit your profile and click Save.' : 'This is not your profile.')
               : 'Log in to save changes.';
           }
