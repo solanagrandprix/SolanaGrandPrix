@@ -1602,30 +1602,6 @@ app.get(/^\/arcade\/.*/, (req, res) => {
 app.get('/connections', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'connections.html'));
 });
-  
-  try {
-    const session = sessions.get(token);
-    
-    // Check session expiration
-    if (Date.now() - session.createdAt > SESSION_EXPIRY_MS) {
-      sessions.delete(token);
-      return res.redirect('/auth');
-    }
-    
-    // User is authenticated, allow access to connections page
-    const filePath = path.join(__dirname, 'public', 'connections.html');
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        console.error('Error sending connections.html:', err);
-        res.status(500).send('Error loading connections page');
-      }
-    });
-  } catch (err) {
-    console.error('Connections route error:', err);
-    // On error, redirect to login
-    return res.redirect('/auth');
-  }
-});
 
 // iRacing settings page: server-side authentication required
 app.get('/iracing', async (req, res) => {
