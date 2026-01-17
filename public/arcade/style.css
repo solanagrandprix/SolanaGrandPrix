@@ -1,0 +1,611 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: #0a0a0a;
+    color: #00ff41;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    position: fixed;
+}
+
+#game-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-canvas {
+    display: block;
+    background: #1a1a1a;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Menu Screens */
+.menu-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 2rem;
+}
+
+.menu-screen.hidden {
+    display: none;
+}
+
+.menu-content {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+.menu-content h1 {
+    font-size: 3rem;
+    color: #00ff41;
+    text-shadow: 0 0 10px #00ff41, 0 0 20px #00ff41;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.2em;
+}
+
+.menu-content h2 {
+    font-size: 1.5rem;
+    color: #00ff41;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.menu-btn {
+    background: transparent;
+    border: 2px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    padding: 1rem 2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.menu-btn:hover {
+    background: #00ff41;
+    color: #0a0a0a;
+    box-shadow: 0 0 20px #00ff41;
+    transform: scale(1.05);
+}
+
+.menu-btn:active {
+    transform: scale(0.98);
+}
+
+.menu-options {
+    margin-top: 2rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #00ff41;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #00ff41;
+}
+
+.track-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.track-item {
+    background: transparent;
+    border: 2px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+}
+
+.track-item:hover {
+    background: rgba(0, 255, 65, 0.1);
+    border-color: #00ff41;
+    box-shadow: 0 0 10px #00ff41;
+}
+
+.track-item.selected {
+    background: rgba(0, 255, 65, 0.2);
+    border-color: #00ff41;
+    box-shadow: 0 0 15px #00ff41;
+}
+
+.controls-info {
+    text-align: left;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(0, 255, 65, 0.05);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.controls-info h3 {
+    color: #00ff41;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.controls-info h3:first-child {
+    margin-top: 0;
+}
+
+.controls-info p {
+    margin: 0.5rem 0;
+    color: #00ff41;
+    opacity: 0.9;
+}
+
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+.menu-overlay.hidden {
+    display: none;
+}
+
+footer {
+    position: absolute;
+    bottom: 1rem;
+    width: 100%;
+    text-align: center;
+    color: #00ff41;
+    opacity: 0.6;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+}
+
+/* In-Game HUD */
+#game-hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+}
+
+#game-hud.hidden {
+    display: none;
+}
+
+.hud-top {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    max-width: calc(100% - 1rem);
+}
+
+.hud-bottom {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+    flex-direction: column;
+}
+
+/* On mobile, adjust HUD positioning */
+@media (max-width: 768px) {
+    .hud-top {
+        top: 0.25rem;
+        left: 0.25rem;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .hud-bottom {
+        bottom: 70px; /* Above mobile controls and menu button */
+        right: 0.5rem;
+    }
+
+    .hud-lap-time,
+    .hud-best-time,
+    .hud-lap-number,
+    .hud-checkpoints,
+    .hud-speed {
+        padding: 0.25rem 0.5rem;
+        min-width: auto;
+        font-size: 0.85rem;
+    }
+
+    .hud-label {
+        font-size: 0.7rem;
+    }
+
+    .hud-value {
+        font-size: 1.1rem;
+    }
+
+    #minimap {
+        width: 120px !important;
+        height: 120px !important;
+    }
+}
+
+.hud-lap-time,
+.hud-best-time,
+.hud-lap-number,
+.hud-checkpoints,
+.hud-speed {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00ff41;
+    padding: 0.4rem 0.8rem;
+    min-width: 100px;
+    backdrop-filter: blur(4px);
+}
+
+.hud-label {
+    font-size: 0.8rem;
+    color: #00ff41;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+}
+
+.hud-value {
+    font-size: 1.5rem;
+    color: #00ff41;
+    font-weight: bold;
+    text-shadow: 0 0 5px #00ff41;
+}
+
+#minimap {
+    border: 2px solid #00ff41;
+    background: rgba(0, 0, 0, 0.7);
+    image-rendering: pixelated;
+}
+
+.debug-overlay {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00ff41;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #00ff41;
+    min-width: 200px;
+}
+
+.debug-overlay.hidden {
+    display: none;
+}
+
+.debug-overlay div {
+    margin: 0.25rem 0;
+}
+
+/* Menu Button (Bottom Right) */
+.menu-button {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 255, 65, 0.2);
+    border: 2px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    z-index: 200;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.menu-button:hover {
+    background: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 0 20px #00ff41;
+    transform: scale(1.1);
+}
+
+.menu-button:active {
+    transform: scale(0.95);
+}
+
+.menu-button.hidden {
+    display: none;
+}
+
+.menu-icon {
+    line-height: 1;
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    padding-bottom: 70px; /* Space for menu button */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: auto;
+    z-index: 60;
+}
+
+.mobile-controls.hidden {
+    display: none;
+}
+
+.mobile-steer {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.mobile-pedals {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-direction: column;
+}
+
+.mobile-btn {
+    background: rgba(0, 255, 65, 0.2);
+    border: 2px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    min-width: 55px;
+    min-height: 55px;
+    width: 55px;
+    height: 55px;
+    cursor: pointer;
+    user-select: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.1s;
+    border-radius: 8px;
+}
+
+.mobile-btn:active,
+.mobile-btn.active {
+    background: rgba(0, 255, 65, 0.6);
+    box-shadow: 0 0 15px #00ff41;
+    transform: scale(0.9);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 300;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #1a1a1a;
+    border: 2px solid #00ff41;
+    padding: 2rem;
+    text-align: center;
+    min-width: 300px;
+}
+
+.modal-content h2 {
+    color: #00ff41;
+    margin-bottom: 1rem;
+}
+
+.modal-content p {
+    color: #00ff41;
+    margin-bottom: 1rem;
+}
+
+#player-name-input {
+    background: #0a0a0a;
+    border: 2px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    padding: 0.5rem;
+    width: 100%;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Leaderboard */
+#leaderboard-content {
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.leaderboard-entry {
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0;
+    background: rgba(0, 255, 65, 0.05);
+    border: 1px solid rgba(0, 255, 65, 0.3);
+    display: flex;
+    justify-content: space-between;
+}
+
+.leaderboard-rank {
+    color: #00ff41;
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+.leaderboard-name {
+    color: #00ff41;
+    flex: 1;
+}
+
+.leaderboard-time {
+    color: #00ff41;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .menu-content {
+        padding: 1rem;
+        max-width: 100%;
+    }
+
+    .menu-content h1 {
+        font-size: 2rem;
+    }
+
+    .menu-content h2 {
+        font-size: 1.25rem;
+    }
+
+    .menu-btn {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .hud-top {
+        flex-direction: row;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .hud-bottom {
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    #minimap {
+        width: 120px;
+        height: 120px;
+    }
+
+    .mobile-controls {
+        padding: 0.75rem;
+        padding-bottom: 70px;
+    }
+
+    .mobile-btn {
+        min-width: 50px;
+        min-height: 50px;
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+
+    .menu-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+        bottom: 0.75rem;
+        right: 0.75rem;
+    }
+}
+
+/* Windows/Desktop optimizations */
+@media (min-width: 769px) {
+    .hud-top {
+        gap: 1rem;
+    }
+
+    #minimap {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    #game-canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}

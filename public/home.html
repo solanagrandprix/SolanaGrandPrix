@@ -357,6 +357,25 @@
         margin-bottom: 28px;
       }
 
+      /* Schedule list scrollbar */
+      #upcoming-schedule-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      #upcoming-schedule-list::-webkit-scrollbar-track {
+        background: #0a0f1a;
+        border-radius: 3px;
+      }
+
+      #upcoming-schedule-list::-webkit-scrollbar-thumb {
+        background: #374151;
+        border-radius: 3px;
+      }
+
+      #upcoming-schedule-list::-webkit-scrollbar-thumb:hover {
+        background: #4b5563;
+      }
+
       .home-card {
         background: rgba(2, 6, 23, 0.96);
         border-radius: 16px;
@@ -379,11 +398,12 @@
 
       .home-pill {
         font-size: 11px;
-        padding: 3px 10px;
+        padding: 4px 10px;
         border-radius: 999px;
-        background: rgba(34, 197, 94, 0.12);
-        color: #bbf7d0;
-        border: 1px solid rgba(34, 197, 94, 0.4);
+        background: rgba(251, 191, 36, 0.12);
+        color: #fde68a;
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        font-weight: 500;
       }
 
       .home-upcoming-meta {
@@ -400,15 +420,99 @@
         margin-bottom: 10px;
       }
 
+      .home-upcoming-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .home-upcoming-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .home-upcoming-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
       .home-upcoming-label {
         color: #6b7280;
-        font-size: 12px;
+        font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.08em;
+        margin-bottom: 4px;
+      }
+
+      .home-upcoming-value {
+        font-weight: 600;
+        color: #e5e7eb;
+        font-size: 13px;
       }
 
       .home-upcoming-track {
         font-weight: 600;
+      }
+
+      /* Race Info & Updates styling */
+      .home-race-info-content {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+
+      .home-race-info-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .home-race-info-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .home-race-info-title {
+        font-weight: 600;
+        font-size: 13px;
+        color: #e5e7eb;
+        margin-bottom: 4px;
+      }
+
+      .home-race-info-text {
+        font-size: 12px;
+        color: #9ca3af;
+        line-height: 1.5;
+      }
+
+      .home-race-info-links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding-top: 8px;
+        border-top: 1px solid rgba(31, 41, 55, 0.5);
+      }
+
+      .home-race-info-link {
+        font-size: 12px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid #1f2937;
+        background: rgba(15, 23, 42, 0.5);
+        color: #9ca3af;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+
+      .home-race-info-link:hover {
+        border-color: #38bdf8;
+        background: rgba(56, 189, 248, 0.1);
+        color: #38bdf8;
       }
 
       .home-upcoming-btn {
@@ -560,6 +664,20 @@
         .home-tiles {
           grid-template-columns: minmax(0, 1fr);
         }
+
+        .home-upcoming-info-grid {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 12px;
+        }
+
+        .home-race-info-links {
+          flex-direction: column;
+        }
+
+        .home-race-info-link {
+          width: 100%;
+          text-align: center;
+        }
       }
 
       @media (max-width: 480px) {
@@ -612,7 +730,7 @@
             <a href="/season" class="sgp-nav-link">Season Hub</a>
             <a href="/card-builder" class="sgp-nav-link">Card Builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-            <a href="/auth" class="sgp-nav-link">Account</a>
+            <a href="/arcade" class="sgp-nav-link">Arcade</a>
           </nav>
 
           <!-- username slot -->
@@ -742,31 +860,47 @@
           </div>
         </section>
 
-        <!-- UPCOMING EVENT + HOW IT WORKS -->
+        <!-- UPCOMING EVENTS + RACE INFO -->
         <section class="home-lower-grid">
-          <!-- Upcoming -->
+          <!-- Upcoming Event -->
           <article class="home-card">
             <div class="home-card-header">
-              <div class="home-card-title">Next Event</div>
-              <span class="home-pill">TBD</span>
+              <div class="home-card-title">🎯 Next Race</div>
+              <span id="next-race-pill" class="home-pill">Loading...</span>
             </div>
 
-            <div class="home-upcoming-meta">
-              All dates / times are placeholder data until the live calendar is wired in.
+            <div id="next-race-meta" class="home-upcoming-meta" style="margin-bottom: 16px;">
+              Loading next race details...
             </div>
 
-            <div class="home-upcoming-row">
-              <div>
-                <div class="home-upcoming-label">Track</div>
-                <div class="home-upcoming-track">TBD</div>
+            <div class="home-upcoming-info-grid">
+              <div class="home-upcoming-info-item">
+                <div class="home-upcoming-icon">🏁</div>
+                <div>
+                  <div class="home-upcoming-label">Track</div>
+                  <div id="next-race-track" class="home-upcoming-value">TBD</div>
+                </div>
               </div>
-              <div>
-                <div class="home-upcoming-label">Car</div>
-                <div>Mazda MX-5 Cup</div>
+              <div class="home-upcoming-info-item">
+                <div class="home-upcoming-icon">🚗</div>
+                <div>
+                  <div class="home-upcoming-label">Car</div>
+                  <div id="next-race-car" class="home-upcoming-value">Mazda MX-5 Cup</div>
+                </div>
               </div>
-              <div>
-                <div class="home-upcoming-label">Format</div>
-                <div>35 min</div>
+              <div class="home-upcoming-info-item">
+                <div class="home-upcoming-icon">⏱️</div>
+                <div>
+                  <div class="home-upcoming-label">Format</div>
+                  <div class="home-upcoming-value">35 min</div>
+                </div>
+              </div>
+              <div class="home-upcoming-info-item">
+                <div class="home-upcoming-icon">📅</div>
+                <div>
+                  <div class="home-upcoming-label">Date</div>
+                  <div id="next-race-date" class="home-upcoming-value">TBD</div>
+                </div>
               </div>
             </div>
 
@@ -775,40 +909,19 @@
             </a>
           </article>
 
-          <!-- How it works -->
+          <!-- Schedule -->
           <article class="home-card">
             <div class="home-card-header">
-              <div class="home-card-title">How SolanaGP works</div>
+              <div class="home-card-title">📅 Upcoming Schedule</div>
             </div>
 
-            <ul class="home-steps">
-              <li class="home-step">
-                <div class="home-step-number">1</div>
-                <div>
-                  <div class="home-step-title">Mint or Purchase</div>
-                  <div class="home-step-text">Obtain one of the driver NFTs.</div>
-                </div>
-              </li>
-              <li class="home-step">
-                <div class="home-step-number">2</div>
-                <div>
-                  <div class="home-step-title">Race, log, repeat</div>
-                  <div class="home-step-text">
-                    As you participate in our events your driver will be rewarded and given custom
-                    stats.
-                  </div>
-                </div>
-              </li>
-              <li class="home-step">
-                <div class="home-step-number">3</div>
-                <div>
-                  <div class="home-step-title">Build your legacy</div>
-                  <div class="home-step-text">
-                    Build and customize your driver to leave a legacy.
-                  </div>
-                </div>
-              </li>
-            </ul>
+            <div id="upcoming-schedule-list" style="max-height: 400px; overflow-y: auto;">
+              <div style="color: #9ca3af; font-size: 12px; text-align: center; padding: 20px;">Loading schedule...</div>
+            </div>
+
+            <a href="/season" class="home-upcoming-btn" style="margin-top: 16px;">
+              View full schedule <span>↗</span>
+            </a>
           </article>
         </section>
 
@@ -1009,9 +1122,173 @@
           }
         }
 
+        // Load next race and schedule from iRacing league
+        async function loadNextRace() {
+          try {
+            const res = await fetch('/api/iracing/league-schedule', { cache: 'no-store' });
+            if (!res.ok) {
+              // Fallback to default values
+              updateNextRaceUI(null);
+              return;
+            }
+
+            const data = await res.json();
+            const schedule = data.schedule || [];
+            
+            // Find the next upcoming race (status: scheduled, not completed/cancelled)
+            const now = new Date();
+            const upcomingRaces = schedule
+              .filter(e => {
+                const eventDate = new Date(e.eventDate);
+                const status = (e.status || '').toLowerCase();
+                return eventDate >= now && 
+                       (status === 'scheduled' || status === 'upcoming' || !status || status === '');
+              })
+              .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+
+            if (upcomingRaces.length > 0) {
+              updateNextRaceUI(upcomingRaces[0]);
+            } else {
+              updateNextRaceUI(null);
+            }
+          } catch (err) {
+            console.error('Error loading next race:', err);
+            updateNextRaceUI(null);
+          }
+        }
+
+        function updateNextRaceUI(race) {
+          const pillEl = document.getElementById('next-race-pill');
+          const metaEl = document.getElementById('next-race-meta');
+          const trackEl = document.getElementById('next-race-track');
+          const carEl = document.getElementById('next-race-car');
+          const dateEl = document.getElementById('next-race-date');
+
+          if (!race) {
+            if (pillEl) pillEl.textContent = 'Coming Soon';
+            if (metaEl) metaEl.textContent = 'Our next race is being scheduled! Check back soon for details.';
+            if (trackEl) trackEl.textContent = 'TBD';
+            if (carEl) carEl.textContent = 'Mazda MX-5 Cup';
+            if (dateEl) dateEl.textContent = 'TBD';
+            return;
+          }
+
+          const eventDate = new Date(race.eventDate);
+          const dateStr = eventDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            timeZone: 'America/New_York'
+          });
+          const timeStr = eventDate.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            timeZone: 'America/New_York'
+          });
+
+          // Calculate days until race
+          const daysUntil = Math.ceil((eventDate - new Date()) / (1000 * 60 * 60 * 24));
+          let statusText = 'Coming Soon';
+          if (daysUntil === 0) statusText = 'Today';
+          else if (daysUntil === 1) statusText = 'Tomorrow';
+          else if (daysUntil <= 7) statusText = `In ${daysUntil} days`;
+          else if (daysUntil <= 30) statusText = `In ${Math.ceil(daysUntil / 7)} weeks`;
+
+          if (pillEl) pillEl.textContent = statusText;
+          if (metaEl) {
+            metaEl.textContent = race.title || `Round ${race.iracing?.raceWeekNum !== undefined ? race.iracing.raceWeekNum + 1 : '?'}`;
+          }
+          if (trackEl) trackEl.textContent = race.track || 'TBD';
+          if (carEl) carEl.textContent = race.carClass || 'Mazda MX-5 Cup';
+          if (dateEl) dateEl.textContent = `${dateStr} at ${timeStr} EST`;
+        }
+
+        // Load upcoming schedule list
+        async function loadUpcomingSchedule() {
+          try {
+            const res = await fetch('/api/iracing/league-schedule', { cache: 'no-store' });
+            if (!res.ok) {
+              const listEl = document.getElementById('upcoming-schedule-list');
+              if (listEl) {
+                listEl.innerHTML = '<div style="color: #9ca3af; font-size: 12px; text-align: center; padding: 20px;">Schedule not available</div>';
+              }
+              return;
+            }
+
+            const data = await res.json();
+            const schedule = data.schedule || [];
+            
+            // Filter to upcoming races only (next 5)
+            const now = new Date();
+            const upcomingRaces = schedule
+              .filter(e => {
+                const eventDate = new Date(e.eventDate);
+                const status = (e.status || '').toLowerCase();
+                return eventDate >= now && 
+                       (status === 'scheduled' || status === 'upcoming' || !status || status === '');
+              })
+              .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate))
+              .slice(0, 5);
+
+            const listEl = document.getElementById('upcoming-schedule-list');
+            if (!listEl) return;
+
+            if (upcomingRaces.length === 0) {
+              listEl.innerHTML = '<div style="color: #9ca3af; font-size: 12px; text-align: center; padding: 20px;">No upcoming races scheduled</div>';
+              return;
+            }
+
+            let html = '';
+            upcomingRaces.forEach(race => {
+              const eventDate = new Date(race.eventDate);
+              const dateStr = eventDate.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                timeZone: 'America/New_York'
+              });
+              const timeStr = eventDate.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                timeZone: 'America/New_York'
+              });
+
+              html += `
+                <div style="padding: 12px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border-left: 3px solid #3b82f6;">
+                  <div style="font-size: 13px; font-weight: 600; color: #e5e7eb; margin-bottom: 4px;">
+                    ${escapeHtml(race.title || `Round ${race.iracing?.raceWeekNum !== undefined ? race.iracing.raceWeekNum + 1 : '?'}`)}
+                  </div>
+                  <div style="font-size: 11px; color: #9ca3af; margin-bottom: 4px;">
+                    ${dateStr} at ${timeStr} EST
+                  </div>
+                  <div style="font-size: 11px; color: #6b7280;">
+                    ${escapeHtml(race.track || 'TBD')}${race.carClass ? ' • ' + escapeHtml(race.carClass) : ''}
+                  </div>
+                </div>
+              `;
+            });
+
+            listEl.innerHTML = html;
+          } catch (err) {
+            console.error('Error loading upcoming schedule:', err);
+            const listEl = document.getElementById('upcoming-schedule-list');
+            if (listEl) {
+              listEl.innerHTML = '<div style="color: #9ca3af; font-size: 12px; text-align: center; padding: 20px;">Error loading schedule</div>';
+            }
+          }
+        }
+
+        function escapeHtml(text) {
+          if (!text) return '';
+          const div = document.createElement('div');
+          div.textContent = text;
+          return div.innerHTML;
+        }
+
         // initial load
         refreshFeaturedDriver();
         loadDriverCount();
+        loadNextRace();
+        loadUpcomingSchedule();
 
         // update live after save on profile page
         window.addEventListener('sgp:driver-updated', function () {
@@ -1027,6 +1304,8 @@
         // Periodically refresh featured driver to catch any changes (every 30 seconds)
         setInterval(function() {
           refreshFeaturedDriver();
+          loadNextRace();
+          loadUpcomingSchedule();
         }, 30000);
         
         // Also listen for driver count updates from drivers page

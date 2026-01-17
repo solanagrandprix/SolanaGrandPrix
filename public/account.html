@@ -222,7 +222,7 @@
             <a href="/season" class="sgp-nav-link">Season hub</a>
             <a href="/card-builder" class="sgp-nav-link">Card builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-            <a href="/auth" class="sgp-nav-link">Account</a>
+            <a href="/arcade" class="sgp-nav-link">Arcade</a>
           </nav>
           <div id="sgp-user" class="sgp-userbox"></div>
         </div>
@@ -413,6 +413,9 @@
     <!-- Per-page JS -->
     <script>
       (function () {
+        // Authentication will be checked when making API calls
+        // No need to redirect on page load - let user see the page first
+        
         const username = localStorage.getItem('sgp_user') || 'Guest';
 
         const usernameEls = [
@@ -528,9 +531,15 @@
             return;
           }
 
-          const token = localStorage.getItem('sgp_token');
+          const token = localStorage.getItem('sgp_token') || 
+                         localStorage.getItem('token') ||
+                         sessionStorage.getItem('sgp_token') ||
+                         sessionStorage.getItem('token');
           if (!token) {
-            setCredStatus('You need to log in again to update credentials.', 'error');
+            setCredStatus('You need to log in to update credentials.', 'error');
+            setTimeout(() => {
+              window.location.href = '/auth';
+            }, 1500);
             return;
           }
 
@@ -594,8 +603,14 @@
         const deletionReason = document.getElementById('deletion-reason');
 
         async function loadDeletionStatus() {
-          const token = localStorage.getItem('sgp_token');
-          if (!token) return;
+          const token = localStorage.getItem('sgp_token') || 
+                         localStorage.getItem('token') ||
+                         sessionStorage.getItem('sgp_token') ||
+                         sessionStorage.getItem('token');
+          if (!token) {
+            // No redirect needed - just don't load deletion status
+            return;
+          }
 
           try {
             const res = await fetch('/api/account/deletion-status', {
@@ -634,10 +649,16 @@
           if (evt) evt.preventDefault();
           if (!deletionForm) return;
 
-          const token = localStorage.getItem('sgp_token');
+          const token = localStorage.getItem('sgp_token') || 
+                         localStorage.getItem('token') ||
+                         sessionStorage.getItem('sgp_token') ||
+                         sessionStorage.getItem('token');
           if (!token) {
             deletionRequestStatus.textContent = 'You must be logged in to request deletion.';
             deletionRequestStatus.style.color = '#fca5a5';
+            setTimeout(() => {
+              window.location.href = '/auth';
+            }, 1500);
             return;
           }
 

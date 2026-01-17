@@ -140,7 +140,7 @@
             <a href="/season" class="sgp-nav-link">Season hub</a>
             <a href="/card-builder" class="sgp-nav-link">Card builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-            <a href="/auth" class="sgp-nav-link active">Account</a>
+            <a href="/arcade" class="sgp-nav-link">Arcade</a>
           </nav>
 
           <div id="sgp-user" class="sgp-userbox"></div>
@@ -286,10 +286,11 @@
             return;
           }
 
-          if (type === 'signup' && (!emailInput || !emailInput.value.trim())) {
-            updateStatus(statusEl, 'Email address is required.');
-            return;
-          }
+          // Email verification temporarily disabled - email is optional
+          // if (type === 'signup' && (!emailInput || !emailInput.value.trim())) {
+          //   updateStatus(statusEl, 'Email address is required.');
+          //   return;
+          // }
 
           updateStatus(statusEl, 'Submitting…');
 

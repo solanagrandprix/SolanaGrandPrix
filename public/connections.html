@@ -234,7 +234,7 @@
             <a href="/season" class="sgp-nav-link">Season hub</a>
             <a href="/card-builder" class="sgp-nav-link">Card builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-            <a href="/auth" class="sgp-nav-link">Account</a>
+            <a href="/arcade" class="sgp-nav-link">Arcade</a>
           </nav>
           <div id="sgp-user" class="sgp-userbox"></div>
         </div>
@@ -399,7 +399,11 @@
         let connectedWallet = null;
 
         function getToken() {
-          return localStorage.getItem('sgp_token');
+          // Check multiple token locations for compatibility
+          return localStorage.getItem('sgp_token') || 
+                 localStorage.getItem('token') ||
+                 sessionStorage.getItem('sgp_token') ||
+                 sessionStorage.getItem('token');
         }
 
         function showStatus(message, type) {
@@ -422,16 +426,24 @@
             // Redirect to login after a moment
             setTimeout(() => {
               window.location.href = '/auth';
-            }, 2000);
+            }, 1500);
             return;
           }
-
+          
           try {
             const res = await fetch('/api/me', {
               headers: { Authorization: 'Bearer ' + token },
             });
 
             if (!res.ok) {
+              // Check if it's an auth error
+              if (res.status === 401) {
+                showStatus('Please log in to view your connections.', 'error');
+                setTimeout(() => {
+                  window.location.href = '/auth';
+                }, 1500);
+                return;
+              }
               throw new Error('Failed to load profile');
             }
 
@@ -457,7 +469,15 @@
             }
           } catch (err) {
             console.error('Error loading connections:', err);
-            showStatus('Error loading connections. Please refresh the page.', 'error');
+            // Check if it's an auth error and redirect
+            if (err.message && err.message.includes('401')) {
+              showStatus('Please log in to view your connections.', 'error');
+              setTimeout(() => {
+                window.location.href = '/auth';
+              }, 1500);
+            } else {
+              showStatus('Error loading connections. Please refresh the page.', 'error');
+            }
           }
         }
 
@@ -501,6 +521,14 @@
             const data = await res.json();
 
             if (!res.ok) {
+              // Check if it's an auth error
+              if (res.status === 401) {
+                showStatus('Please log in to save connections.', 'error');
+                setTimeout(() => {
+                  window.location.href = '/auth';
+                }, 1500);
+                return;
+              }
               throw new Error(data.message || 'Failed to save connections');
             }
 

@@ -92,6 +92,19 @@
             role="menuitem"
           >Connections</a>
 
+          <a class="sgp-usermenu-item" href="/iracing" id="iracing-connect-item"
+            style="display:flex;align-items:center;justify-content:space-between;padding:10px 10px;border-radius:10px;color:#e5e7eb;text-decoration:none;"
+            role="menuitem"
+          >
+            <span>🏁</span>
+            <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+              <span>iRacing</span>
+              <span id="iracing-status-indicator" style="font-size:10px;" title="Connection status">○</span>
+            </div>
+          </a>
+
+          <div class="sgp-usermenu-item" style="height:1px;background:#1f2937;margin:4px 0;padding:0;"></div>
+
           <button
             type="button"
             id="sgp-logout"
@@ -154,7 +167,47 @@
         window.location.href = '/';
       });
     }
+
+    // Update iRacing connection status
+    updateIracingStatus();
   }
+
+  async function updateIracingStatus() {
+    const token = getToken();
+    if (!token) return;
+
+    const statusIndicator = document.getElementById('iracing-status-indicator');
+    if (!statusIndicator) return;
+
+    try {
+      const response = await fetch('/api/iracing/status', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.connected) {
+          statusIndicator.textContent = '●';
+          statusIndicator.style.color = data.isExpired ? '#f59e0b' : '#22c55e';
+          statusIndicator.title = data.isExpired 
+            ? 'Connected (Expired - Reconnect needed)'
+            : 'Connected';
+        } else {
+          statusIndicator.textContent = '○';
+          statusIndicator.style.color = '#9ca3af';
+          statusIndicator.title = 'Not Connected';
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check iRacing status:', error);
+    }
+  }
+
+  // Refresh iRacing status periodically
+  setInterval(updateIracingStatus, 5 * 60 * 1000); // Every 5 minutes
 
   async function fetchMe(token) {
     const res = await fetch('/api/me', {

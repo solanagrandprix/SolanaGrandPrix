@@ -467,6 +467,30 @@
         border: 1px solid rgba(59, 130, 246, 0.3);
       }
 
+      .pill.upcoming {
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      .pill.completed {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+
+      .pill.cancelled {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      .pill.postponed {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
       /* Highlights */
       ul.season-highlights {
         margin: 0;
@@ -558,7 +582,7 @@
             <a href="/season" class="sgp-nav-link active">Season Hub</a>
             <a href="/card-builder" class="sgp-nav-link">Card builder</a>
             <a href="/leaderboard" class="sgp-nav-link">Leaderboard</a>
-            <a href="/auth" class="sgp-nav-link">Account</a>
+            <a href="/arcade" class="sgp-nav-link">Arcade</a>
           </nav>
           <div id="sgp-user" class="sgp-userbox"></div>
         </div>
@@ -592,11 +616,8 @@
                       <th>Status</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    <tr><td>R1</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
-                    <tr><td>R2</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
-                    <tr><td>R3</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
-                    <tr><td>R4</td><td>TBD</td><td>TBD</td><td>TBD</td><td><span class="pill">Upcoming</span></td></tr>
+                  <tbody id="season-schedule-tbody">
+                    <tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">Loading schedule...</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -919,12 +940,137 @@
     document.getElementById('calendar-next-month')?.addEventListener('click', () => changeMonth(1));
     document.getElementById('calendar-today')?.addEventListener('click', goToToday);
 
+    // Load season schedule from iRacing league
+    async function loadSeasonSchedule() {
+      try {
+        const res = await fetch('/api/iracing/league-schedule', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          renderSeasonSchedule(data.schedule || []);
+        } else {
+          // Fallback: try regular calendar if iRacing schedule not available
+          console.warn('iRacing league schedule not available, using calendar events');
+          loadCalendarEvents();
+        }
+      } catch (err) {
+        console.error('Error loading season schedule:', err);
+        // Fallback to calendar events
+        loadCalendarEvents();
+      }
+    }
+    
+    function renderSeasonSchedule(schedule) {
+      const tbody = document.getElementById('season-schedule-tbody');
+      if (!tbody) return;
+      
+      if (schedule.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #9ca3af; padding: 20px;">No schedule available. Sync your iRacing league schedule to display events.</td></tr>';
+        return;
+      }
+      
+      // Sort by date and extract race events for the main schedule table
+      const raceEvents = schedule
+        .filter(e => e.eventType === 'race' || e.iracing?.raceWeekNum !== undefined)
+        .sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+      
+      let html = '';
+      
+      if (raceEvents.length === 0) {
+        // If no race events, show all events
+        schedule.slice(0, 20).forEach((event, index) => {
+          const eventDate = new Date(event.eventDate);
+          const dateStr = eventDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            timeZone: 'America/New_York'
+          });
+          
+          const roundNum = event.iracing?.raceWeekNum !== undefined 
+            ? `R${event.iracing.raceWeekNum + 1}` 
+            : `R${index + 1}`;
+          
+          const statusClass = event.status === 'completed' ? 'completed' : 
+                            event.status === 'cancelled' ? 'cancelled' : 
+                            event.status === 'postponed' ? 'postponed' : 'upcoming';
+          
+          html += `
+            <tr>
+              <td>${roundNum}</td>
+              <td>${dateStr}</td>
+              <td>${escapeHtml(event.track || 'TBD')}</td>
+              <td>${escapeHtml(event.carClass || 'TBD')}</td>
+              <td><span class="pill ${statusClass}">${escapeHtml(event.status || 'Upcoming')}</span></td>
+            </tr>
+          `;
+        });
+      } else {
+        raceEvents.forEach((event, index) => {
+          const eventDate = new Date(event.eventDate);
+          const dateStr = eventDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            timeZone: 'America/New_York'
+          });
+          
+          const roundNum = event.iracing?.raceWeekNum !== undefined 
+            ? `R${event.iracing.raceWeekNum + 1}` 
+            : `R${index + 1}`;
+          
+          const statusClass = event.status === 'completed' ? 'completed' : 
+                            event.status === 'cancelled' ? 'cancelled' : 
+                            event.status === 'postponed' ? 'postponed' : 'upcoming';
+          
+          html += `
+            <tr>
+              <td>${roundNum}</td>
+              <td>${dateStr}</td>
+              <td>${escapeHtml(event.track || 'TBD')}</td>
+              <td>${escapeHtml(event.carClass || 'TBD')}</td>
+              <td><span class="pill ${statusClass}">${escapeHtml(event.status || 'Upcoming')}</span></td>
+            </tr>
+          `;
+        });
+      }
+      
+      tbody.innerHTML = html;
+      
+      // Also merge into calendar events for display in calendar widget
+      const mergedEvents = [...schedule.map(e => ({
+        title: e.title,
+        description: e.description,
+        eventDate: e.eventDate,
+        eventType: e.eventType,
+        track: e.track,
+        carClass: e.carClass,
+        status: e.status,
+      }))];
+      
+      // Merge with existing calendar events (avoid duplicates)
+      const existingEventDates = new Set(
+        calendarEvents.map(e => formatESTDate(new Date(e.eventDate)))
+      );
+      const newEvents = mergedEvents.filter(e => {
+        const dateStr = formatESTDate(new Date(e.eventDate));
+        return !existingEventDates.has(dateStr) || !e.title.includes(calendarEvents.find(ce => formatESTDate(new Date(ce.eventDate)) === dateStr)?.title || '');
+      });
+      
+      calendarEvents = [...calendarEvents, ...newEvents];
+      renderCalendar();
+      renderUpcomingEvents();
+    }
+
     // Initial load
+    loadSeasonSchedule();
     loadCalendarEvents();
     renderCalendar();
 
     // Refresh events every 30 seconds
-    setInterval(loadCalendarEvents, 30000);
+    setInterval(() => {
+      loadCalendarEvents();
+      loadSeasonSchedule();
+    }, 30000);
   })();
 </script>
 

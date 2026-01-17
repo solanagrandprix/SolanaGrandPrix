@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Grand Prix — Rally Arcade</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- Main Menu -->
+        <div id="main-menu" class="menu-screen">
+            <div class="menu-content">
+                <h1>Solana Grand Prix</h1>
+                <h2>Rally Arcade</h2>
+                <div class="menu-buttons">
+                    <button id="btn-play" class="menu-btn">Play</button>
+                    <button id="btn-time-trial" class="menu-btn">Time Trial</button>
+                    <button id="btn-leaderboard" class="menu-btn">Leaderboard</button>
+                    <button id="btn-controls" class="menu-btn">Controls</button>
+                </div>
+                <div class="menu-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="ghost-toggle">
+                        <span>Ghost Car</span>
+                    </label>
+                </div>
+            </div>
+            <footer>
+                IRACING • LEAGUE • STATS • CRYPTO
+            </footer>
+        </div>
+
+        <!-- Track Selection Menu -->
+        <div id="track-menu" class="menu-screen hidden">
+            <div class="menu-content">
+                <h2>Select Track</h2>
+                <div id="track-list" class="track-list"></div>
+                <button id="btn-back-from-tracks" class="menu-btn">Back</button>
+            </div>
+        </div>
+
+        <!-- Controls Screen -->
+        <div id="controls-screen" class="menu-screen hidden">
+            <div class="menu-content">
+                <h2>Controls</h2>
+                <div class="controls-info">
+                    <h3>Keyboard</h3>
+                    <p>WASD or Arrow Keys: Drive</p>
+                    <p>Space: Handbrake</p>
+                    <p>R: Reset to Checkpoint</p>
+                    <p>Esc: Pause</p>
+                    <p>`: Debug Overlay</p>
+                    <h3>Gamepad</h3>
+                    <p>Left Stick: Steer</p>
+                    <p>RT: Accelerate</p>
+                    <p>LT: Brake</p>
+                    <p>A: Handbrake</p>
+                    <p>Y: Reset</p>
+                    <h3>Mobile</h3>
+                    <p>On-screen touch controls</p>
+                </div>
+                <button id="btn-back-from-controls" class="menu-btn">Back</button>
+            </div>
+        </div>
+
+        <!-- Leaderboard Screen -->
+        <div id="leaderboard-screen" class="menu-screen hidden">
+            <div class="menu-content">
+                <h2>Leaderboard</h2>
+                <div id="leaderboard-content"></div>
+                <button id="btn-back-from-leaderboard" class="menu-btn">Back</button>
+            </div>
+        </div>
+
+        <!-- Pause Menu -->
+        <div id="pause-menu" class="menu-overlay hidden">
+            <div class="menu-content">
+                <h2>Paused</h2>
+                <div class="menu-buttons">
+                    <button id="btn-resume" class="menu-btn">Resume</button>
+                    <button id="btn-restart" class="menu-btn">Restart</button>
+                    <button id="btn-change-track" class="menu-btn">Change Track</button>
+                    <button id="btn-quit" class="menu-btn">Quit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- In-Game HUD -->
+        <div id="game-hud" class="hidden">
+            <div class="hud-top">
+                <div class="hud-lap-time">
+                    <div class="hud-label">Stage Time</div>
+                    <div id="lap-time" class="hud-value">0.00</div>
+                </div>
+                <div class="hud-best-time">
+                    <div class="hud-label">Best</div>
+                    <div id="best-time" class="hud-value">--:--.--</div>
+                </div>
+                <div class="hud-lap-number">
+                    <div class="hud-label">Status</div>
+                    <div id="lap-number" class="hud-value">READY</div>
+                </div>
+                <div class="hud-checkpoints">
+                    <div class="hud-label">Checkpoints</div>
+                    <div id="checkpoint-progress" class="hud-value">0/0</div>
+                </div>
+            </div>
+            <div class="hud-bottom">
+                <div class="hud-speed">
+                    <div class="hud-label">Speed</div>
+                    <div id="speed" class="hud-value">0</div>
+                </div>
+                <canvas id="minimap" width="200" height="200"></canvas>
+            </div>
+            <div id="debug-overlay" class="debug-overlay hidden"></div>
+        </div>
+
+        <!-- Menu Button (Bottom Right) -->
+        <button id="menu-button" class="menu-button hidden">
+            <span class="menu-icon">☰</span>
+        </button>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls" class="mobile-controls hidden">
+            <div class="mobile-steer">
+                <button id="mobile-left" class="mobile-btn">←</button>
+                <button id="mobile-right" class="mobile-btn">→</button>
+            </div>
+            <div class="mobile-pedals">
+                <button id="mobile-throttle" class="mobile-btn">▲</button>
+                <button id="mobile-brake" class="mobile-btn">▼</button>
+                <button id="mobile-handbrake" class="mobile-btn">H</button>
+            </div>
+        </div>
+
+        <!-- Name Entry Modal -->
+        <div id="name-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>New Best Lap!</h2>
+                <p>Enter your name:</p>
+                <input type="text" id="player-name-input" value="Lemon93" maxlength="20">
+                <div class="modal-buttons">
+                    <button id="btn-submit-name" class="menu-btn">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

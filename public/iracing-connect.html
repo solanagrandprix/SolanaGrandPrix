@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect iRacing - Solana Grand Prix</title>
+  <link rel="stylesheet" href="layout.css">
+  <style>
+    .iracing-connect-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(6, 182, 212, 0.1));
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .iracing-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .iracing-header h1 {
+      color: #fff;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .iracing-header p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.1rem;
+    }
+
+    .status-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .status-card h2 {
+      color: #fff;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-connected {
+      color: #22c55e;
+    }
+
+    .status-disconnected {
+      color: #ef4444;
+    }
+
+    .status-info {
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0.5rem 0;
+    }
+
+    .status-info strong {
+      color: #fff;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #22c55e, #06b6d4);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .sync-status {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .sync-status.success {
+      border-left: 4px solid #22c55e;
+    }
+
+    .sync-status.error {
+      border-left: 4px solid #ef4444;
+    }
+
+    .sync-status.info {
+      border-left: 4px solid #06b6d4;
+    }
+
+    .sessions-list {
+      margin-top: 1.5rem;
+    }
+
+    .session-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .session-item h3 {
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .session-item p {
+      color: rgba(255, 255, 255, 0.8);
+      margin: 0.25rem 0;
+      font-size: 0.9rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #22c55e;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="iracing-connect-container">
+    <div class="iracing-header">
+      <h1>🏁 Connect iRacing Account</h1>
+      <p>Link your iRacing account to sync session data automatically</p>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="status-card" id="statusCard">
+      <h2>
+        <span id="statusIcon">⏳</span>
+        <span id="statusTitle">Checking connection...</span>
+      </h2>
+      <div id="statusInfo"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="button-group">
+      <button id="connectBtn" class="btn btn-primary" onclick="connectIracing()">
+        Connect iRacing Account
+      </button>
+      <button id="syncBtn" class="btn btn-secondary" onclick="syncSessions()" disabled>
+        Sync Sessions
+      </button>
+    </div>
+
+    <!-- Sync Status -->
+    <div id="syncStatus" style="display: none;"></div>
+
+    <!-- Sessions List -->
+    <div id="sessionsList" class="sessions-list" style="display: none;">
+      <h2 style="color: #fff; margin-bottom: 1rem;">Recent Sessions</h2>
+      <div id="sessionsContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    // Get auth token from localStorage or sessionStorage
+    function getAuthToken() {
+      return localStorage.getItem('token') || sessionStorage.getItem('token');
+    }
+
+    // Check if user is authenticated
+    function checkAuth() {
+      const token = getAuthToken();
+      if (!token) {
+        window.location.href = '/auth';
+        return false;
+      }
+      return true;
+    }
+
+    // Load connection status on page load
+    async function loadStatus() {
+      if (!checkAuth()) return;
+
+      const token = getAuthToken();
+      try {
+        const response = await fetch('/api/iracing/status', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          window.location.href = '/auth';
+          return;
+        }
+
+        const data = await response.json();
+        updateStatusUI(data);
+
+        if (data.connected) {
+          document.getElementById('syncBtn').disabled = false;
+          loadSessions();
+        }
+      } catch (error) {
+        console.error('Failed to load status:', error);
+        showError('Failed to load connection status');
+      }
+    }
+
+    // Update status UI
+    function updateStatusUI(data) {
+      const statusCard = document.getElementById('statusCard');
+      const statusIcon = document.getElementById('statusIcon');
+      const statusTitle = document.getElementById('statusTitle');
+      const statusInfo = document.getElementById('statusInfo');
+      const connectBtn = document.getElementById('connectBtn');
+
+      if (data.connected) {
+        statusIcon.textContent = '✅';
+        statusTitle.textContent = 'Connected';
+        statusTitle.className = 'status-connected';
+        
+        const expiresAt = new Date(data.expiresAt);
+        const isExpired = new Date(data.expiresAt) <= new Date();
+        
+        statusInfo.innerHTML = `
+          <p class="status-info">
+            <strong>iRacing ID:</strong> ${data.custId}
+          </p>
+          <p class="status-info">
+            <strong>Display Name:</strong> ${data.displayName || 'N/A'}
+          </p>
+          <p class="status-info">
+            <strong>Connection Status:</strong> 
+            <span style="color: ${isExpired ? '#ef4444' : '#22c55e'}">
+              ${isExpired ? 'Expired - Please reconnect' : 'Active'}
+            </span>
+          </p>
+          ${data.lastSyncedAt ? `
+            <p class="status-info">
+              <strong>Last Synced:</strong> ${new Date(data.lastSyncedAt).toLocaleString()}
+            </p>
+          ` : ''}
+        `;
+        
+        connectBtn.textContent = 'Reconnect iRacing Account';
+        if (isExpired) {
+          connectBtn.style.background = 'linear-gradient(135deg, #ef4444, #f59e0b)';
+        }
+      } else {
+        statusIcon.textContent = '❌';
+        statusTitle.textContent = 'Not Connected';
+        statusTitle.className = 'status-disconnected';
+        statusInfo.innerHTML = `
+          <p class="status-info">
+            Click "Connect iRacing Account" to link your iRacing account and enable automatic session syncing.
+          </p>
+        `;
+        connectBtn.textContent = 'Connect iRacing Account';
+        connectBtn.style.background = 'linear-gradient(135deg, #22c55e, #06b6d4)';
+      }
+    }
+
+    // Connect iRacing account
+    async function connectIracing() {
+      if (!checkAuth()) return;
+
+      const token = getAuthToken();
+      try {
+        const response = await fetch('/auth/iracing/start', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          window.location.href = '/auth';
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (data.authUrl) {
+          // Redirect to iRacing OAuth page
+          window.location.href = data.authUrl;
+        } else {
+          showError(data.message || 'Failed to start OAuth flow');
+        }
+      } catch (error) {
+        console.error('Failed to connect:', error);
+        showError('Failed to start connection process');
+      }
+    }
+
+    // Sync sessions from iRacing API
+    async function syncSessions() {
+      if (!checkAuth()) return;
+
+      const token = getAuthToken();
+      const syncBtn = document.getElementById('syncBtn');
+      const syncStatus = document.getElementById('syncStatus');
+      
+      syncBtn.disabled = true;
+      syncBtn.textContent = 'Syncing...';
+      
+      syncStatus.style.display = 'block';
+      syncStatus.className = 'sync-status info';
+      syncStatus.innerHTML = '<p>⏳ Syncing sessions from iRacing API...</p>';
+
+      try {
+        const response = await fetch('/api/iracing/sync', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.status === 401) {
+          window.location.href = '/auth';
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          syncStatus.className = 'sync-status success';
+          syncStatus.innerHTML = `
+            <p>✅ ${data.message}</p>
+            ${data.errors > 0 ? `
+              <p style="margin-top: 0.5rem; color: rgba(255, 255, 255, 0.8);">
+                ⚠️ ${data.errors} session(s) failed to sync
+              </p>
+            ` : ''}
+          `;
+          
+          // Reload sessions
+          setTimeout(() => {
+            loadSessions();
+            loadStatus(); // Refresh status to update last synced time
+          }, 1000);
+        } else {
+          syncStatus.className = 'sync-status error';
+          syncStatus.innerHTML = `<p>❌ ${data.message || 'Sync failed'}</p>`;
+        }
+      } catch (error) {
+        console.error('Failed to sync:', error);
+        syncStatus.className = 'sync-status error';
+        syncStatus.innerHTML = '<p>❌ Failed to sync sessions. Please try again.</p>';
+      } finally {
+        syncBtn.disabled = false;
+        syncBtn.textContent = 'Sync Sessions';
+      }
+    }
+
+    // Load user's synced sessions
+    async function loadSessions() {
+      if (!checkAuth()) return;
+
+      const token = getAuthToken();
+      const sessionsContainer = document.getElementById('sessionsContainer');
+      const sessionsList = document.getElementById('sessionsList');
+      
+      sessionsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading sessions...</p></div>';
+      sessionsList.style.display = 'block';
+
+      try {
+        const response = await fetch('/api/iracing/sessions?limit=10', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          window.location.href = '/auth';
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (data.sessions && data.sessions.length > 0) {
+          sessionsContainer.innerHTML = data.sessions.map(session => {
+            const participant = session.participant;
+            return `
+              <div class="session-item">
+                <h3>${session.trackName} - ${session.carName}</h3>
+                <p><strong>Type:</strong> ${session.sessionType.charAt(0).toUpperCase() + session.sessionType.slice(1)}</p>
+                <p><strong>Date:</strong> ${new Date(session.startTime).toLocaleString()}</p>
+                ${session.leagueName ? `<p><strong>League:</strong> ${session.leagueName}</p>` : ''}
+                ${participant ? `
+                  <p><strong>Laps:</strong> ${participant.lapsCompleted}</p>
+                  ${participant.bestLapTime ? `<p><strong>Best Lap:</strong> ${formatLapTime(participant.bestLapTime)}</p>` : ''}
+                  ${participant.incidents > 0 ? `<p><strong>Incidents:</strong> ${participant.incidents}</p>` : ''}
+                  ${participant.finishPosition ? `<p><strong>Finish Position:</strong> ${participant.finishPosition}</p>` : ''}
+                ` : ''}
+              </div>
+            `;
+          }).join('');
+        } else {
+          sessionsContainer.innerHTML = '<p class="status-info">No sessions found. Click "Sync Sessions" to fetch your session data from iRacing.</p>';
+        }
+      } catch (error) {
+        console.error('Failed to load sessions:', error);
+        sessionsContainer.innerHTML = '<p class="status-info" style="color: #ef4444;">Failed to load sessions</p>';
+      }
+    }
+
+    // Format lap time (seconds to MM:SS.mmm)
+    function formatLapTime(seconds) {
+      if (!seconds) return 'N/A';
+      const mins = Math.floor(seconds / 60);
+      const secs = (seconds % 60).toFixed(3);
+      return `${mins}:${secs.padStart(6, '0')}`;
+    }
+
+    // Show error message
+    function showError(message) {
+      const syncStatus = document.getElementById('syncStatus');
+      syncStatus.style.display = 'block';
+      syncStatus.className = 'sync-status error';
+      syncStatus.innerHTML = `<p>❌ ${message}</p>`;
+    }
+
+    // Check for OAuth callback success/error
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+
+    if (success === 'iracing_connected') {
+      const syncStatus = document.getElementById('syncStatus');
+      syncStatus.style.display = 'block';
+      syncStatus.className = 'sync-status success';
+      syncStatus.innerHTML = '<p>✅ iRacing account connected successfully!</p>';
+      
+      // Remove query params from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Reload status
+      setTimeout(loadStatus, 1000);
+    } else if (error) {
+      showError(`Connection failed: ${error}`);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    // Load status on page load
+    window.addEventListener('DOMContentLoaded', loadStatus);
+  </script>
+</body>
+</html>

@@ -5,6 +5,9 @@ const fs = require('fs');
 const multer = require('multer');
 const nodemailer = require('nodemailer');
 const { PrismaClient } = require('@prisma/client');
+const iracingOAuth = require('./lib/iracing-oauth');
+const iracingSync = require('./lib/iracing-sync');
+const iracingLeagueSchedule = require('./lib/iracing-league-schedule');
 
 const prisma = new PrismaClient();
 
@@ -1577,57 +1580,9 @@ app.get('/card-builder', (req, res) =>
 app.get('/auth', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'auth.html'))
 );
-// Account page: owner-only, but for now redirect to driver profile page
-app.get('/account', async (req, res) => {
-  const token = readToken(req);
-  
-  // If not logged in, redirect to login
-  if (!token || !sessions.has(token)) {
-    return res.redirect('/auth');
-  }
-  
-  try {
-    const session = sessions.get(token);
-    
-    // Check session expiration
-    if (Date.now() - session.createdAt > SESSION_EXPIRY_MS) {
-      sessions.delete(token);
-      return res.redirect('/auth');
-    }
-    
-    // Get user to find their driverKey
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: {
-        id: true,
-        username: true,
-        driver: {
-          select: {
-            driverKey: true,
-          },
-        },
-      },
-    });
-    
-    // For now: Always redirect authenticated users to their driver profile page
-    // Account editor should only be viewable by owner and accessed directly
-    if (user && user.driver && user.driver.driverKey) {
-      return res.redirect(`/driver/${encodeURIComponent(user.driver.driverKey.toLowerCase())}`);
-    }
-    
-    // If no driver profile yet, redirect to driver profile creation
-    // Use username as fallback driverKey
-    if (user && user.username) {
-      return res.redirect(`/driver/${encodeURIComponent(user.username.toLowerCase())}`);
-    }
-    
-    // Fallback: redirect to home
-    return res.redirect('/');
-  } catch (err) {
-    console.error('Account route error:', err);
-    // On error, redirect to login
-    return res.redirect('/auth');
-  }
+// Account Settings page: client-side handles authentication
+app.get('/account', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'account.html'));
 });
 app.get('/season', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'season.html'))
@@ -1635,14 +1590,18 @@ app.get('/season', (req, res) =>
 app.get('/leaderboard', (req, res) =>
   res.sendFile(path.join(__dirname, 'public', 'leaderboard.html'))
 );
-// Connections page: only accessible to authenticated users (owners only)
-app.get('/connections', async (req, res) => {
-  const token = readToken(req);
-  
-  // If not logged in, redirect to login
-  if (!token || !sessions.has(token)) {
-    return res.redirect('/auth');
-  }
+// Arcade route: Hidden for future development
+app.get('/arcade', (req, res) => {
+  res.status(404).send('Arcade is currently under development and not available.');
+});
+// Catch-all for arcade sub-routes using regex (Express 5 compatible)
+app.get(/^\/arcade\/.*/, (req, res) => {
+  res.status(404).send('Arcade is currently under development and not available.');
+});
+// Connections page: client-side handles authentication
+app.get('/connections', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'connections.html'));
+});
   
   try {
     const session = sessions.get(token);
@@ -1666,6 +1625,48 @@ app.get('/connections', async (req, res) => {
     // On error, redirect to login
     return res.redirect('/auth');
   }
+});
+
+// iRacing settings page: server-side authentication required
+app.get('/iracing', async (req, res) => {
+  const token = readToken(req);
+  
+  // If not logged in, redirect to login
+  if (!token || !sessions.has(token)) {
+    return res.redirect('/auth');
+  }
+  
+  try {
+    const session = sessions.get(token);
+    
+    // Check session expiration
+    if (Date.now() - session.createdAt > SESSION_EXPIRY_MS) {
+      sessions.delete(token);
+      return res.redirect('/auth');
+    }
+    
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { id: true },
+    });
+    
+    if (!user) {
+      return res.redirect('/auth');
+    }
+    
+    // User is authenticated, serve the page
+    res.sendFile(path.join(__dirname, 'public', 'iracing.html'));
+  } catch (err) {
+    console.error('iRacing route error:', err);
+    // On error, redirect to login
+    return res.redirect('/auth');
+  }
+});
+
+// Legacy iRacing connect page redirect (for backwards compatibility)
+app.get('/iracing-connect', async (req, res) => {
+  return res.redirect('/iracing');
 });
 
 app.get('/verify-email', (req, res) => {
@@ -2451,6 +2452,841 @@ app.post('/api/admin/driver/:driverKey/xp', requireAdmin, async (req, res) => {
     if (err.code === 'P2025') {
       return res.status(404).json({ message: 'Driver not found.' });
     }
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// ---------------------- iRacing OAuth Integration ----------------------
+// Get iRacing OAuth client configuration from environment variables
+const IRACING_CLIENT_ID = process.env.IRACING_CLIENT_ID || '';
+const IRACING_CLIENT_SECRET = process.env.IRACING_CLIENT_SECRET || '';
+const IRACING_REDIRECT_URI = process.env.IRACING_REDIRECT_URI || `${process.env.BASE_URL || 'http://localhost:3000'}/auth/iracing/callback`;
+
+/**
+ * Helper function to refresh expired iRacing access tokens
+ * @param {Object} iracingAccount - iRacing account from database
+ * @returns {Promise<Object>} Updated account with refreshed tokens
+ */
+async function refreshIracingTokenIfNeeded(iracingAccount) {
+  if (!iracingAccount) {
+    throw new Error('iRacing account not found');
+  }
+
+  // Check if token is expired or will expire in the next 5 minutes
+  const expiresAt = new Date(iracingAccount.expiresAt);
+  const now = new Date();
+  const bufferTime = 5 * 60 * 1000; // 5 minutes
+
+  if (expiresAt.getTime() - now.getTime() > bufferTime) {
+    // Token is still valid
+    return iracingAccount;
+  }
+
+  try {
+    console.log(`Refreshing iRacing token for user ${iracingAccount.userId} (custId: ${iracingAccount.custId})`);
+    
+    // Refresh the token
+    const tokenResponse = await iracingOAuth.refreshAccessToken(
+      iracingAccount.refreshToken,
+      IRACING_CLIENT_ID,
+      IRACING_CLIENT_SECRET
+    );
+
+    // Calculate new expiration time
+    const expiresIn = tokenResponse.expires_in || 3600; // Default to 1 hour
+    const newExpiresAt = new Date(now.getTime() + expiresIn * 1000);
+
+    // Update account with new tokens
+    const updated = await prisma.iracingAccount.update({
+      where: { id: iracingAccount.id },
+      data: {
+        accessToken: tokenResponse.access_token,
+        refreshToken: tokenResponse.refresh_token || iracingAccount.refreshToken, // Keep old refresh token if not provided
+        expiresAt: newExpiresAt,
+        updatedAt: new Date(),
+      },
+    });
+
+    console.log(`Token refreshed successfully for user ${iracingAccount.userId}`);
+    return updated;
+  } catch (error) {
+    console.error(`Failed to refresh iRacing token for user ${iracingAccount.userId}:`, error.message);
+    throw new Error(`Token refresh failed: ${error.message}`);
+  }
+}
+
+/**
+ * Get valid iRacing access token, refreshing if needed
+ * @param {number} userId - User ID
+ * @returns {Promise<string>} Valid access token
+ */
+async function getValidIracingToken(userId) {
+  const account = await prisma.iracingAccount.findUnique({
+    where: { userId },
+  });
+
+  if (!account) {
+    throw new Error('iRacing account not connected');
+  }
+
+  const refreshed = await refreshIracingTokenIfNeeded(account);
+  return refreshed.accessToken;
+}
+
+// -------- iRacing OAuth Start --------
+// Redirect user to iRacing OAuth consent page
+// SECURITY: Requires authentication (requireAuth middleware)
+// Generates CSRF-protected state containing userId, random state, and timestamp
+app.get('/auth/iracing/start', requireAuth, async (req, res) => {
+  try {
+    // Verify authentication
+    if (!req.auth || !req.auth.userId) {
+      console.error('iRacing OAuth start: Missing auth data', { auth: req.auth });
+      return res.status(401).json({ 
+        message: 'Authentication required. Please log in again.' 
+      });
+    }
+
+    if (!IRACING_CLIENT_ID) {
+      return res.status(500).json({ 
+        message: 'iRacing OAuth not configured. Please set IRACING_CLIENT_ID environment variable.' 
+      });
+    }
+
+    if (!IRACING_REDIRECT_URI) {
+      console.error('IRACING_REDIRECT_URI is not set');
+      return res.status(500).json({ 
+        message: 'iRacing OAuth redirect URI not configured.' 
+      });
+    }
+
+    // Generate random state for CSRF protection
+    const randomState = crypto.randomBytes(32).toString('hex');
+    
+    // Encode userId and state together so we can identify user on callback
+    // Format: base64(JSON.stringify({userId, state, timestamp}))
+    const stateData = {
+      userId: req.auth.userId,
+      state: randomState,
+      timestamp: Date.now(),
+    };
+    
+    let encodedState;
+    try {
+      encodedState = Buffer.from(JSON.stringify(stateData)).toString('base64url');
+    } catch (err) {
+      console.error('Failed to encode state:', err);
+      return res.status(500).json({ message: 'Failed to generate OAuth state.' });
+    }
+
+    // Get authorization URL
+    let authUrl;
+    try {
+      authUrl = iracingOAuth.getAuthorizationUrl(
+        IRACING_CLIENT_ID,
+        IRACING_REDIRECT_URI,
+        encodedState
+      );
+    } catch (err) {
+      console.error('Failed to generate authorization URL:', err);
+      return res.status(500).json({ message: 'Failed to generate OAuth authorization URL.' });
+    }
+
+    return res.json({
+      authUrl,
+      message: 'Redirect to this URL to authorize iRacing connection',
+    });
+  } catch (err) {
+    console.error('iRacing OAuth start error:', err);
+    console.error('Error stack:', err.stack);
+    return res.status(500).json({ 
+      message: 'Server error starting OAuth flow.',
+      error: err.message 
+    });
+  }
+});
+
+// -------- iRacing OAuth Callback --------
+// Handle OAuth callback from iRacing
+// SECURITY: No auth middleware (user redirected from iRacing)
+// BUT: Validates state parameter containing userId, checks expiration (10 min max, 1 hour absolute),
+//      verifies user exists before saving tokens, ensuring only valid users can link accounts
+app.get('/auth/iracing/callback', async (req, res) => {
+  try {
+    const { code, state, error } = req.query;
+
+    // Log callback parameters for debugging
+    console.log('iRacing OAuth callback received:', {
+      hasCode: !!code,
+      hasState: !!state,
+      hasError: !!error,
+      error: error,
+      queryKeys: Object.keys(req.query),
+    });
+
+    if (error) {
+      console.error('iRacing OAuth error:', error);
+      return res.redirect(`/iracing?error=${encodeURIComponent(error)}`);
+    }
+
+    if (!code || !state) {
+      console.error('Missing OAuth parameters:', {
+        hasCode: !!code,
+        hasState: !!state,
+        allQueryParams: req.query,
+      });
+      return res.redirect('/iracing?error=missing_code_or_state');
+    }
+
+    // Decode state to get userId and verify CSRF protection
+    let stateData;
+    try {
+      const decoded = Buffer.from(state, 'base64url').toString('utf-8');
+      stateData = JSON.parse(decoded);
+    } catch (err) {
+      console.error('Invalid state format:', err);
+      return res.redirect('/iracing?error=invalid_state');
+    }
+
+    // Verify state has required fields
+    if (!stateData.userId || !stateData.state || !stateData.timestamp) {
+      console.error('Invalid state data structure:', { hasUserId: !!stateData.userId, hasState: !!stateData.state, hasTimestamp: !!stateData.timestamp });
+      return res.redirect('/iracing?error=invalid_state');
+    }
+
+    // Validate userId is a valid string/UUID (basic validation)
+    if (typeof stateData.userId !== 'string' || stateData.userId.length < 1) {
+      console.error('Invalid userId in state:', stateData.userId);
+      return res.redirect('/iracing?error=invalid_state');
+    }
+
+    // Check state expiration (10 minutes)
+    const stateAge = Date.now() - stateData.timestamp;
+    if (stateAge > 10 * 60 * 1000) {
+      console.error('State expired:', { age: stateAge, maxAge: 10 * 60 * 1000 });
+      return res.redirect('/iracing?error=state_expired');
+    }
+
+    // Additional security: reject states that are too old (negative timestamp or very old)
+    if (stateAge < 0 || stateAge > 60 * 60 * 1000) {
+      console.error('State timestamp invalid:', { timestamp: stateData.timestamp, age: stateAge });
+      return res.redirect('/iracing?error=invalid_state');
+    }
+
+    const userId = stateData.userId;
+
+    // Exchange code for tokens
+    let tokenResponse;
+    try {
+      tokenResponse = await iracingOAuth.exchangeCodeForToken(
+        code,
+        IRACING_CLIENT_ID,
+        IRACING_CLIENT_SECRET,
+        IRACING_REDIRECT_URI
+      );
+    } catch (err) {
+      console.error('Token exchange failed:', err);
+      return res.redirect(`/iracing?error=${encodeURIComponent('token_exchange_failed')}`);
+    }
+
+    // Get user info from iRacing API
+    // PRIVACY: Only fetches displayName (iRacing username), NOT email or real names
+    let userInfo;
+    try {
+      userInfo = await iracingOAuth.getUserInfo(tokenResponse.access_token);
+    } catch (err) {
+      console.error('Failed to get user info:', err);
+      return res.redirect(`/iracing?error=${encodeURIComponent('user_info_failed')}`);
+    }
+
+    // PRIVACY VERIFICATION: Ensure we're only storing displayName (iRacing username), not email or real names
+    // displayName is the iRacing username/display name that users choose themselves, not their real name
+    if (userInfo.email) {
+      console.warn('WARNING: iRacing API returned email field - this should not be stored or used');
+      // Explicitly remove email if present (shouldn't happen with our getUserInfo function)
+      delete userInfo.email;
+    }
+
+    // Calculate expiration time
+    const expiresIn = tokenResponse.expires_in || 3600; // Default to 1 hour
+    const expiresAt = new Date(Date.now() + expiresIn * 1000);
+
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { driver: true },
+    });
+
+    if (!user) {
+      return res.redirect('/iracing?error=user_not_found');
+    }
+
+    // Store or update iRacing account
+    // PRIVACY: Only stores displayName (iRacing username), custId, and tokens - NO email or real names
+    const existing = await prisma.iracingAccount.findUnique({
+      where: { userId: userId },
+    });
+
+    if (existing) {
+      // Update existing account
+      await prisma.iracingAccount.update({
+        where: { id: existing.id },
+        data: {
+          custId: userInfo.custId,
+          accessToken: tokenResponse.access_token,
+          refreshToken: tokenResponse.refresh_token,
+          expiresAt,
+          displayName: userInfo.displayName, // iRacing username only, NOT real name
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      // Create new account
+      await prisma.iracingAccount.create({
+        data: {
+          userId: userId,
+          custId: userInfo.custId,
+          accessToken: tokenResponse.access_token,
+          refreshToken: tokenResponse.refresh_token,
+          expiresAt,
+          displayName: userInfo.displayName, // iRacing username only, NOT real name
+        },
+      });
+    }
+
+    // Update driver's iRacing field for backward compatibility
+
+    if (user && user.driver) {
+      await prisma.driver.update({
+        where: { id: user.driver.id },
+        data: {
+          iracing: String(userInfo.custId), // Store custId as string
+        },
+      });
+    }
+
+    return res.redirect('/iracing?success=iracing_connected');
+  } catch (err) {
+    console.error('iRacing OAuth callback error:', err);
+    return res.redirect(`/iracing?error=${encodeURIComponent('server_error')}`);
+  }
+});
+
+// -------- iRacing Session Sync --------
+// Sync league and hosted practice sessions from iRacing API
+// SECURITY: Requires authentication, filters by req.auth.userId to ensure users can only sync their own account
+app.post('/api/iracing/sync', requireAuth, async (req, res) => {
+  try {
+    // Get user's iRacing account
+    const account = await prisma.iracingAccount.findUnique({
+      where: { userId: req.auth.userId },
+    });
+
+    if (!account) {
+      return res.status(404).json({ 
+        message: 'iRacing account not connected. Please connect your iRacing account first.' 
+      });
+    }
+
+    // Get valid access token (refresh if needed)
+    let accessToken;
+    try {
+      accessToken = await getValidIracingToken(req.auth.userId);
+    } catch (err) {
+      return res.status(401).json({ 
+        message: 'Failed to get valid access token. Please reconnect your iRacing account.',
+        error: err.message,
+      });
+    }
+
+    // Fetch user sessions from iRacing API
+    let sessions;
+    try {
+      sessions = await iracingSync.fetchUserSessions(accessToken, account.custId);
+    } catch (err) {
+      console.error('Failed to fetch sessions:', err);
+      // Retry once
+      try {
+        // Refresh token and retry
+        const refreshedAccount = await refreshIracingTokenIfNeeded(account);
+        sessions = await iracingSync.fetchUserSessions(refreshedAccount.accessToken, account.custId);
+      } catch (retryErr) {
+        return res.status(500).json({ 
+          message: 'Failed to fetch sessions from iRacing API.',
+          error: retryErr.message,
+        });
+      }
+    }
+
+    let syncedCount = 0;
+    let errorCount = 0;
+    const errors = [];
+
+    // Process each session
+    for (const sessionData of sessions) {
+      try {
+        // Get detailed session results
+        let sessionResults;
+        try {
+          sessionResults = await iracingSync.getSessionResults(
+            accessToken,
+            sessionData.subsession_id || sessionData.session_id,
+            sessionData.subsession_id
+          );
+        } catch (err) {
+          console.warn(`Failed to get session results for ${sessionData.subsession_id || sessionData.session_id}:`, err.message);
+          // Continue with basic session data if detailed results fail
+          sessionResults = {
+            sessionId: String(sessionData.subsession_id || sessionData.session_id),
+            sessionType: iracingSync.normalizeSession(sessionData).sessionType,
+            trackName: sessionData.track_name || 'Unknown Track',
+            carName: sessionData.car_name || 'Unknown Car',
+            startTime: sessionData.start_time ? new Date(sessionData.start_time) : new Date(),
+            leagueId: sessionData.league_id || null,
+            leagueName: sessionData.league_name || null,
+            participants: [],
+          };
+        }
+
+        // Normalize session data
+        const normalizedSession = {
+          ...iracingSync.normalizeSession(sessionResults),
+          ...sessionResults,
+        };
+
+        // Check if session already exists
+        const existing = await prisma.iracingSession.findUnique({
+          where: { sessionId: normalizedSession.sessionId },
+        });
+
+        let sessionRecord;
+        if (existing) {
+          // Update existing session
+          sessionRecord = await prisma.iracingSession.update({
+            where: { sessionId: normalizedSession.sessionId },
+            data: {
+              sessionType: normalizedSession.sessionType,
+              leagueId: normalizedSession.leagueId,
+              leagueName: normalizedSession.leagueName,
+              trackName: normalizedSession.trackName,
+              carName: normalizedSession.carName,
+              startTime: normalizedSession.startTime,
+              subSessionId: normalizedSession.subSessionId,
+              seasonId: normalizedSession.seasonId,
+              updatedAt: new Date(),
+            },
+          });
+        } else {
+          // Create new session
+          sessionRecord = await prisma.iracingSession.create({
+            data: {
+              sessionId: normalizedSession.sessionId,
+              sessionType: normalizedSession.sessionType,
+              leagueId: normalizedSession.leagueId,
+              leagueName: normalizedSession.leagueName,
+              trackName: normalizedSession.trackName,
+              carName: normalizedSession.carName,
+              startTime: normalizedSession.startTime,
+              subSessionId: normalizedSession.subSessionId,
+              seasonId: normalizedSession.seasonId,
+            },
+          });
+        }
+
+        // Sync participants
+        if (sessionResults.participants && sessionResults.participants.length > 0) {
+          for (const participantData of sessionResults.participants) {
+            const normalizedParticipant = iracingSync.normalizeParticipant(participantData);
+            
+            // Upsert participant (update if exists, create if not)
+            await prisma.iracingSessionParticipant.upsert({
+              where: {
+                sessionId_custId: {
+                  sessionId: sessionRecord.sessionId,
+                  custId: normalizedParticipant.custId,
+                },
+              },
+              create: {
+                sessionId: sessionRecord.sessionId,
+                custId: normalizedParticipant.custId,
+                displayName: normalizedParticipant.displayName,
+                lapsCompleted: normalizedParticipant.lapsCompleted,
+                bestLapTime: normalizedParticipant.bestLapTime,
+                incidents: normalizedParticipant.incidents,
+                finishPosition: normalizedParticipant.finishPosition,
+                startingPosition: normalizedParticipant.startingPosition,
+                totalLaps: normalizedParticipant.totalLaps,
+              },
+              update: {
+                displayName: normalizedParticipant.displayName,
+                lapsCompleted: normalizedParticipant.lapsCompleted,
+                bestLapTime: normalizedParticipant.bestLapTime,
+                incidents: normalizedParticipant.incidents,
+                finishPosition: normalizedParticipant.finishPosition,
+                startingPosition: normalizedParticipant.startingPosition,
+                totalLaps: normalizedParticipant.totalLaps,
+                updatedAt: new Date(),
+              },
+            });
+          }
+        }
+
+        syncedCount++;
+      } catch (sessionErr) {
+        errorCount++;
+        errors.push({
+          sessionId: sessionData.subsession_id || sessionData.session_id,
+          error: sessionErr.message,
+        });
+        console.error(`Error syncing session ${sessionData.subsession_id || sessionData.session_id}:`, sessionErr);
+      }
+    }
+
+    // Update last synced timestamp
+    await prisma.iracingAccount.update({
+      where: { id: account.id },
+      data: {
+        lastSyncedAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    return res.json({
+      message: `Synced ${syncedCount} session(s) successfully.`,
+      synced: syncedCount,
+      errors: errorCount,
+      errorDetails: errors.length > 0 ? errors : undefined,
+    });
+  } catch (err) {
+    console.error('iRacing sync error:', err);
+    return res.status(500).json({ 
+      message: 'Server error during sync.',
+      error: err.message,
+    });
+  }
+});
+
+// -------- Get iRacing Connection Status --------
+// Get current user's iRacing connection status
+// SECURITY: Requires authentication, filters by req.auth.userId - users can only see their own status
+app.get('/api/iracing/status', requireAuth, async (req, res) => {
+  try {
+    const account = await prisma.iracingAccount.findUnique({
+      where: { userId: req.auth.userId },
+      select: {
+        custId: true,
+        displayName: true,
+        expiresAt: true,
+        lastSyncedAt: true,
+        createdAt: true,
+      },
+    });
+
+    if (!account) {
+      return res.json({
+        connected: false,
+        message: 'iRacing account not connected',
+      });
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(account.expiresAt);
+    const isExpired = expiresAt <= now;
+
+    return res.json({
+      connected: true,
+      custId: account.custId,
+      // PRIVACY: displayName is the user's own iRacing username (user-chosen), not real name
+      // Only returned to authenticated user viewing their own status
+      displayName: account.displayName,
+      expiresAt: account.expiresAt,
+      isExpired,
+      lastSyncedAt: account.lastSyncedAt,
+      connectedAt: account.createdAt,
+    });
+  } catch (err) {
+    console.error('Get iRacing status error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Get User's iRacing Sessions --------
+// Get synced sessions for the current user
+// SECURITY: Requires authentication, filters by req.auth.userId via account lookup - users can only see their own sessions
+app.get('/api/iracing/sessions', requireAuth, async (req, res) => {
+  try {
+    const account = await prisma.iracingAccount.findUnique({
+      where: { userId: req.auth.userId },
+      select: { custId: true },
+    });
+
+    if (!account) {
+      return res.status(404).json({ 
+        message: 'iRacing account not connected.' 
+      });
+    }
+
+    // Get sessions where user participated
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const sessions = await prisma.iracingSession.findMany({
+      where: {
+        participants: {
+          some: {
+            custId: account.custId,
+          },
+        },
+      },
+      include: {
+        participants: {
+          where: {
+            custId: account.custId,
+          },
+          take: 1, // Only get current user's participation record
+        },
+      },
+      orderBy: {
+        startTime: 'desc',
+      },
+      take: limit,
+      skip: offset,
+    });
+
+    // Format response
+    // PRIVACY: Do NOT include participant displayName - only show stats for authenticated user's own participation
+    const formattedSessions = sessions.map(session => ({
+      sessionId: session.sessionId,
+      sessionType: session.sessionType,
+      leagueId: session.leagueId,
+      leagueName: session.leagueName,
+      trackName: session.trackName,
+      carName: session.carName,
+      startTime: session.startTime,
+      participant: session.participants[0] ? {
+        // Only include stats, NOT displayName or any identifying information
+        lapsCompleted: session.participants[0].lapsCompleted,
+        bestLapTime: session.participants[0].bestLapTime,
+        incidents: session.participants[0].incidents,
+        finishPosition: session.participants[0].finishPosition,
+      } : null,
+    }));
+
+    return res.json({
+      sessions: formattedSessions,
+      total: formattedSessions.length,
+      limit,
+      offset,
+    });
+  } catch (err) {
+    console.error('Get iRacing sessions error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Sync iRacing League Schedule --------
+// Sync league schedule from iRacing API to calendar events
+// SECURITY: Requires authentication, uses authenticated user's iRacing account
+app.post('/api/iracing/sync-league-schedule', requireAuth, async (req, res) => {
+  try {
+    const { leagueId, seasonId } = req.body;
+    
+    if (!leagueId) {
+      return res.status(400).json({ 
+        message: 'leagueId is required.' 
+      });
+    }
+    
+    // Get user's iRacing account
+    const account = await prisma.iracingAccount.findUnique({
+      where: { userId: req.auth.userId },
+    });
+    
+    if (!account) {
+      return res.status(404).json({ 
+        message: 'iRacing account not connected. Please connect your iRacing account first.' 
+      });
+    }
+    
+    // Get valid access token
+    let accessToken;
+    try {
+      accessToken = await getValidIracingToken(req.auth.userId);
+    } catch (err) {
+      return res.status(401).json({ 
+        message: 'Failed to get valid access token. Please reconnect your iRacing account.',
+        error: err.message,
+      });
+    }
+    
+    // Fetch league schedule as calendar events
+    let calendarEvents;
+    try {
+      calendarEvents = await iracingLeagueSchedule.fetchLeagueScheduleAsCalendarEvents(
+        accessToken,
+        parseInt(leagueId),
+        seasonId ? parseInt(seasonId) : null
+      );
+    } catch (err) {
+      console.error('Failed to fetch league schedule:', err);
+      return res.status(500).json({ 
+        message: 'Failed to fetch league schedule from iRacing API.',
+        error: err.message,
+      });
+    }
+    
+    // Sync calendar events (update existing or create new)
+    let syncedCount = 0;
+    let updatedCount = 0;
+    let createdCount = 0;
+    
+    for (const event of calendarEvents) {
+      // Use iRacing session ID as unique identifier
+      const uniqueKey = event.iracingMetadata?.subsessionId || event.iracingMetadata?.sessionId;
+      
+      if (!uniqueKey) {
+        console.warn('Skipping event without unique identifier:', event);
+        continue;
+      }
+      
+      // Store iRacing metadata in description or as JSON
+      const description = event.description || '';
+      const iracingData = JSON.stringify(event.iracingMetadata || {});
+      const fullDescription = `${description}\n\n[iRacing: ${iracingData}]`;
+      
+      // Check if event already exists (by checking description for iRacing metadata)
+      // Or use a more reliable approach: store iRacing session ID in a custom field
+      // For now, we'll match by title, track, and approximate date
+      const existingEvents = await prisma.calendarEvent.findMany({
+        where: {
+          title: event.title,
+          track: event.track,
+          eventDate: {
+            gte: new Date(new Date(event.eventDate).getTime() - 60 * 60 * 1000), // 1 hour before
+            lte: new Date(new Date(event.eventDate).getTime() + 60 * 60 * 1000), // 1 hour after
+          },
+        },
+      });
+      
+      // Check if any existing event has this iRacing session ID in description
+      const existingEvent = existingEvents.find(e => {
+        if (e.description && e.description.includes('[iRacing:')) {
+          try {
+            const match = e.description.match(/\[iRacing: (.+?)\]/);
+            if (match) {
+              const metadata = JSON.parse(match[1]);
+              return metadata.subsessionId === event.iracingMetadata.subsessionId ||
+                     metadata.sessionId === event.iracingMetadata.sessionId;
+            }
+          } catch (err) {
+            // Ignore parse errors
+          }
+        }
+        return false;
+      });
+      
+      if (existingEvent) {
+        // Update existing event
+        await prisma.calendarEvent.update({
+          where: { id: existingEvent.id },
+          data: {
+            title: event.title,
+            description: fullDescription,
+            eventDate: new Date(event.eventDate),
+            eventType: event.eventType,
+            track: event.track,
+            carClass: event.carClass,
+            status: event.status,
+            isActive: true,
+            updatedAt: new Date(),
+          },
+        });
+        updatedCount++;
+      } else {
+        // Create new event
+        await prisma.calendarEvent.create({
+          data: {
+            title: event.title,
+            description: fullDescription,
+            eventDate: new Date(event.eventDate),
+            eventType: event.eventType,
+            track: event.track,
+            carClass: event.carClass,
+            status: event.status,
+            isActive: true,
+            createdBy: req.auth.userId,
+          },
+        });
+        createdCount++;
+      }
+      syncedCount++;
+    }
+    
+    return res.json({
+      message: 'League schedule synced successfully.',
+      synced: syncedCount,
+      created: createdCount,
+      updated: updatedCount,
+    });
+  } catch (err) {
+    console.error('Sync league schedule error:', err);
+    return res.status(500).json({ 
+      message: 'Server error syncing league schedule.',
+      error: err.message 
+    });
+  }
+});
+
+// -------- Get iRacing League Schedule --------
+// Get league schedule for display (public endpoint, returns synced calendar events)
+app.get('/api/iracing/league-schedule', async (req, res) => {
+  try {
+    // Get calendar events that have iRacing metadata
+    const events = await prisma.calendarEvent.findMany({
+      where: {
+        isActive: true,
+        description: {
+          contains: '[iRacing:',
+        },
+      },
+      orderBy: {
+        eventDate: 'asc',
+      },
+    });
+    
+    // Parse iRacing metadata and format response
+    const schedule = events.map(event => {
+      let iracingMetadata = null;
+      if (event.description && event.description.includes('[iRacing:')) {
+        try {
+          const match = event.description.match(/\[iRacing: (.+?)\]/);
+          if (match) {
+            iracingMetadata = JSON.parse(match[1]);
+          }
+        } catch (err) {
+          // Ignore parse errors
+        }
+      }
+      
+      return {
+        id: event.id,
+        title: event.title,
+        description: event.description?.replace(/\[iRacing: .+?\]/, '').trim() || null,
+        eventDate: event.eventDate,
+        eventType: event.eventType,
+        track: event.track,
+        carClass: event.carClass,
+        status: event.status,
+        iracing: iracingMetadata,
+      };
+    });
+    
+    return res.json({
+      schedule: schedule,
+      total: schedule.length,
+    });
+  } catch (err) {
+    console.error('Get league schedule error:', err);
     return res.status(500).json({ message: 'Server error.' });
   }
 });

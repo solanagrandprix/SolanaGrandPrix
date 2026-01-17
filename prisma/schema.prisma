@@ -15,6 +15,7 @@ model User {
   isAdmin           Boolean  @default(false)
   driver            Driver?
   deletionRequest   DeletionRequest?
+  iracingAccount    IracingAccount?
   createdAt         DateTime @default(now())
   // updatedAt temporarily removed - column doesn't exist in database
   // updatedAt         DateTime @updatedAt
@@ -110,4 +111,75 @@ model CalendarEvent {
   createdBy   Int?     // Admin user ID who created the event
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// iRacing OAuth account connection
+// PRIVACY NOTE: displayName is the user's iRacing username/display name (user-chosen), NOT their real name.
+// Only returned to the authenticated user viewing their own account status, never exposed publicly.
+model IracingAccount {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  custId        Int      @unique // iRacing customer ID
+  accessToken   String   // Encrypted or stored securely
+  refreshToken  String
+  expiresAt     DateTime // Token expiration time
+  // PRIVACY: displayName is iRacing username (user-chosen), NOT real name. Only visible to account owner.
+  displayName   String?  // iRacing username/display name (cached, user-chosen, NOT real name)
+  
+  lastSyncedAt  DateTime? // Last time sessions were synced
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// iRacing session data (league or hosted practice sessions)
+model IracingSession {
+  id            Int      @id @default(autoincrement())
+  sessionId     String   @unique // iRacing session ID
+  
+  sessionType   String   // practice, race, qualifying
+  leagueId      Int?     // iRacing league ID (if league session)
+  leagueName    String?  // League name (cached)
+  trackName     String
+  carName       String
+  startTime     DateTime
+  
+  // Additional metadata
+  subSessionId  Int?     // Sub-session ID for multi-session races
+  seasonId      Int?     // Season ID if part of a series
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  participants  IracingSessionParticipant[]
+}
+
+// Participants in iRacing sessions
+// PRIVACY NOTE: displayName is stored for internal tracking but is NOT exposed in public APIs.
+// displayName is the iRacing username/display name (user-chosen), NOT real names.
+// Only session stats (laps, times, incidents, positions) are exposed, not participant identities.
+model IracingSessionParticipant {
+  id            Int      @id @default(autoincrement())
+  sessionId     String
+  session       IracingSession @relation(fields: [sessionId], references: [sessionId], onDelete: Cascade)
+  
+  custId        Int      // iRacing customer ID
+  // PRIVACY: displayName stored internally but NOT exposed in API responses
+  displayName   String   // iRacing username/display name at time of session (user-chosen, NOT real name)
+  
+  lapsCompleted Int      @default(0)
+  bestLapTime   Float?   // Best lap time in seconds (null if no lap completed)
+  incidents     Int      @default(0) // Total incidents (if available)
+  
+  // Additional stats (if available)
+  finishPosition Int?    // Finish position (if race completed)
+  startingPosition Int?  // Starting position
+  totalLaps      Int?    // Total laps (may differ from lapsCompleted)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([sessionId, custId]) // One record per participant per session
+  @@index([custId]) // Index for querying by customer ID
 }
