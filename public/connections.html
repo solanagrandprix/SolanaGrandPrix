@@ -246,15 +246,15 @@
           <div class="connections-header">
             <h1>🔗 Account Connections</h1>
             <div class="connections-subtitle">
-              Link your Discord, iRacing, and Twitter accounts to connect with the league
+              Link your Discord and Twitter accounts to connect with the league
             </div>
           </div>
 
           <div class="connection-info-box">
             <h3>ℹ️ About Connections</h3>
             <p>
-              Connect your accounts to enable integration with the private iRacing league API. 
-              Your iRacing username will be used to sync race data and statistics automatically.
+              Connect your accounts to link your profiles across platforms. 
+              To connect your iRacing account, visit the <a href="/iracing" style="color: #22c55e; text-decoration: underline;">iRacing Settings</a> page.
             </p>
           </div>
 
@@ -280,26 +280,6 @@
                 />
                 <div class="connection-help">
                   Your Discord username (with or without discriminator)
-                </div>
-              </div>
-
-              <div class="connection-field">
-                <label for="iracing">
-                  <span class="connection-icon">🏁</span>
-                  iRacing Username
-                </label>
-                <input
-                  type="text"
-                  id="iracing"
-                  name="iracing"
-                  placeholder="Your iRacing username"
-                  autocomplete="off"
-                />
-                <div class="connection-help">
-                  Your iRacing username or customer ID. This is used to connect with the private league API.
-                  <strong style="color: #fbbf24; display: block; margin-top: 4px;">
-                    🔒 This information is private and will never be displayed on your public profile.
-                  </strong>
                 </div>
               </div>
 
@@ -453,11 +433,9 @@
             if (driver) {
               // Fill form fields
               const discordInput = document.getElementById('discord');
-              const iracingInput = document.getElementById('iracing');
               const twitterInput = document.getElementById('twitter');
 
             if (discordInput) discordInput.value = driver.discord || '';
-            if (iracingInput) iracingInput.value = driver.iracing || '';
             if (twitterInput) twitterInput.value = driver.twitter || '';
             
             // Load Solana wallet if connected
@@ -489,7 +467,6 @@
           }
 
           const discord = document.getElementById('discord')?.value.trim() || '';
-          const iracing = document.getElementById('iracing')?.value.trim() || '';
           const twitter = document.getElementById('twitter')?.value.trim() || '';
           const solanaWallet = walletInput?.value.trim() || '';
 
@@ -512,7 +489,6 @@
               },
               body: JSON.stringify({
                 discord: discord || null,
-                iracing: iracing || null,
                 twitter: cleanTwitter || null,
                 solanaWallet: solanaWallet || null,
               }),

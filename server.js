@@ -1603,41 +1603,9 @@ app.get('/connections', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'connections.html'));
 });
 
-// iRacing settings page: server-side authentication required
-app.get('/iracing', async (req, res) => {
-  const token = readToken(req);
-  
-  // If not logged in, redirect to login
-  if (!token || !sessions.has(token)) {
-    return res.redirect('/auth');
-  }
-  
-  try {
-    const session = sessions.get(token);
-    
-    // Check session expiration
-    if (Date.now() - session.createdAt > SESSION_EXPIRY_MS) {
-      sessions.delete(token);
-      return res.redirect('/auth');
-    }
-    
-    // Verify user exists
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: { id: true },
-    });
-    
-    if (!user) {
-      return res.redirect('/auth');
-    }
-    
-    // User is authenticated, serve the page
-    res.sendFile(path.join(__dirname, 'public', 'iracing.html'));
-  } catch (err) {
-    console.error('iRacing route error:', err);
-    // On error, redirect to login
-    return res.redirect('/auth');
-  }
+// iRacing settings page: client-side handles authentication
+app.get('/iracing', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'iracing.html'));
 });
 
 // Legacy iRacing connect page redirect (for backwards compatibility)
@@ -2982,6 +2950,175 @@ app.get('/api/iracing/status', requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error('Get iRacing status error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Get League Details --------
+app.get('/api/iracing/league', requireAuth, async (req, res) => {
+  try {
+    // Get user's iRacing account
+    const account = await prisma.iracingAccount.findUnique({
+      where: { userId: req.auth.userId },
+    });
+
+    if (!account) {
+      return res.status(404).json({ 
+        message: 'iRacing account not connected. Please connect your iRacing account first.' 
+      });
+    }
+
+    // Get valid access token
+    let accessToken;
+    try {
+      accessToken = await getValidIracingToken(req.auth.userId);
+    } catch (err) {
+      return res.status(401).json({ 
+        message: 'Failed to get valid access token. Please reconnect your iRacing account.',
+        error: err.message,
+      });
+    }
+
+    // Get league ID from query param or environment variable, default to 13015
+    const leagueId = parseInt(req.query.leagueId || process.env.IRACING_LEAGUE_ID || '13015', 10);
+
+    if (isNaN(leagueId)) {
+      return res.status(400).json({ message: 'Invalid league ID.' });
+    }
+
+    // Fetch league details
+    try {
+      const leagueDetails = await iracingLeagueSchedule.getLeagueDetails(accessToken, leagueId);
+      
+      // Get additional information by fetching the full API response
+      // The getLeagueDetails function returns basic info, but we can enhance it
+      return res.json({
+        leagueId: leagueDetails.leagueId,
+        leagueName: leagueDetails.leagueName,
+        ownerId: leagueDetails.ownerId,
+        createdDate: leagueDetails.createdDate,
+        url: leagueDetails.url,
+        rosterCount: leagueDetails.rosterCount,
+      });
+    } catch (apiErr) {
+      console.error('Error fetching league details from iRacing API:', apiErr);
+      return res.status(500).json({ 
+        message: 'Failed to fetch league details from iRacing API.',
+        error: apiErr.message,
+      });
+    }
+  } catch (err) {
+    console.error('Get league details error:', err);
+    return res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// -------- Get User's League Sessions (Practice & Race Stats) --------
+// Get league-specific sessions for the current user
+// SECURITY: Requires authentication, filters by req.auth.userId via account lookup - users can only see their own sessions
+app.get('/api/iracing/league-sessions', requireAuth, async (req, res) => {
+  try {
+    const account = await prisma.iracingAccount.findUnique({
+      where: { userId: req.auth.userId },
+      select: { custId: true },
+    });
+
+    if (!account) {
+      return res.status(404).json({ 
+        message: 'iRacing account not connected.' 
+      });
+    }
+
+    // Get league ID from query param or environment variable
+    const leagueId = parseInt(req.query.leagueId || process.env.IRACING_LEAGUE_ID || '13015', 10);
+
+    // Get only league sessions where user participated
+    const sessions = await prisma.iracingSession.findMany({
+      where: {
+        leagueId: leagueId,
+        participants: {
+          some: {
+            custId: account.custId,
+          },
+        },
+      },
+      include: {
+        participants: {
+          where: {
+            custId: account.custId,
+          },
+          take: 1,
+        },
+      },
+      orderBy: {
+        startTime: 'desc',
+      },
+    });
+
+    // Calculate statistics
+    const races = sessions.filter(s => s.sessionType === 'race');
+    const practices = sessions.filter(s => s.sessionType === 'practice');
+    
+    // Get unique tracks
+    const tracks = [...new Set(sessions.map(s => s.trackName))];
+    
+    // Get fastest lap times per track
+    const fastestLapsByTrack = {};
+    sessions.forEach(session => {
+      const participant = session.participants[0];
+      if (participant && participant.bestLapTime) {
+        const track = session.trackName;
+        if (!fastestLapsByTrack[track] || participant.bestLapTime < fastestLapsByTrack[track].time) {
+          fastestLapsByTrack[track] = {
+            time: participant.bestLapTime,
+            sessionType: session.sessionType,
+            date: session.startTime,
+            car: session.carName,
+          };
+        }
+      }
+    });
+
+    // Get race statistics
+    const raceStats = {
+      totalRaces: races.length,
+      totalPractices: practices.length,
+      totalSessions: sessions.length,
+      wins: races.filter(r => r.participants[0]?.finishPosition === 1).length,
+      podiums: races.filter(r => {
+        const pos = r.participants[0]?.finishPosition;
+        return pos && pos >= 1 && pos <= 3;
+      }).length,
+      bestFinish: Math.min(...races.map(r => r.participants[0]?.finishPosition || 999).filter(p => p < 999)),
+      totalLaps: sessions.reduce((sum, s) => sum + (s.participants[0]?.lapsCompleted || 0), 0),
+      totalIncidents: sessions.reduce((sum, s) => sum + (s.participants[0]?.incidents || 0), 0),
+    };
+
+    // Format response
+    const formattedSessions = sessions.map(session => ({
+      sessionId: session.sessionId,
+      sessionType: session.sessionType,
+      trackName: session.trackName,
+      carName: session.carName,
+      startTime: session.startTime,
+      participant: session.participants[0] ? {
+        lapsCompleted: session.participants[0].lapsCompleted,
+        bestLapTime: session.participants[0].bestLapTime,
+        incidents: session.participants[0].incidents,
+        finishPosition: session.participants[0].finishPosition,
+        startingPosition: session.participants[0].startingPosition,
+      } : null,
+    }));
+
+    return res.json({
+      sessions: formattedSessions,
+      statistics: raceStats,
+      tracks: tracks.sort(),
+      fastestLapsByTrack,
+      total: formattedSessions.length,
+    });
+  } catch (err) {
+    console.error('Get league sessions error:', err);
     return res.status(500).json({ message: 'Server error.' });
   }
 });

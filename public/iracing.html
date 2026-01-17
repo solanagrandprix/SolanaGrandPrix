@@ -266,13 +266,24 @@
       <div id="syncStatus" style="display: none;"></div>
     </div>
 
-    <!-- Recent Sessions -->
+    <!-- League Information -->
     <div class="iracing-section">
-      <h2>Recent Sessions</h2>
-      <div id="sessionsList" class="sessions-list">
-        <div id="sessionsContainer" class="loading">
+      <h2>League Information</h2>
+      <div id="leagueInfo" class="sessions-list">
+        <div id="leagueContainer" class="loading">
           <div class="spinner"></div>
-          <p>Loading sessions...</p>
+          <p>Loading league information...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- League Practice & Race Statistics -->
+    <div class="iracing-section">
+      <h2>League Practice & Race Statistics</h2>
+      <div id="leagueStats" class="sessions-list">
+        <div id="leagueStatsContainer" class="loading">
+          <div class="spinner"></div>
+          <p>Loading league statistics...</p>
         </div>
       </div>
     </div>
@@ -369,7 +380,7 @@
 
         if (data.connected) {
           document.getElementById('syncBtn').disabled = false;
-          loadSessions();
+          loadLeagueInfo();
         }
       } catch (error) {
         console.error('Failed to load status:', error);
@@ -529,10 +540,9 @@
             ` : ''}
           `;
           
-          // Reload sessions
+          // Refresh status to update last synced time
           setTimeout(() => {
-            loadSessions();
-            loadStatus(); // Refresh status to update last synced time
+            loadStatus();
           }, 1000);
         } else {
           syncStatus.className = 'sync-status error';
@@ -548,18 +558,18 @@
       }
     }
 
-    // Load user's synced sessions
-    async function loadSessions() {
+    // Load league information
+    async function loadLeagueInfo() {
       const token = getAuthToken();
       if (!token) {
-        return; // Don't redirect here, just skip loading sessions
+        return; // Don't redirect here, just skip loading league info
       }
-      const sessionsContainer = document.getElementById('sessionsContainer');
+      const leagueContainer = document.getElementById('leagueContainer');
       
-      sessionsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading sessions...</p></div>';
+      leagueContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading league information...</p></div>';
 
       try {
-        const response = await fetch('/api/iracing/sessions?limit=20', {
+        const response = await fetch('/api/iracing/league', {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -572,33 +582,76 @@
 
         const data = await response.json();
         
-        if (data.sessions && data.sessions.length > 0) {
-          sessionsContainer.innerHTML = data.sessions.map(session => {
-            const participant = session.participant;
-            return `
-              <div class="session-item">
-                <h3>${session.trackName} - ${session.carName}</h3>
-                <p><strong>Type:</strong> ${session.sessionType.charAt(0).toUpperCase() + session.sessionType.slice(1)}</p>
-                <p><strong>Date:</strong> ${new Date(session.startTime).toLocaleString()}</p>
-                ${session.leagueName ? `<p><strong>League:</strong> ${session.leagueName}</p>` : ''}
-                ${participant ? `
-                  <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <p><strong>Laps:</strong> ${participant.lapsCompleted}</p>
-                    ${participant.bestLapTime ? `<p><strong>Best Lap:</strong> ${formatLapTime(participant.bestLapTime)}</p>` : ''}
-                    ${participant.incidents > 0 ? `<p><strong>Incidents:</strong> ${participant.incidents}</p>` : ''}
-                    ${participant.finishPosition ? `<p><strong>Finish Position:</strong> ${participant.finishPosition}</p>` : ''}
+        if (response.ok && data) {
+          const formatDate = (dateString) => {
+            if (!dateString) return 'N/A';
+            try {
+              return new Date(dateString).toLocaleString();
+            } catch {
+              return dateString;
+            }
+          };
+
+          leagueContainer.innerHTML = `
+            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem;">
+              <div style="display: grid; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                  <h3 style="margin: 0; color: #fff; font-size: 1.25rem;">${escapeHtml(data.leagueName || 'Unknown League')}</h3>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                  <div class="info-item">
+                    <div class="info-item-label">League I.D.</div>
+                    <div class="info-item-value">${data.leagueId || 'N/A'}</div>
                   </div>
+                  
+                  ${data.ownerId ? `
+                  <div class="info-item">
+                    <div class="info-item-label">Owner I.D.</div>
+                    <div class="info-item-value">${data.ownerId}</div>
+                  </div>
+                  ` : ''}
+                  
+                  ${data.createdDate ? `
+                  <div class="info-item">
+                    <div class="info-item-label">Created</div>
+                    <div class="info-item-value">${formatDate(data.createdDate)}</div>
+                  </div>
+                  ` : ''}
+                  
+                  ${data.rosterCount !== undefined ? `
+                  <div class="info-item">
+                    <div class="info-item-label">Members</div>
+                    <div class="info-item-value">${data.rosterCount}</div>
+                  </div>
+                  ` : ''}
+                </div>
+                
+                ${data.url ? `
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <div class="info-item-label" style="margin-bottom: 0.5rem;">League Website</div>
+                  <a href="${escapeHtml(data.url)}" target="_blank" rel="noopener noreferrer" style="color: #22c55e; text-decoration: underline; word-break: break-all;">
+                    ${escapeHtml(data.url)}
+                  </a>
+                </div>
                 ` : ''}
               </div>
-            `;
-          }).join('');
+            </div>
+          `;
         } else {
-          sessionsContainer.innerHTML = '<p class="status-info" style="text-align: center; padding: 2rem;">No sessions found. Click "Sync Sessions" to fetch your session data from iRacing.</p>';
+          leagueContainer.innerHTML = `<p class="status-info" style="text-align: center; padding: 2rem; color: #ef4444;">${data.message || 'Failed to load league information'}</p>`;
         }
       } catch (error) {
-        console.error('Failed to load sessions:', error);
-        sessionsContainer.innerHTML = '<p class="status-info" style="color: #ef4444; text-align: center; padding: 2rem;">Failed to load sessions</p>';
+        console.error('Failed to load league information:', error);
+        leagueContainer.innerHTML = '<p class="status-info" style="color: #ef4444; text-align: center; padding: 2rem;">Failed to load league information</p>';
       }
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
     }
 
     // Format lap time (seconds to MM:SS.mmm)
@@ -608,6 +661,165 @@
       const secs = (seconds % 60).toFixed(3);
       return `${mins}:${secs.padStart(6, '0')}`;
     }
+
+    // Load league session statistics
+    async function loadLeagueStats() {
+      const token = getAuthToken();
+      if (!token) {
+        return;
+      }
+      const statsContainer = document.getElementById('leagueStatsContainer');
+      
+      statsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading league statistics...</p></div>';
+
+      try {
+        const response = await fetch('/api/iracing/league-sessions', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          window.location.href = '/auth';
+          return;
+        }
+
+        const data = await response.json();
+        
+        if (response.ok && data) {
+          const { statistics, tracks, fastestLapsByTrack, sessions } = data;
+
+          let html = '';
+
+          // Statistics Summary
+          if (statistics) {
+            html += `
+              <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem; color: #fff; font-size: 1.1rem;">Overall Statistics</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                  <div class="info-item">
+                    <div class="info-item-label">Total Races</div>
+                    <div class="info-item-value">${statistics.totalRaces || 0}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-item-label">Total Practices</div>
+                    <div class="info-item-value">${statistics.totalPractices || 0}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-item-label">Wins</div>
+                    <div class="info-item-value" style="color: #fbbf24;">${statistics.wins || 0}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-item-label">Podiums</div>
+                    <div class="info-item-value" style="color: #fbbf24;">${statistics.podiums || 0}</div>
+                  </div>
+                  ${statistics.bestFinish && statistics.bestFinish < 999 ? `
+                  <div class="info-item">
+                    <div class="info-item-label">Best Finish</div>
+                    <div class="info-item-value" style="color: #22c55e;">P${statistics.bestFinish}</div>
+                  </div>
+                  ` : ''}
+                  <div class="info-item">
+                    <div class="info-item-label">Total Laps</div>
+                    <div class="info-item-value">${statistics.totalLaps || 0}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-item-label">Total Incidents</div>
+                    <div class="info-item-value">${statistics.totalIncidents || 0}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          // Tracks Raced
+          if (tracks && tracks.length > 0) {
+            html += `
+              <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem; color: #fff; font-size: 1.1rem;">Tracks Raced (${tracks.length})</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                  ${tracks.map(track => `<span style="background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 6px; padding: 0.5rem 1rem; color: #bbf7d0; font-size: 0.9rem;">${escapeHtml(track)}</span>`).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          // Fastest Laps by Track
+          if (fastestLapsByTrack && Object.keys(fastestLapsByTrack).length > 0) {
+            html += `
+              <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 1rem; color: #fff; font-size: 1.1rem;">Fastest Laps by Track</h3>
+                <div style="display: grid; gap: 0.75rem;">
+                  ${Object.entries(fastestLapsByTrack)
+                    .sort((a, b) => a[1].time - b[1].time)
+                    .map(([track, lap]) => `
+                      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 1rem; display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: center;">
+                        <div>
+                          <div style="color: #fff; font-weight: 600; margin-bottom: 0.25rem;">${escapeHtml(track)}</div>
+                          <div style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">${escapeHtml(lap.car)} • ${lap.sessionType}</div>
+                        </div>
+                        <div style="text-align: right;">
+                          <div style="color: #fbbf24; font-size: 1.25rem; font-weight: 700;">${formatLapTime(lap.time)}</div>
+                        </div>
+                        <div style="text-align: right; color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">
+                          ${new Date(lap.date).toLocaleDateString()}
+                        </div>
+                      </div>
+                    `).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          // Recent Sessions List
+          if (sessions && sessions.length > 0) {
+            html += `
+              <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem;">
+                <h3 style="margin: 0 0 1rem; color: #fff; font-size: 1.1rem;">Recent League Sessions</h3>
+                <div style="display: grid; gap: 0.75rem; max-height: 500px; overflow-y: auto;">
+                  ${sessions.slice(0, 20).map(session => {
+                    const p = session.participant;
+                    return `
+                      <div class="session-item">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                          <h3 style="margin: 0; color: #fff;">${escapeHtml(session.trackName)} - ${escapeHtml(session.carName)}</h3>
+                          <span style="background: ${session.sessionType === 'race' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)'}; border: 1px solid ${session.sessionType === 'race' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.75rem; text-transform: uppercase; color: ${session.sessionType === 'race' ? '#fca5a5' : '#93c5fd'};">
+                            ${session.sessionType}
+                          </span>
+                        </div>
+                        <p style="margin: 0.25rem 0; color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
+                          <strong>Date:</strong> ${new Date(session.startTime).toLocaleString()}
+                        </p>
+                        ${p ? `
+                          <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                            ${p.lapsCompleted > 0 ? `<p style="margin: 0; font-size: 0.85rem;"><strong>Laps:</strong> ${p.lapsCompleted}</p>` : ''}
+                            ${p.bestLapTime ? `<p style="margin: 0; font-size: 0.85rem;"><strong>Best Lap:</strong> ${formatLapTime(p.bestLapTime)}</p>` : ''}
+                            ${p.incidents > 0 ? `<p style="margin: 0; font-size: 0.85rem;"><strong>Incidents:</strong> ${p.incidents}</p>` : ''}
+                            ${p.finishPosition ? `<p style="margin: 0; font-size: 0.85rem;"><strong>Finish:</strong> P${p.finishPosition}</p>` : ''}
+                          </div>
+                        ` : ''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          if (!html) {
+            html = '<p class="status-info" style="text-align: center; padding: 2rem;">No league sessions found. Sync sessions to see your league statistics.</p>';
+          }
+
+          statsContainer.innerHTML = html;
+        } else {
+          statsContainer.innerHTML = `<p class="status-info" style="text-align: center; padding: 2rem; color: #ef4444;">${data.message || 'Failed to load league statistics'}</p>`;
+        }
+      } catch (error) {
+        console.error('Failed to load league statistics:', error);
+        statsContainer.innerHTML = '<p class="status-info" style="color: #ef4444; text-align: center; padding: 2rem;">Failed to load league statistics</p>';
+      }
+    }
+
 
     // Show error message
     function showError(message) {
@@ -631,8 +843,12 @@
       // Remove query params from URL
       window.history.replaceState({}, document.title, window.location.pathname);
       
-      // Reload status
-      setTimeout(loadStatus, 1000);
+      // Reload status and league info
+      setTimeout(() => {
+        loadStatus();
+        loadLeagueInfo();
+        loadLeagueStats();
+      }, 1000);
     } else if (error) {
       // Map error codes to user-friendly messages
       let errorMessage = 'Connection failed. ';
@@ -674,12 +890,16 @@
         // Otherwise wait a bit more - global-user.js might still be initializing
         if (token) {
           loadStatus();
+          loadLeagueInfo();
+          loadLeagueStats();
         } else {
           // Check one more time after a delay (in case token is being set)
           setTimeout(() => {
             const retryToken = getAuthToken();
             if (retryToken) {
               loadStatus();
+              loadLeagueInfo();
+              loadLeagueStats();
             } else {
               // No token found after delays - redirect to login
               const statusCard = document.getElementById('statusCard');
